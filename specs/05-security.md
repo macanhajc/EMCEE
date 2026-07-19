@@ -45,7 +45,7 @@ The crown jewels are **customer bot tokens**: a leaked token = attacker controls
 
 ## Open questions
 
-- KMS (AWS/GCP) vs. libsodium-on-host for v1 — cost/ops tradeoff; decide with hosting choice.
+- ~~KMS (AWS/GCP) vs. libsodium-on-host for v1~~ → resolved 2026-07-19: libsodium sealed box; control plane holds public key only (`apps/web/src/lib/token-seal.ts` seals, `workers/runtime/tokenbox.py` unseals, key ref column enables rotation). KMS revisited only if hosting/scale demands it.
 - Do we need per-shard IP reputation isolation (one abusive-looking tenant getting an IP flagged affects shard-mates)?
 - Data-plane compromise drill: what's the actual runbook — mass-notify customers to regenerate tokens? Draft it before launch, not after.
 - ~~Age handling~~ → resolved 2026-07-19: 18+ self-attestation at signup, minor-discovered runbook = refund + suspend (`06-auth.md`).

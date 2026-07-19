@@ -2,6 +2,9 @@
 
 ADR-lite. Newest first. One entry per decision that shapes the product or architecture; link the spec that carries the detail.
 
+## 2026-07-19 — Token encryption: libsodium sealed boxes, public-key-only control plane
+Envelope/KMS deferred; v1 uses **sealed boxes** (X25519 + XSalsa20-Poly1305): control plane env holds only `TOKEN_SEAL_PUBLIC_KEY` — it can seal a pasted token but structurally cannot decrypt one; `TOKEN_SEAL_PRIVATE_KEY` lives only on data-plane hosts, unsealed at instance spawn (`token-seal.ts` / `tokenbox.py`, key-ref column for rotation, `keygen.py` per environment). Trial dedupe uses a peppered HMAC fingerprint (pepper control-plane-only). Cross-plane interop pinned by `scripts/check-token-seal.sh` + unit suites both sides (vitest is now the web test runner). → `specs/05-security.md`
+
 ## 2026-07-19 — ORM: Drizzle; initial Postgres schema landed
 Drizzle over Prisma: schema-as-TypeScript colocated with the control plane, plain-SQL migrations the Python plane can read, no codegen step, lighter runtime for App Router. Initial schema (`apps/web/src/db/schema.ts`, migration `0000_init`): Auth.js-compatible `users`/`accounts`/`sessions`/`verification_tokens`; `catalog_bots` (slug PK, seeded with `emote`); `bot_instances` (token ciphertext/key-ref/last4/peppered-fingerprint — write-only per `05-security.md`; billing-owned `desired_state` vs. supervisor-observed `status` + `error_kind`); `subscriptions` (Stripe mirror, ours + raw status); `webhook_events` (raw archive, Stripe event id PK = idempotency); `trial_registry` (room + fingerprint, **no user FK** so dedupe survives account deletion, no PII); `instance_events` (append-only). Local dev via root `docker-compose.yml` (Postgres 17 + Redis 8). → `specs/02-architecture.md`
 
