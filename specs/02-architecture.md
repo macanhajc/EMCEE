@@ -18,7 +18,7 @@
 
 ## Control plane (Next.js + TypeScript)
 
-- App Router, server components by default; Postgres via an ORM (Drizzle or Prisma — pick at code time).
+- App Router, server components by default; Postgres via **Drizzle** (decided 2026-07-19 — schema in `apps/web/src/db/schema.ts`, SQL migrations in `apps/web/drizzle/`).
 - Auth: Google OAuth + email magic link via Auth.js, no passwords; auth required for checkout, instance creation, and dashboard. Highrise has no public OAuth — the pasted bot token is the Highrise credential. Full spec: `06-auth.md`.
 - Config dashboard renders forms **generated from each bot's JSON Schema** (see below). Saving config = validate → write Postgres → publish `config.updated` on Redis.
 - Admin surface: tenant list, instance health, kill switch per instance, catalog rollout controls.
@@ -65,6 +65,6 @@ Desired state lives in Postgres; supervisors reconcile actual → desired (small
 ## Open questions
 
 - Internal API transport: REST over private network vs. everything-through-Postgres/Redis (no direct API)? Leaning: no direct API in v1 — DB + pub/sub is enough and one less surface.
-- Drizzle vs. Prisma; single VPS vs. Fly machines for supervisors.
+- Single VPS vs. Fly machines for supervisors. (~~Drizzle vs. Prisma~~ → Drizzle, 2026-07-19 — `docs/decisions.md`.)
 - Config live-apply semantics per bot: which options can hot-apply vs. require bot reconnect? (Mark per-field in schema metadata.)
 - Do we need per-tenant outbound action queues from day one to enforce rate limits, or is per-bot throttling in-process enough at v1 scale?

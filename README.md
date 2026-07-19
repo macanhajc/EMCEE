@@ -10,6 +10,9 @@ Hosted, configurable bots for [Highrise](https://highrise.game) rooms — monthl
 
 ```sh
 pnpm install          # control plane (Next.js) + schemas workspace
+docker compose up -d  # local Postgres 17 + Redis 8
+cp apps/web/.env.example apps/web/.env
+pnpm --filter web db:migrate && pnpm --filter web seed
 pnpm dev              # run the web app
 
 cd workers/runtime

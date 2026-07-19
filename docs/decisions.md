@@ -2,6 +2,9 @@
 
 ADR-lite. Newest first. One entry per decision that shapes the product or architecture; link the spec that carries the detail.
 
+## 2026-07-19 — ORM: Drizzle; initial Postgres schema landed
+Drizzle over Prisma: schema-as-TypeScript colocated with the control plane, plain-SQL migrations the Python plane can read, no codegen step, lighter runtime for App Router. Initial schema (`apps/web/src/db/schema.ts`, migration `0000_init`): Auth.js-compatible `users`/`accounts`/`sessions`/`verification_tokens`; `catalog_bots` (slug PK, seeded with `emote`); `bot_instances` (token ciphertext/key-ref/last4/peppered-fingerprint — write-only per `05-security.md`; billing-owned `desired_state` vs. supervisor-observed `status` + `error_kind`); `subscriptions` (Stripe mirror, ours + raw status); `webhook_events` (raw archive, Stripe event id PK = idempotency); `trial_registry` (room + fingerprint, **no user FK** so dedupe survives account deletion, no PII); `instance_events` (append-only). Local dev via root `docker-compose.yml` (Postgres 17 + Redis 8). → `specs/02-architecture.md`
+
 ## 2026-07-19 — Repo scaffold: pnpm workspace + uv-managed Python 3.11
 Monorepo per the planned layout: pnpm workspace (`apps/web` Next.js 16 App Router + Tailwind, `packages/schemas` with `emote/v1.json`), `workers/runtime` managed by **uv** with a **Python 3.11 pin** — the SDK transitively pins `pendulum==2.1.2`, which needs `distutils` (removed in 3.12), and its old `typing-extensions` pin also forces `jsonschema<4.18` in the runtime. Runtime skeleton establishes the non-negotiable patterns: shielded handlers, per-instance action throttle with priority classes, schema revalidation with last-good-config fallback. ORM (Drizzle vs. Prisma) still open — decide when the DB layer starts. → `specs/02-architecture.md`, `specs/04-bot-runtime.md`
 
