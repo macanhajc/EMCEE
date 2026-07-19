@@ -1,0 +1,39 @@
+# BotMarket
+
+Hosted, configurable bots for [Highrise](https://highrise.game) rooms — monthly subscription, no code, two-minute setup. Bring your own bot token; we run it 24/7.
+
+> Independent project. Not affiliated with Highrise or Pocket Worlds.
+
+**Status:** scaffold — monorepo skeleton in place, feature work starting.
+
+## Development
+
+```sh
+pnpm install          # control plane (Next.js) + schemas workspace
+pnpm dev              # run the web app
+
+cd workers/runtime
+uv sync               # data plane: Python 3.11 venv + pinned highrise-bot-sdk
+uv run python supervisor.py --shard shard-0
+```
+
+Requires [pnpm](https://pnpm.io) and [uv](https://docs.astral.sh/uv/) (uv downloads its own Python 3.11 — the SDK's `pendulum` pin doesn't build on newer).
+
+## Map
+
+| Path | What |
+|---|---|
+| `apps/web/` | Next.js control plane: storefront, auth, billing, dashboard |
+| `workers/runtime/` | Python data plane: supervisor + catalog bots on the official SDK |
+| `packages/schemas/` | Versioned JSON Schema per bot config — the contract between planes |
+| `CLAUDE.md` | Working agreement: constraints, stack, conventions |
+| `docs/research.md` | Platform research + sources (SDK, ToS, market) |
+| `docs/decisions.md` | Dated decision log |
+| `specs/01-product.md` | Vision, pricing draft, v1 scope |
+| `specs/02-architecture.md` | Control plane / data plane split |
+| `specs/03-billing.md` | Stripe + Pix/PayPal, entitlement lifecycle |
+| `specs/04-bot-runtime.md` | Python supervisor, throttling, failure modes |
+| `specs/05-security.md` | Token handling, threat model |
+| `specs/06-auth.md` | Sign-in methods, gating, sessions, age policy |
+| `specs/bots/` | v1 flagship: Emote ("Emcee") · deferred drafts: Moderation, Greeter |
+| `.claude/skills/highrise/` | Highrise SDK/platform reference skill |

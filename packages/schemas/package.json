@@ -1,0 +1,12 @@
+{
+  "name": "@botmarket/schemas",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Versioned JSON Schemas for catalog bot configs — the contract between the dashboard (form rendering + validation) and the Python runtime (revalidation on load).",
+  "exports": {
+    "./emote/v1": "./emote/v1.json"
+  },
+  "files": [
+    "*/v*.json"
+  ]
+}

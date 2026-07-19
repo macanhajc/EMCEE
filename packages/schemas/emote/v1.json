@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://botmarket.app/schemas/emote/v1.json",
+  "title": "Emote bot",
+  "description": "Configuration for the Emote catalog bot: say an emote's name in chat and your avatar performs it; permitted users can trigger a room-wide emote wave.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "emote_on_say": {
+      "title": "Emote on say",
+      "description": "A user says an emote name or alias in chat and their avatar performs it.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "title": "Enabled",
+          "type": "boolean",
+          "default": true
+        },
+        "cooldown_s": {
+          "title": "Per-user cooldown (seconds)",
+          "description": "Minimum wait between one user's emote triggers.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 60,
+          "default": 3
+        },
+        "disabled_emotes": {
+          "title": "Blocked emotes",
+          "description": "Emote names the bot will ignore in this room.",
+          "type": "array",
+          "items": { "type": "string", "maxLength": 64 },
+          "maxItems": 100,
+          "uniqueItems": true,
+          "default": []
+        }
+      }
+    },
+    "emote_all": {
+      "title": "Emote all",
+      "description": "\"all <emote>\" makes everyone in the room perform it as a staggered wave.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "title": "Enabled",
+          "type": "boolean",
+          "default": true
+        },
+        "permission": {
+          "title": "Who can trigger it",
+          "type": "string",
+          "enum": ["owner", "owner_designers", "allowlist"],
+          "default": "owner"
+        },
+        "allowlist": {
+          "title": "Allowed usernames",
+          "description": "Only used when permission is \"allowlist\".",
+          "type": "array",
+          "items": { "type": "string", "maxLength": 32 },
+          "maxItems": 50,
+          "uniqueItems": true,
+          "default": []
+        },
+        "cooldown_s": {
+          "title": "Room cooldown (seconds)",
+          "description": "Minimum wait between emote-all waves.",
+          "type": "integer",
+          "minimum": 10,
+          "maximum": 600,
+          "default": 60
+        }
+      }
+    },
+    "list_command": {
+      "title": "Emote list command",
+      "description": "\"emotes\" whispers a paginated list of available emote names.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "title": "Enabled",
+          "type": "boolean",
+          "default": true
+        }
+      }
+    }
+  }
+}

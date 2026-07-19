@@ -1,0 +1,17 @@
+[project]
+name = "botmarket-runtime"
+version = "0.1.0"
+description = "BotMarket data plane: bot supervisor + catalog bots (specs/04-bot-runtime.md)"
+# SDK transitively pins pendulum==2.1.2, which needs distutils (gone in 3.12+).
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    # Official Pocket Worlds SDK — pinned; bumps go canary-first (specs/04-bot-runtime.md).
+    "highrise-bot-sdk==25.1.0",
+    # Runtime revalidates config against packages/schemas before applying.
+    # <4.18: newer needs typing-extensions>=4.4, but the SDK pins 3.10.
+    "jsonschema>=4.17,<4.18",
+]
+
+[tool.setuptools]
+py-modules = ["supervisor"]
+packages = ["catalog"]

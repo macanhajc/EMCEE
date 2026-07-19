@@ -1,0 +1,22 @@
+# Node
+node_modules/
+.next/
+out/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+
+# Env — real secrets never enter the repo (specs/05-security.md)
+.env
+.env.*
+!.env.example
+
+# Misc
+.DS_Store
+*.log
