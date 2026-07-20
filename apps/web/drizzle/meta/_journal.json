@@ -15,6 +15,13 @@
       "when": 1784544499959,
       "tag": "0001_add_stripe_customer_id",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784546828703,
+      "tag": "0002_add_lease_claiming",
+      "breakpoints": true
     }
   ]
 }

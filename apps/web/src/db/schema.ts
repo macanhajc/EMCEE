@@ -146,7 +146,17 @@ export const botInstances = pgTable(
     desiredState: desiredState("desired_state").notNull().default("stopped"), // billing-owned
     status: instanceStatus("status").notNull().default("created"), // supervisor-observed
     errorKind: instanceErrorKind("error_kind"), // distinct customer-facing failure states
+    // Reserved for a future coarse partition (e.g. IP-pool grouping) — not
+    // read by the claim query. Actual assignment is lease-based (below),
+    // per specs/04-bot-runtime.md's stated lean: "survives supervisor death
+    // without ops."
     shard: text("shard"),
+    // Lease-based claiming: a supervisor claims unclaimed-or-expired running
+    // instances and renews the lease while it runs them. A crashed
+    // supervisor's leases simply expire — no ops action needed for another
+    // supervisor to pick the instance back up.
+    supervisorId: text("supervisor_id"),
+    leaseExpiresAt: timestamptz("lease_expires_at"),
     suspendedAt: timestamptz("suspended_at"), // reaped 30d after, config retained
 
     createdAt: timestamptz("created_at").notNull().defaultNow(),
@@ -157,7 +167,7 @@ export const botInstances = pgTable(
   },
   (t) => [
     index("bot_instances_user_idx").on(t.userId),
-    index("bot_instances_claim_idx").on(t.shard, t.desiredState), // supervisor claim query
+    index("bot_instances_claim_idx").on(t.desiredState, t.leaseExpiresAt), // lease claim query
     index("bot_instances_room_idx").on(t.roomId),
     index("bot_instances_fingerprint_idx").on(t.tokenFingerprint),
   ],

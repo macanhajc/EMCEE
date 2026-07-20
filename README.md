@@ -16,8 +16,9 @@ pnpm --filter web db:migrate && pnpm --filter web seed
 pnpm dev              # run the web app
 
 cd workers/runtime
-uv sync               # data plane: Python 3.11 venv + pinned highrise-bot-sdk
-uv run python supervisor.py --shard shard-0
+uv sync                        # data plane: Python 3.11 venv + pinned highrise-bot-sdk
+uv run python keygen.py        # token-sealing keypair — public half to apps/web, private half here
+uv run python supervisor.py    # claims desired_state=running instances and connects them
 ```
 
 Requires [pnpm](https://pnpm.io) and [uv](https://docs.astral.sh/uv/) (uv downloads its own Python 3.11 — the SDK's `pendulum` pin doesn't build on newer).

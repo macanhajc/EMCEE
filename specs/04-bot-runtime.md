@@ -2,6 +2,8 @@
 
 Python workers running catalog bots on the official `highrise-bot-sdk`. This is the part of the system that is the revenue: if it flaps, we churn.
 
+Wired 2026-07-20 (`workers/runtime/supervisor.py`, `db.py`, `heartbeat.py`). See `docs/decisions.md` for what's verified vs. still open — no real Highrise credentials exist in this environment, so verification used a fake WebSocket server speaking the real wire protocol against the real SDK's `bot_runner()`, not the live platform.
+
 ## Process model
 
 - **Supervisor** process per shard (start with 1–2 shards). On boot: claim `BotInstance` rows for its shard from Postgres (`desired_state = running`), spawn each as an SDK bot. SDK supports multiple bots per process (≥23.1.0b11); each bot ↔ one room WebSocket, one asyncio task tree.
@@ -55,7 +57,10 @@ Bots are I/O-bound WS clients; expect O(hundreds) instances per small VM. First 
 
 ## Open questions
 
-- Shard assignment: static column vs. lease-based claiming (leaning lease w/ TTL — survives supervisor death without ops).
+- ~~Shard assignment: static column vs. lease-based claiming~~ → resolved 2026-07-20: lease-based (`bot_instances.supervisor_id` + `lease_expires_at`, `FOR UPDATE SKIP LOCKED` claim). `shard` column kept but unused — reserved for a future coarse partition (e.g. IP-pool grouping) if per-IP ceilings turn out to require it.
+- Precise `error_kind` classification (token/permissions/room) isn't achievable yet: the SDK's `bot_runner()` doesn't surface *why* it returned, only stdout prints. The supervisor currently detects "fails fast repeatedly" generically → `degraded`, with `error_kind` unset except for the one failure mode we can classify ourselves (token unseal failure). Refine once a canary instance gives us real failure signatures to key off (matches "measure real platform limits" below — same empirical posture).
 - Measure real platform limits: connects/min per IP? actions/min per bot? multiple bots from one IP — any per-IP ceiling that forces IP diversity across shards?
 - Event log volume: every `user_joined` in a busy room is a lot of rows — sample or aggregate `InstanceEvent` beyond moderation actions?
 - Is `on_moderate` sufficient to detect our own bot being kicked/banned from a room (owner removed bot) → auto-stop instance vs. reconnect loop?
+- `status`/heartbeat are written optimistically when a (re)connect attempt starts, not confirmed after a successful handshake — `bot_runner()` offers no such callback. Fine in practice (fast failures still escalate to `degraded` within a few attempts) but worth knowing if the dashboard's "running" ever reads as briefly optimistic.
+- `highrise-bot-sdk==25.1.0`'s `__main__.py` imports the deprecated `pkg_resources`, "slated for removal as early as 2025-11-30" per its own deprecation warning — already past that date. Pinned `setuptools<81` as a stopgap (`workers/runtime/pyproject.toml`); this may force an SDK bump sooner than otherwise planned if that pin becomes unsatisfiable.
