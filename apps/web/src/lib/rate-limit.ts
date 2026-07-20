@@ -42,3 +42,7 @@ export class RateLimiter {
 // generous enough for real retries, tight enough to blunt stuffing.
 export const magicLinkEmailLimiter = new RateLimiter(5, 15 * 60 * 1000);
 export const magicLinkIpLimiter = new RateLimiter(20, 15 * 60 * 1000);
+
+// Token entry (instance creation, token replace): "token entry is a
+// credential-stuffing target" (specs/05-security.md). Keyed by user id.
+export const tokenEntryLimiter = new RateLimiter(10, 15 * 60 * 1000);

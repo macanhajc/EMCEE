@@ -46,6 +46,8 @@ This is the core product leverage: catalog growth is bounded by bot logic, not U
 - `CatalogBot` — slug, name, schema version(s), pricing id, lifecycle (beta/GA/retired).
 - `InstanceEvent` — append-only: connects, disconnects, errors, moderation actions taken (feeds the dashboard activity log).
 
+Wired 2026-07-20: `apps/web/src/app/instances/` (create + config), `apps/web/src/lib/schema-form.ts` (schema→form), `apps/web/src/lib/schema-validate.ts` (ajv). See `docs/decisions.md`.
+
 ## Instance lifecycle
 
 ```

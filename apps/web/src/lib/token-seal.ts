@@ -15,6 +15,14 @@ import "server-only";
 import { createHash, createHmac } from "node:crypto";
 import sodium from "libsodium-wrappers";
 
+/**
+ * The only error `sealToken` throws that's actually about what the user
+ * typed. Callers should show this one to the user; anything else (e.g. a
+ * missing TOKEN_SEAL_PUBLIC_KEY) is our misconfiguration, not theirs, and
+ * should surface as a real error, not a misleading "check your token".
+ */
+export class TokenFormatError extends Error {}
+
 export interface SealedToken {
   /** base64 (standard, padded) sealed-box ciphertext → bot_instances.token_ciphertext */
   ciphertext: string;
@@ -53,7 +61,7 @@ export async function sealToken(rawToken: string): Promise<SealedToken> {
   const token = rawToken.trim();
   // Sanity bounds only — never echo the value or its length in the error.
   if (token.length < 8 || token.length > 512) {
-    throw new Error("token has an unexpected format");
+    throw new TokenFormatError("token has an unexpected format");
   }
   await sodium.ready;
   const publicKey = sodium.from_base64(
