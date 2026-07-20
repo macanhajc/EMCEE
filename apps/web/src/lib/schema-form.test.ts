@@ -5,8 +5,8 @@ import { defaultsFromSchema, parseConfigFormData, sectionsFromSchema } from "./s
 describe("sectionsFromSchema (against the real emote/v1 schema)", () => {
   const sections = sectionsFromSchema(emoteSchemaV1);
 
-  it("finds all three top-level sections", () => {
-    expect(sections.map((s) => s.key)).toEqual(["emote_on_say", "emote_all", "list_command"]);
+  it("finds all top-level sections", () => {
+    expect(sections.map((s) => s.key)).toEqual(["emote_on_say", "emote_all", "list_command", "loop"]);
   });
 
   it("classifies each leaf shape correctly", () => {
@@ -44,6 +44,7 @@ describe("defaultsFromSchema (against the real emote/v1 schema)", () => {
       emote_on_say: { enabled: true, cooldown_s: 3, disabled_emotes: [] },
       emote_all: { enabled: true, permission: "owner", allowlist: [], cooldown_s: 60 },
       list_command: { enabled: true },
+      loop: { enabled: false, interval_s: 8, max_concurrent_loopers: 3, max_duration_s: 1800, cooldown_s: 10 },
     });
   });
 });
@@ -61,11 +62,17 @@ describe("parseConfigFormData", () => {
     fd.set("emote_all.allowlist", "alice\nbob");
     fd.set("emote_all.cooldown_s", "90");
     fd.set("list_command.enabled", "on");
+    fd.set("loop.enabled", "on");
+    fd.set("loop.interval_s", "12");
+    fd.set("loop.max_concurrent_loopers", "5");
+    fd.set("loop.max_duration_s", "600");
+    fd.set("loop.cooldown_s", "15");
 
     expect(parseConfigFormData(sections, fd)).toEqual({
       emote_on_say: { enabled: true, cooldown_s: 5, disabled_emotes: ["wave", "macarena"] },
       emote_all: { enabled: true, permission: "allowlist", allowlist: ["alice", "bob"], cooldown_s: 90 },
       list_command: { enabled: true },
+      loop: { enabled: true, interval_s: 12, max_concurrent_loopers: 5, max_duration_s: 600, cooldown_s: 15 },
     });
   });
 

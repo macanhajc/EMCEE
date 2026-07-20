@@ -84,6 +84,52 @@
           "default": true
         }
       }
+    },
+    "loop": {
+      "title": "Loop",
+      "description": "\"loop <emote>\" repeats that emote until the user says \"stop\" or leaves the room — the AFK-dance feature.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "title": "Enabled",
+          "description": "Off by default — the heaviest-load v1 feature (specs/bots/emote.md) and not yet tuned against real platform limits.",
+          "type": "boolean",
+          "default": false
+        },
+        "interval_s": {
+          "title": "Repeat interval (seconds)",
+          "description": "How often the looped emote re-triggers.",
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 60,
+          "default": 8
+        },
+        "max_concurrent_loopers": {
+          "title": "Max concurrent loopers",
+          "description": "Caps how many users can loop at once in this room.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10,
+          "default": 3
+        },
+        "max_duration_s": {
+          "title": "Max loop duration (seconds)",
+          "description": "Safety auto-stop if a user forgets to say \"stop\" (e.g. disconnects without a clean leave).",
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 7200,
+          "default": 1800
+        },
+        "cooldown_s": {
+          "title": "Per-user start cooldown (seconds)",
+          "description": "Minimum wait between one user starting new loops.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 120,
+          "default": 10
+        }
+      }
     }
   }
 }

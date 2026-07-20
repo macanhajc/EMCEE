@@ -253,3 +253,189 @@ async def test_stopall_with_no_active_wave_is_a_noop():
     bot = make_bot(owner_id="owner-1")
     await bot.on_chat(user("owner-1"), "stopall")  # must not raise
     assert bot._all_task is None
+
+
+# --- loop / stop -----------------------------------------------------------
+
+
+async def test_loop_is_disabled_by_default():
+    bot = make_bot()  # no explicit loop config — schema default is enabled: false
+    await bot.on_chat(user("u1"), "loop macarena")
+    await asyncio.sleep(0.05)
+    assert bot._loops == {}
+    assert bot.highrise.sent_emotes == []
+
+
+async def test_loop_starts_and_repeats_to_the_speaker():
+    bot = make_bot({"loop": {"enabled": True, "interval_s": 5, "cooldown_s": 0}})
+    # interval_s below the schema's stated minimum (5) is fine here — the
+    # schema bounds what the *control plane* accepts on save, the bot just
+    # reads whatever's in self.config at runtime.
+    bot.config["loop"]["interval_s"] = 0.02
+
+    await bot.on_chat(user("u1"), "loop macarena")
+    await asyncio.sleep(0.09)  # a few repeats' worth
+    task = bot._loops["u1"]
+    task.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await task
+
+    assert len(bot.highrise.sent_emotes) >= 2
+    assert all(call == ("dance-macarena", "u1") for call in bot.highrise.sent_emotes)
+
+
+async def test_unknown_emote_does_not_start_a_loop():
+    bot = make_bot({"loop": {"enabled": True}})
+    await bot.on_chat(user("u1"), "loop nonsense")
+    await asyncio.sleep(0.02)
+    assert bot._loops == {}
+
+
+async def test_stop_cancels_the_speakers_own_loop():
+    bot = make_bot({"loop": {"enabled": True, "cooldown_s": 0}})
+    bot.config["loop"]["interval_s"] = 0.02
+
+    await bot.on_chat(user("u1"), "loop macarena")
+    await asyncio.sleep(0.03)
+    task = bot._loops["u1"]
+
+    await bot.on_chat(user("u1"), "stop")
+    await asyncio.sleep(0.01)
+
+    assert task.cancelled()
+    sent_at_stop = len(bot.highrise.sent_emotes)
+    await asyncio.sleep(0.05)
+    assert len(bot.highrise.sent_emotes) == sent_at_stop  # nothing more after stop
+
+
+async def test_stop_with_no_active_loop_is_a_noop():
+    bot = make_bot({"loop": {"enabled": True}})
+    await bot.on_chat(user("u1"), "stop")  # must not raise
+    assert bot._loops == {}
+
+
+async def test_stop_only_affects_the_caller_not_other_loopers():
+    bot = make_bot({"loop": {"enabled": True, "cooldown_s": 0}})
+    bot.config["loop"]["interval_s"] = 0.02
+    await bot.on_chat(user("u1"), "loop macarena")
+    await bot.on_chat(user("u2"), "loop hello")
+    await asyncio.sleep(0.01)
+    u1_task = bot._loops["u1"]
+
+    await bot.on_chat(user("u1"), "stop")
+    await asyncio.sleep(0.01)
+
+    assert u1_task.cancelled()
+    assert "u1" not in bot._loops  # cleaned itself up after cancellation
+    assert not bot._loops["u2"].done()
+    bot._loops["u2"].cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await bot._loops["u2"]
+
+
+async def test_loop_start_cooldown_blocks_rapid_restart():
+    bot = make_bot({"loop": {"enabled": True, "cooldown_s": 60}})
+    await bot.on_chat(user("u1"), "loop macarena")
+    first_task = bot._loops.get("u1")
+    assert first_task is not None
+
+    await bot.on_chat(user("u1"), "loop hello")  # within cooldown — ignored
+    await asyncio.sleep(0.01)
+    assert bot._loops["u1"] is first_task  # unchanged, still looping the first emote
+
+    first_task.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await first_task
+
+
+async def test_switching_loop_emote_cancels_old_and_starts_new():
+    bot = make_bot({"loop": {"enabled": True, "cooldown_s": 0}})
+    bot.config["loop"]["interval_s"] = 0.02
+
+    await bot.on_chat(user("u1"), "loop macarena")
+    old_task = bot._loops["u1"]
+    await asyncio.sleep(0.01)
+
+    await bot.on_chat(user("u1"), "loop hello")
+    await asyncio.sleep(0.05)
+    new_task = bot._loops["u1"]
+
+    assert new_task is not old_task
+    assert old_task.cancelled()
+    assert not new_task.done()
+
+    new_task.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await new_task
+
+    # switching emotes doesn't count against the concurrent-looper cap
+    assert set(bot.highrise.sent_emotes) <= {("dance-macarena", "u1"), ("emote-hello", "u1")}
+
+
+async def test_max_concurrent_loopers_blocks_new_looper_and_whispers():
+    bot = make_bot({"loop": {"enabled": True, "max_concurrent_loopers": 2, "cooldown_s": 0}})
+    await bot.on_chat(user("u1"), "loop macarena")
+    await bot.on_chat(user("u2"), "loop hello")
+    await bot.on_chat(user("u3"), "loop tired")  # over the cap
+    await asyncio.sleep(0.02)
+
+    assert set(bot._loops.keys()) == {"u1", "u2"}
+    assert bot.highrise.whispers and bot.highrise.whispers[-1][0] == "u3"
+
+    for task in bot._loops.values():
+        task.cancel()
+    for task in list(bot._loops.values()):
+        with pytest.raises(asyncio.CancelledError):
+            await task
+
+
+async def test_cap_does_not_block_switching_an_existing_loopers_emote():
+    bot = make_bot({"loop": {"enabled": True, "max_concurrent_loopers": 1, "cooldown_s": 0}})
+    bot.config["loop"]["interval_s"] = 0.02
+
+    await bot.on_chat(user("u1"), "loop macarena")  # fills the cap (max 1)
+    await asyncio.sleep(0.01)
+    await bot.on_chat(user("u1"), "loop hello")  # switching, not adding — must not be blocked
+    await asyncio.sleep(0.03)
+
+    assert "u1" in bot._loops
+    assert not bot._loops["u1"].done()
+    assert not any(w[1].startswith("Loop limit") for w in bot.highrise.whispers)
+
+    bot._loops["u1"].cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await bot._loops["u1"]
+
+
+async def test_loop_auto_stops_after_max_duration_and_whispers_why():
+    bot = make_bot({"loop": {"enabled": True, "cooldown_s": 0}})
+    bot.config["loop"]["interval_s"] = 0.01
+    bot.config["loop"]["max_duration_s"] = 0.03
+
+    await bot.on_chat(user("u1"), "loop macarena")
+    task = bot._loops["u1"]
+    await asyncio.wait_for(task, timeout=2.0)  # must finish on its own, no external cancel
+
+    assert task.done() and not task.cancelled()
+    assert "u1" not in bot._loops  # cleaned up after natural completion
+    assert bot.highrise.whispers and "timed out" in bot.highrise.whispers[-1][1]
+
+
+async def test_on_user_leave_cancels_their_loop():
+    bot = make_bot({"loop": {"enabled": True, "cooldown_s": 0}})
+    bot.config["loop"]["interval_s"] = 0.02
+
+    await bot.on_chat(user("u1"), "loop macarena")
+    task = bot._loops["u1"]
+    await asyncio.sleep(0.01)
+
+    await bot.on_user_leave(user("u1"))
+    await asyncio.sleep(0.01)
+
+    assert task.cancelled()
+
+
+async def test_on_user_leave_for_non_looping_user_is_a_noop():
+    bot = make_bot({"loop": {"enabled": True}})
+    await bot.on_user_leave(user("nobody-looping"))  # must not raise
+    assert bot._loops == {}

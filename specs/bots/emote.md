@@ -28,6 +28,14 @@ Reworked 2026-07-19: v1 catalog focuses on this bot alone (Moderation & Greeter 
 - Cooldown (default 60s) + abort word (`stopall`) mid-wave.
 - New joiners during a wave are not included (snapshot at trigger).
 
+### Loop / stop (moved out of deferred, built 2026-07-20)
+- Trigger: `loop <emote>` repeats that emote for the *speaker* on an interval until they say `stop` or leave the room. **Off by default** — deliberately not enabled-by-default like the other three, since this is explicitly the heaviest sustained-load feature and isn't tuned against real platform limits yet (see rate-limit profile below).
+- Saying `loop <other emote>` while already looping switches to the new emote instead of stacking a second loop — doesn't count against the concurrent-looper cap, since it's not adding a new looper.
+- `max_concurrent_loopers` (default 3) caps how many users can loop at once in a room; a blocked attempt gets a quiet whisper explaining why, not silence — this is a recognized command being capped, not gibberish being ignored.
+- `max_duration_s` (default 1800 = 30 min) is a safety auto-stop for a forgotten loop (e.g. a disconnect that never fires a clean leave) — whispers the user why when it fires, so their avatar doesn't just stop for no reason they said.
+- Leaving the room (`on_user_leave`) cancels the leaver's own loop.
+- `stop` (distinct word from emote-all's `stopall`, no collision) only ever stops the caller's *own* loop — inherently self-service, no permission check needed.
+
 ### Config (sketch → `packages/schemas/emote/v1.json`)
 
 ```yaml
@@ -42,25 +50,30 @@ emote_all:
   cooldown_s: int 10..600 (default 60)
 list_command:
   enabled: bool (default true)
+loop:
+  enabled: bool (default false — see "Loop / stop" above for why)
+  interval_s: int 5..60 (default 8) — how often the looped emote re-triggers
+  max_concurrent_loopers: int 1..10 (default 3)
+  max_duration_s: int 60..7200 (default 1800)
+  cooldown_s: int 0..120 (default 10) — per-user cooldown on starting/switching a loop
 ```
 
 All fields hot-apply.
 
 ## SDK mapping
 
-- Events: `on_chat` (trigger parsing), `on_user_join`/`on_user_leave` (room roster for emote-all).
-- Actions: `send_emote(emote_id, target_user_id)` — confirmed to support directing emotes at players (EmoteRequest endpoint); `send_whisper` (list, error nudges); `get_room_users` (fan-out snapshot).
-- All sends through the `CatalogBot` throttle. Priority classes: single emote-on-say = normal; emote-all fan-out = background (yields to everything else).
+- Events: `on_chat` (trigger parsing), `on_user_leave` (cancel the leaver's own loop; not currently used for emote-all's roster, which snapshots fresh via `get_room_users()` at trigger time instead of maintaining one).
+- Actions: `send_emote(emote_id, target_user_id)` — confirmed to support directing emotes at players (EmoteRequest endpoint); `send_whisper` (list, error nudges, loop-cap/timeout notices); `get_room_users` (fan-out snapshot); `get_room_privilege` (found by reading the SDK source — confirmed it's exactly what `owner_designers` permission needs, no separate designer-list API required).
+- All sends through the `CatalogBot` throttle. Priority classes: single emote-on-say = normal; emote-all fan-out and loop repeats = background (yield to everything else under pressure — once the throttle actually differentiates priorities, which it doesn't yet, see `specs/04-bot-runtime.md`).
 
 ## Rate-limit profile (drives `04-bot-runtime.md` assumptions)
 
 - Steady state: cheap — one action per user trigger, cooldown-capped.
-- Bursts: emote-all only. Stagger built into the feature; worst case = room capacity × 1 action spread over tens of seconds.
-- This bot is the fleet's action-volume king even without loops — its telemetry is how we learn real platform limits.
+- Bursts: emote-all. Stagger built into the feature; worst case = room capacity × 1 action spread over tens of seconds.
+- Sustained: loop, now built. This is genuinely the fleet's action-volume king — a single looper at the default 8s interval is a low, steady trickle, but it never stops on its own (until `stop`/leave/timeout), unlike every other trigger here which is one-shot. `max_concurrent_loopers` is the only thing bounding total sustained load per room today.
 
 ## Explicitly deferred (post-v1 candidates, in rough order of demand)
 
-- **Loop/stop** (`loop macarena` until `stop`/leave) — the club AFK-dance feature; biggest sustained throttle load, needs concurrent-looper caps. Likely first fast-follow.
 - Copy mode (bot mirrors user emotes via `on_emote`).
 - Numbered emote menu (`say 1-100`), emote roulette, scheduled room-wide emote moments.
 
