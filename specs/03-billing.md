@@ -2,6 +2,8 @@
 
 Reviewed & decided 2026-07-19: **single rail — Stripe Brazil.** Cards + Pix (with Pix Automático for recurring). PayPal dropped for v1.
 
+Wired 2026-07-20 against a real Stripe sandbox (`apps/web/src/app/checkout/`, `apps/web/src/app/api/webhooks/stripe/`). See `docs/decisions.md` for what's verified vs. still open (webhook endpoint registration, Pix eligibility, tax).
+
 ## Principles
 
 1. **Real currency only.** Never Gold, never in-game items — ToS line, not a preference (see `docs/research.md`).
@@ -62,7 +64,8 @@ trialing(7d) ─→ active ─→ past_due (day 0–3, bot keeps running, emails
 
 ## Open questions
 
-- Verify: Pix Automático + trial periods; Smart Retries on Pix; Stripe BR presentment currencies for international cards.
+- Verify: Pix Automático + trial periods; Smart Retries on Pix; Stripe BR presentment currencies for international cards. (The sandbox account used to build this has Pix disabled by default — `payment_method_options.pix: null` on the real test subscription created 2026-07-20 — expected for a non-BR test account; must reverify once the real BR entity/account exists.)
 - NFS-e automation provider choice.
 - Annual plan dunning: if the yearly Pix/card charge fails, is 3-day grace too short? (Leaning: 7 days for annual.)
 - Do we email a pre-renewal notice for monthly too (good faith, tiny churn cost) or annual-only?
+- No live webhook endpoint registered yet (needs a public URL — deploy or tunnel); today's verification replayed real Stripe events with a locally-chosen signing secret rather than exercising Stripe's actual delivery/retry path. Register a real endpoint + secret once there's a reachable environment.

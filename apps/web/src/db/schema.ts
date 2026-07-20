@@ -56,6 +56,9 @@ export const users = pgTable("users", {
   image: text("image"),
   role: userRole("role").notNull().default("customer"),
   ageAttestedAt: timestamptz("age_attested_at"),
+  // Set on first successful checkout.session.completed (specs/03-billing.md)
+  // so repeat purchases and the Customer Portal reuse one Stripe Customer.
+  stripeCustomerId: text("stripe_customer_id").unique(),
   createdAt: timestamptz("created_at").notNull().defaultNow(),
 });
 

@@ -1,8 +1,11 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import emoteSchemaV1 from "@botmarket/schemas/emote/v1";
 import { auth } from "@/auth";
 import { getOwnedInstance } from "@/db/instances";
+import { getActiveSubscriptionForInstance } from "@/db/billing";
 import { sectionsFromSchema } from "@/lib/schema-form";
+import { openBillingPortal } from "@/app/checkout/actions";
 import { replaceToken, updateConfig } from "./actions";
 
 const SCHEMAS: Record<string, object> = { emote: emoteSchemaV1 };
@@ -17,13 +20,15 @@ export default async function InstancePage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ error?: string; saved?: string }>;
+  searchParams: Promise<{ error?: string; saved?: string; checkout?: string }>;
 }) {
   const { id } = await params;
-  const { error, saved } = await searchParams;
+  const { error, saved, checkout } = await searchParams;
   const session = await auth(); // proxy.ts guarantees a session on this route
   const instance = await getOwnedInstance(session!.user.id, id);
   if (!instance) notFound();
+
+  const subscription = await getActiveSubscriptionForInstance(id);
 
   const schema = SCHEMAS[instance.catalogBotSlug];
   const sections = sectionsFromSchema(schema);
@@ -35,10 +40,28 @@ export default async function InstancePage({
       <p>
         Room: {instance.roomId}
         <br />
-        Status: {instance.status}
-        {instance.status === "created" && " — awaiting checkout"}
+        Bot status: {instance.status}
+        <br />
+        {subscription ? (
+          <>
+            Subscription: {subscription.status}{" "}
+            <form action={openBillingPortal} style={{ display: "inline" }}>
+              <button type="submit">Manage billing</button>
+            </form>
+          </>
+        ) : (
+          <>
+            Subscription: none —{" "}
+            <Link href={`/checkout?instance=${instance.id}`}>Subscribe</Link>
+          </>
+        )}
       </p>
 
+      {checkout === "success" && (
+        <p role="status">
+          Thanks! Your subscription is starting — this page will reflect it shortly.
+        </p>
+      )}
       {error && <p role="alert">{ERROR_MESSAGES[error] ?? decodeURIComponent(error)}</p>}
       {saved && <p role="status">Saved.</p>}
 

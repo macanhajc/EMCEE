@@ -1,11 +1,15 @@
+import { eq } from "drizzle-orm";
 import Link from "next/link";
 import { auth, signOut } from "@/auth";
+import { db, tables } from "@/db";
 import { listInstancesForUser } from "@/db/instances";
+import { openBillingPortal } from "@/app/checkout/actions";
 import { signOutEverywhere } from "./actions";
 
 export default async function DashboardPage() {
   const session = await auth(); // proxy.ts already guarantees this is set
   const instances = await listInstancesForUser(session!.user.id);
+  const [user] = await db.select().from(tables.users).where(eq(tables.users.id, session!.user.id));
 
   return (
     <main style={{ maxWidth: 480, margin: "4rem auto", display: "grid", gap: 16 }}>
@@ -28,6 +32,12 @@ export default async function DashboardPage() {
         </ul>
       )}
       <Link href="/instances/new">New bot instance</Link>
+
+      {user?.stripeCustomerId && (
+        <form action={openBillingPortal}>
+          <button type="submit">Manage billing</button>
+        </form>
+      )}
 
       <form
         action={async () => {
