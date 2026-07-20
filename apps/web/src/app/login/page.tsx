@@ -1,4 +1,5 @@
 import { signIn } from "@/auth";
+import { safeRedirectPath } from "@/lib/safe-redirect";
 import { sendMagicLink } from "./actions";
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -11,7 +12,8 @@ export default async function LoginPage({
 }: {
   searchParams: Promise<{ next?: string; error?: string }>;
 }) {
-  const { next = "/dashboard", error } = await searchParams;
+  const { next: rawNext, error } = await searchParams;
+  const next = safeRedirectPath(rawNext);
 
   return (
     <main style={{ maxWidth: 360, margin: "4rem auto", display: "grid", gap: 24 }}>

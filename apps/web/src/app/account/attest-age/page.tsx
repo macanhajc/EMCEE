@@ -1,3 +1,4 @@
+import { safeRedirectPath } from "@/lib/safe-redirect";
 import { attestAge } from "./actions";
 
 export default async function AttestAgePage({
@@ -5,7 +6,8 @@ export default async function AttestAgePage({
 }: {
   searchParams: Promise<{ next?: string; error?: string }>;
 }) {
-  const { next = "/dashboard", error } = await searchParams;
+  const { next: rawNext, error } = await searchParams;
+  const next = safeRedirectPath(rawNext);
 
   return (
     <main style={{ maxWidth: 420, margin: "4rem auto" }}>
