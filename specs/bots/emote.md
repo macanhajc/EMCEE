@@ -1,3 +1,5 @@
+Wired 2026-07-20 (`workers/runtime/catalog/emote.py`, `catalog/emotes.py` + `emotes.json`). See `docs/decisions.md` for what's verified vs. still open — no real Highrise token/room exists in this environment, so the catalog is a small, doc-verified starter set, and per-emote targetability is still unconfirmed exactly as the "Verification list" below already anticipated.
+
 # Catalog bot — Emote ("Emcee", working name) · **v1 flagship**
 
 **Pitch:** every emote in the game, for everyone in your room. Say the emote's name — your avatar does it, even if you don't own it. The room owner can make the whole room dance at once.
@@ -64,13 +66,14 @@ All fields hot-apply.
 
 ## Verification list (build time, before sales copy)
 
-- Which emote IDs are **targetable at users** and whether any require the *target* to own them (curate the catalog empirically; the "use emotes you don't own" pitch depends on it).
-- Emote ID source of truth: `self.webapi` vs. maintained static list; how fast new game emotes appear.
-- Behavior when target is mid-emote / moving / in voice — dropped or queued?
-- Actual burst tolerance for fan-out (tune stagger rate on the canary room).
+- Which emote IDs are **targetable at users** and whether any require the *target* to own them (curate the catalog empirically; the "use emotes you don't own" pitch depends on it). Still open — `emotes.json`'s `targetable: true` on all 5 starter entries is an assumption inherited from the docs' general "can be directed toward a player" language, not per-emote confirmed.
+- ~~Emote ID source of truth: `self.webapi` vs. maintained static list~~ → resolved 2026-07-20: confirmed by reading `highrise/webapi.py` directly — there is no emotes endpoint at all (only user/room/post/item/grab lookups), so it **must** be a maintained static list; no live source ever existed to check against. Today's list (`workers/runtime/catalog/emotes.json`) has 5 entries, each confirmed against Highrise's own docs (create.highrise.game/learn/bots/api/endpoints/emoterequest) — not a fabricated full catalog, since none is published anywhere. Growing it is the next real step here.
+- Behavior when target is mid-emote / moving / in voice — dropped or queued? Still open.
+- Actual burst tolerance for fan-out (tune stagger rate on the canary room). Still open — and now additionally: the fan-out's actual pacing today is bottlenecked by the shared per-instance throttle's conservative default (~1/sec), well under this section's "~2-4 users/sec" target. See `specs/04-bot-runtime.md`.
 
 ## Open questions
 
 - Bare-name triggers can collide with normal chat (someone says "hello" conversationally → avatar waves). Acceptable/charming, or do we need a per-room toggle for prefix mode (`!hello`)? Leaning: charming, ship bare + offer prefix toggle in config later if complaints.
 - Should `emote all` have a room-size ceiling in v1 (e.g. skip rooms >60 users) until burst tolerance is measured?
 - Free tier of the catalog (say, 20 emotes) as a marketing hook vs. all-in from day one?
+- `stopall` currently requires the same permission tier as triggering the wave (a judgment call made during implementation — the spec doesn't say). Should *anyone* be able to abort as a safety valve instead, independent of who started it?

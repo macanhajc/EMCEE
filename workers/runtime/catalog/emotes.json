@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "emotes": [
+    { "id": "dance-macarena", "name": "Macarena", "aliases": ["macarena"], "targetable": true },
+    { "id": "emote-hello", "name": "Hello", "aliases": ["hello", "hi", "oi", "olá"], "targetable": true },
+    { "id": "emote-tired", "name": "Tired", "aliases": ["tired", "sleepy", "cansado", "sono"], "targetable": true },
+    { "id": "emoji-angry", "name": "Angry", "aliases": ["angry", "mad", "bravo", "irritado"], "targetable": true },
+    { "id": "emoji-thumbsup", "name": "Thumbs Up", "aliases": ["thumbsup", "thumbs up", "like", "legal"], "targetable": true }
+  ]
+}

@@ -31,6 +31,7 @@ SCHEMAS_DIR = Path(__file__).resolve().parents[3] / "packages" / "schemas"
 
 # SDK handlers that must be shielded (see .claude/skills/highrise).
 _HANDLERS = (
+    "on_start",
     "on_connect",
     "on_chat",
     "on_whisper",
