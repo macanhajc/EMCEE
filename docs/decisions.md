@@ -2,6 +2,17 @@
 
 ADR-lite. Newest first. One entry per decision that shapes the product or architecture; link the spec that carries the detail.
 
+## 2026-07-20 — CI: three jobs, zero GitHub Secrets required
+Added `.github/workflows/ci.yml`: `web` (lint, vitest, `next build`), `runtime` (pytest against real Postgres 17 + Redis 8 service containers — matching `docker-compose.yml` exactly — not mocks, since the existing test suite genuinely needs live services), and `cross-plane` (runs `scripts/check-token-seal.sh` as a standing regression check that the TS/Python token-sealing contract hasn't drifted). A fourth job, `ci-success`, exists purely so branch protection can require one check name instead of three — added the job, did not configure branch protection itself (a repo-policy change, left for the user to decide).
+
+Runs with **no secrets configured** — deliberately verified, not assumed: every Stripe-touching test is pure/mocked (asserts on request shapes, never calls stripe.com), and token-sealing keypairs are generated fresh per run in both the `runtime` and `cross-plane` jobs. `web`'s build step gets non-secret placeholder env vars (`AUTH_SECRET`, `STRIPE_SECRET_KEY`) safe to commit in the open.
+
+Jobs are three independent Postgres/Redis-per-job setups rather than one shared migrated DB — sequencing jobs to share state would slow every run down for no real benefit at current scale. `runtime` and `cross-plane` both need Node/pnpm despite being "Python jobs": `runtime` to run Drizzle migrations (owns the schema the Python tests write into directly via raw SQL), `cross-plane` to run the TS half of the seal/unseal round trip.
+
+Every command in the workflow was run locally first, exactly as CI invokes it (`pnpm --filter web exec drizzle-kit migrate`, `pnpm build` with the placeholder env vars, `uv sync --locked`, `uv run pytest -q`, `./scripts/check-token-seal.sh` with no local token env vars set) — no `act` available in this environment to simulate the full workflow, so this was the practical substitute for that gap.
+
+Not yet live: this repo has no GitHub remote configured, so the workflow can't actually run until it's pushed somewhere with Actions enabled.
+
 ## 2026-07-20 — Loop/stop: EmoteBot's first post-v1 feature, off by default
 Moved loop/stop out of `specs/bots/emote.md`'s "explicitly deferred" list and built it (`workers/runtime/catalog/emote.py`): `loop <emote>` repeats it for the speaker on an interval until `stop`, leaving the room, or a safety timeout; `stop` is a distinct word from emote-all's `stopall` (no collision) and only ever stops the caller's own loop, no permission check needed since it's inherently self-service.
 

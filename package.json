@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "pnpm --filter web dev",
     "build": "pnpm --filter web build",
-    "lint": "pnpm --filter web lint"
+    "lint": "pnpm --filter web lint",
+    "test": "pnpm --filter web test"
   },
   "packageManager": "pnpm@11.7.0"
 }

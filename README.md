@@ -4,7 +4,7 @@ Hosted, configurable bots for [Highrise](https://highrise.game) rooms — monthl
 
 > Independent project. Not affiliated with Highrise or Pocket Worlds.
 
-**Status:** scaffold — monorepo skeleton in place, feature work starting.
+**Status:** core spine wired end-to-end — auth, instance creation, Stripe checkout, and the Python supervisor + first catalog bot (Emote) are all built and tested. Not yet deployed anywhere; no real Highrise credentials exist in this environment (see `docs/decisions.md`).
 
 ## Development
 
@@ -22,6 +22,10 @@ uv run python supervisor.py    # claims desired_state=running instances and conn
 ```
 
 Requires [pnpm](https://pnpm.io) and [uv](https://docs.astral.sh/uv/) (uv downloads its own Python 3.11 — the SDK's `pendulum` pin doesn't build on newer).
+
+## CI
+
+`.github/workflows/ci.yml` runs on every push/PR: web (lint, vitest, `next build`), runtime (pytest against real Postgres + Redis service containers, not mocks), and a cross-plane job proving the TS/Python token-sealing contract hasn't drifted. No GitHub Secrets required — nothing in CI calls a real external API. Not yet live: this repo has no GitHub remote configured yet.
 
 ## Map
 
