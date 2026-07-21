@@ -7,7 +7,7 @@ Wired 2026-07-20 against a real Stripe sandbox (`apps/web/src/app/checkout/`, `a
 ## Principles
 
 1. **Real currency only.** Never Gold, never in-game items — ToS line, not a preference (see `docs/research.md`).
-2. **Billing state drives entitlement, never the reverse.** The data plane reads `desired_state`; only webhook-driven billing logic writes it.
+2. **Billing state drives entitlement, never the reverse.** The data plane reads `desired_state`; billing (webhooks) and the customer's own dashboard start/stop switch are the only writers (2026-07-21). Billing decides whether the bot is *allowed* to run; it never decides that the bot *should* run right now — a fresh or reactivated subscription only entitles, it doesn't auto-start. See "Subscription → instance state machine" below.
 3. **Grace before cut-off.** Payment failure feels like a nudge, not an outage.
 4. **One rail.** Every payment method must live inside Stripe Billing's subscription machinery — no parallel billing systems.
 
@@ -28,7 +28,7 @@ Entity will be Brazil-based, which is the only path to Pix: Stripe supports **Pi
 | Monthly, per instance | R$39/mo (~$7) | Core offer |
 | Annual, per instance | R$390/yr (10× monthly, ~2 months free) | Renewal reminder email 7 days before charge |
 
-- **No bundle SKU at launch** (deselected in review — multi-bot discount revisited post-launch with real basket data).
+- **No bundle SKU at launch** (deselected in review — a multi-*instance* discount, i.e. running the same bot in several rooms, is the post-launch experiment to revisit with real basket data; written when the product was still framed as multiple separate bot products, see `docs/decisions.md` 2026-07-20).
 - **No prepaid blocks** — Pix Automático makes recurring work without them (rejected 2026-07-19).
 - Annual refund exposure mitigations: 7-day money-back window applies to annual too; after that, cancel stops renewal but no pro-rata refund (exception: if *we* discontinue the product, unused months are refunded — say so in ToS, it's cheap trust).
 
@@ -47,6 +47,7 @@ trialing(7d) ─→ active ─→ past_due (day 0–3, bot keeps running, emails
    └─ cancel ──────┴─────→ canceled (end of period) ─────────────────────────┴→ reaped after 30d (config export offered)
 ```
 
+- **Entitlement vs. running (2026-07-21):** every state above is *entitlement*, not "the bot is live." A new instance is created stopped by default; checkout completing and entering `trialing` doesn't start it either — the customer presses **Start** on the dashboard, both right after checkout and any time they've stopped it themselves. "Bot keeps running" during `past_due` and "bot stopped" at `suspended` describe what billing *allows*; if the customer never started it, it stays stopped through all of that. Resuming from `suspended` still requires the customer to press Start again — payment alone doesn't restart it.
 - Webhooks we act on: `checkout.session.completed`, `invoice.paid`, `invoice.payment_failed`, `customer.subscription.updated/deleted`, and **mandate events** (Pix mandate revoked ≈ card removed → prompt for new payment method, then past_due flow). Idempotent handlers; raw events archived.
 - `past_due` grace: 3 days, Stripe Smart Retries on (verify retry behavior for Pix charges specifically).
 - Bots never mention billing in-room. All billing comms via email + dashboard banner.

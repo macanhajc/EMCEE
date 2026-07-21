@@ -4,8 +4,9 @@ Reconciliation loop, k8s-style: claim instances whose desired_state is
 "running" and aren't already claimed (lease-based — specs/04-bot-runtime.md's
 stated lean: "survives supervisor death without ops"), renew leases on ones
 we're running, stop ones whose desired_state flipped away. Redis pub/sub
-(config.updated) makes config changes snappy; the reconcile loop is what
-makes everything eventually correct even if a pub/sub message is dropped.
+(config.updated, avatar_position.updated) makes config and dashboard-set
+avatar-position changes snappy; the reconcile loop is what makes everything
+eventually correct even if a pub/sub message is dropped.
 
 Tokens are decrypted fresh on every (re)connect attempt, not just once at
 spawn — that's what makes "replace token" (specs/05-security.md) take
@@ -38,12 +39,12 @@ import redis.asyncio as redis
 import db
 import heartbeat
 from catalog.base import CatalogBot
-from catalog.emote import EmoteBot
+from catalog.emcee import EmceeBot
 from tokenbox import TokenBox
 
 log = logging.getLogger("supervisor")
 
-CATALOG: dict[str, type[CatalogBot]] = {"emote": EmoteBot}
+CATALOG: dict[str, type[CatalogBot]] = {"emcee": EmceeBot}
 
 RECONCILE_INTERVAL_S = 10
 LEASE_TTL_S = 60
@@ -160,6 +161,11 @@ class Supervisor:
             await db.set_status(self.pool, instance_id, "degraded")
             return
 
+        # Generic capability every catalog bot may use (specs/04-bot-runtime.md);
+        # today only Concierge's visit-stats persistence does (catalog/greeter.py).
+        bot.db_pool = self.pool
+        bot.bot_instance_id = instance_id
+
         task = asyncio.create_task(self._run_instance_loop(instance_id, bot, row))
         self.running[instance_id] = RunningInstance(instance_id=instance_id, bot=bot, task=task)
 
@@ -237,12 +243,20 @@ class Supervisor:
         await db.insert_event(self.pool, instance_id, "stopped", {"reason": reason})
 
     async def _listen_config_updates(self) -> None:
+        # Two channels, one listener task: config.updated (the JSON config
+        # blob) and avatar_position.updated (the dashboard-set anchor spot,
+        # specs/bots/avatar.md — a row in `avatar_positions`, not part of
+        # config, so it needs its own signal rather than piggybacking on the
+        # config one).
         pubsub = self.redis.pubsub()
-        await pubsub.subscribe("config.updated")
+        await pubsub.subscribe("config.updated", "avatar_position.updated")
         async for message in pubsub.listen():
             if message["type"] != "message":
                 continue
-            await self._handle_config_update(message["data"])
+            if message["channel"] == "avatar_position.updated":
+                await self._handle_avatar_position_update(message["data"])
+            else:
+                await self._handle_config_update(message["data"])
 
     async def _handle_config_update(self, raw: str | bytes) -> None:
         try:
@@ -266,6 +280,26 @@ class Supervisor:
             # CatalogBot.apply_config already logs + keeps last-good; this is
             # what makes the rejection visible on the dashboard.
             await db.insert_event(self.pool, instance_id, "config_rejected", {})
+
+    async def _handle_avatar_position_update(self, raw: str | bytes) -> None:
+        try:
+            payload = json.loads(raw)
+            instance_id = payload["instanceId"]
+        except (json.JSONDecodeError, KeyError, TypeError):
+            log.warning("avatar_position.updated: malformed payload %r", raw)
+            return
+
+        running = self.running.get(instance_id)
+        if running is None:
+            return  # not ours (different supervisor, or not currently running)
+
+        # Only EmceeBot (the one catalog bot with the avatar module) exposes
+        # this; getattr rather than an isinstance import keeps this module
+        # agnostic to which catalog bots compose avatar-like behavior.
+        apply_position = getattr(running.bot, "apply_avatar_position", None)
+        if apply_position is not None:
+            await apply_position()
+            await db.insert_event(self.pool, instance_id, "avatar_position_applied", {})
 
 
 async def main(supervisor_id: str, capacity: int) -> None:

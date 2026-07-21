@@ -22,7 +22,7 @@ async def pool():
     async with p.acquire() as conn:
         # Idempotent — tests don't depend on the control plane's seed having run.
         await conn.execute(
-            "INSERT INTO catalog_bots (slug, name, schema_version) VALUES ('emote', 'Emcee', 1) "
+            "INSERT INTO catalog_bots (slug, name, schema_version) VALUES ('emcee', 'Emcee', 1) "
             "ON CONFLICT (slug) DO NOTHING"
         )
     yield p
@@ -95,7 +95,7 @@ async def make_instance(pool, test_user, keypair, token_box):
                 INSERT INTO bot_instances
                     (id, user_id, catalog_bot_slug, room_id, token_ciphertext, token_key_ref,
                      config, schema_version, desired_state, supervisor_id, lease_expires_at)
-                VALUES ($1, $2, 'emote', $3, $4, $5, $6, 1, $7, $8, $9)
+                VALUES ($1, $2, 'emcee', $3, $4, $5, $6, 1, $7, $8, $9)
                 """,
                 instance_id,
                 test_user,

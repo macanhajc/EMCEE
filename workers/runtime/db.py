@@ -109,3 +109,87 @@ async def insert_event(pool: asyncpg.Pool, instance_id: str, kind: str, data: di
             kind,
             data,
         )
+
+
+async def record_visit(pool: asyncpg.Pool, instance_id: str, user_id: str, username: str) -> int:
+    """Concierge module (specs/bots/greeter.md): atomically bumps this
+    user's visit count for this instance and returns the new total —
+    single round trip, no read-then-write race between concurrent joins.
+    """
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow(
+            """
+            INSERT INTO greeter_visits (bot_instance_id, user_id, username, visit_count, first_seen_at, last_seen_at)
+            VALUES ($1, $2, $3, 1, now(), now())
+            ON CONFLICT (bot_instance_id, user_id) DO UPDATE
+            SET visit_count = greeter_visits.visit_count + 1, username = $3, last_seen_at = now()
+            RETURNING visit_count
+            """,
+            instance_id,
+            user_id,
+            username,
+        )
+        return row["visit_count"]
+
+
+async def get_avatar_position(pool: asyncpg.Pool, instance_id: str) -> asyncpg.Record | None:
+    """Avatar module (specs/bots/avatar.md): the saved "anchor" spot, if the
+    owner has ever set one for this instance."""
+    async with pool.acquire() as conn:
+        return await conn.fetchrow(
+            "SELECT x, y, z, facing FROM avatar_positions WHERE bot_instance_id = $1", instance_id
+        )
+
+
+async def set_avatar_position(
+    pool: asyncpg.Pool, instance_id: str, x: float, y: float, z: float, facing: str
+) -> None:
+    """Upserts the single saved anchor spot for this instance — one row per
+    instance, not one per user like `record_visit`/`bump_strikes`."""
+    async with pool.acquire() as conn:
+        await conn.execute(
+            """
+            INSERT INTO avatar_positions (bot_instance_id, x, y, z, facing, updated_at)
+            VALUES ($1, $2, $3, $4, $5, now())
+            ON CONFLICT (bot_instance_id) DO UPDATE
+            SET x = $2, y = $3, z = $4, facing = $5, updated_at = now()
+            """,
+            instance_id,
+            x,
+            y,
+            z,
+            facing,
+        )
+
+
+async def bump_strikes(
+    pool: asyncpg.Pool, instance_id: str, user_id: str, username: str, decay_h: float
+) -> int:
+    """Warden module (specs/bots/moderation.md): atomically adds one strike
+    for this user on this instance and returns the new total — single round
+    trip, same shape as `record_visit`. Decay is computed at write time
+    rather than by a separate cron job: if the last strike is older than
+    `decay_h` hours, the count resets to 1 (this strike) instead of
+    incrementing the stale one.
+    """
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow(
+            """
+            INSERT INTO warden_strikes (bot_instance_id, user_id, username, strikes, last_strike_at)
+            VALUES ($1, $2, $3, 1, now())
+            ON CONFLICT (bot_instance_id, user_id) DO UPDATE
+            SET strikes = CASE
+                    WHEN warden_strikes.last_strike_at < now() - ($4 * interval '1 hour')
+                    THEN 1
+                    ELSE warden_strikes.strikes + 1
+                END,
+                username = $3,
+                last_strike_at = now()
+            RETURNING strikes
+            """,
+            instance_id,
+            user_id,
+            username,
+            decay_h,
+        )
+        return row["strikes"]

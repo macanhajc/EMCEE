@@ -102,6 +102,96 @@ async def test_get_instance_none_for_missing_id(pool):
     assert await db.get_instance(pool, "00000000-0000-0000-0000-000000000000") is None
 
 
+async def test_record_visit_starts_at_one_and_increments(pool, make_instance):
+    instance_id = await make_instance()
+
+    first = await db.record_visit(pool, instance_id, "hr-user-1", "alice")
+    second = await db.record_visit(pool, instance_id, "hr-user-1", "alice")
+
+    assert first == 1
+    assert second == 2
+
+
+async def test_record_visit_is_per_instance_and_per_user(pool, make_instance):
+    instance_a = await make_instance()
+    instance_b = await make_instance()
+
+    await db.record_visit(pool, instance_a, "hr-user-1", "alice")
+    # Same Highrise user id, different instance — independent counters.
+    assert await db.record_visit(pool, instance_b, "hr-user-1", "alice") == 1
+    # Different user, same instance — also independent.
+    assert await db.record_visit(pool, instance_a, "hr-user-2", "bob") == 1
+    # Original counter unaffected by either of the above.
+    assert await db.record_visit(pool, instance_a, "hr-user-1", "alice") == 2
+
+
+async def test_record_visit_updates_username_on_revisit(pool, make_instance):
+    instance_id = await make_instance()
+    await db.record_visit(pool, instance_id, "hr-user-1", "oldname")
+    await db.record_visit(pool, instance_id, "hr-user-1", "newname")
+
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow(
+            "SELECT username FROM greeter_visits WHERE bot_instance_id = $1 AND user_id = $2",
+            instance_id,
+            "hr-user-1",
+        )
+    assert row["username"] == "newname"
+
+
+async def test_bump_strikes_starts_at_one_and_increments(pool, make_instance):
+    instance_id = await make_instance()
+
+    first = await db.bump_strikes(pool, instance_id, "hr-user-1", "alice", decay_h=24)
+    second = await db.bump_strikes(pool, instance_id, "hr-user-1", "alice", decay_h=24)
+
+    assert first == 1
+    assert second == 2
+
+
+async def test_bump_strikes_is_per_instance_and_per_user(pool, make_instance):
+    instance_a = await make_instance()
+    instance_b = await make_instance()
+
+    await db.bump_strikes(pool, instance_a, "hr-user-1", "alice", decay_h=24)
+    # Same Highrise user id, different instance — independent counters.
+    assert await db.bump_strikes(pool, instance_b, "hr-user-1", "alice", decay_h=24) == 1
+    # Different user, same instance — also independent.
+    assert await db.bump_strikes(pool, instance_a, "hr-user-2", "bob", decay_h=24) == 1
+    # Original counter unaffected by either of the above.
+    assert await db.bump_strikes(pool, instance_a, "hr-user-1", "alice", decay_h=24) == 2
+
+
+async def test_bump_strikes_resets_after_decay_window(pool, make_instance):
+    instance_id = await make_instance()
+    await db.bump_strikes(pool, instance_id, "hr-user-1", "alice", decay_h=24)
+
+    stale = datetime.now(timezone.utc) - timedelta(hours=25)
+    async with pool.acquire() as conn:
+        await conn.execute(
+            "UPDATE warden_strikes SET last_strike_at = $2 WHERE bot_instance_id = $1 AND user_id = 'hr-user-1'",
+            instance_id,
+            stale,
+        )
+
+    assert await db.bump_strikes(pool, instance_id, "hr-user-1", "alice", decay_h=24) == 1
+
+
+async def test_bump_strikes_does_not_reset_within_decay_window(pool, make_instance):
+    instance_id = await make_instance()
+    await db.bump_strikes(pool, instance_id, "hr-user-1", "alice", decay_h=24)
+
+    recent = datetime.now(timezone.utc) - timedelta(hours=1)
+    async with pool.acquire() as conn:
+        await conn.execute(
+            "UPDATE warden_strikes SET last_strike_at = $2 WHERE bot_instance_id = $1 AND user_id = 'hr-user-1'",
+            instance_id,
+            recent,
+        )
+
+    assert await db.bump_strikes(pool, instance_id, "hr-user-1", "alice", decay_h=24) == 2
+
+
 async def test_claim_is_concurrency_safe_across_supervisors(pool, pool2, make_instance):
     """The FOR UPDATE SKIP LOCKED claim must never let two supervisors claim
     the same instance — this is the whole point of lease-based claiming

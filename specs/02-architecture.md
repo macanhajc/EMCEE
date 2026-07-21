@@ -29,7 +29,7 @@ Detailed in `04-bot-runtime.md`. Summary: a **supervisor** process per shard cla
 
 ## The contract between planes: JSON Schema per bot
 
-Each catalog bot ships a versioned JSON Schema in `packages/schemas/`:
+Each catalog bot ships a versioned JSON Schema in `packages/schemas/`. In v1 there is exactly one catalog bot row (`emote`/"Emcee") and its schema grows by adding a new top-level section per feature module as each ships — additive, no version bump, same pattern the `loop` section already proved (`docs/decisions.md`, 2026-07-20) — rather than a new schema per bot (`01-product.md`).
 
 - **Dashboard** auto-renders the config form from it (labels/help text/constraints in the schema).
 - **Control plane** validates on save.
@@ -42,7 +42,7 @@ This is the core product leverage: catalog growth is bounded by bot logic, not U
 
 - `User` — account, auth identities.
 - `Subscription` — Stripe/PayPal state mirror; status drives entitlement.
-- `BotInstance` — the sellable unit: user + catalog bot + room_id + encrypted token ref + config (JSONB) + schema_version + desired_state (running/stopped) + shard assignment.
+- `BotInstance` — the sellable unit: user + catalog bot + room_id + encrypted token ref + config (JSONB) + schema_version + desired_state (running/stopped) + user_enabled (customer's own start/stop switch, 2026-07-21) + shard assignment.
 - `CatalogBot` — slug, name, schema version(s), pricing id, lifecycle (beta/GA/retired).
 - `InstanceEvent` — append-only: connects, disconnects, errors, moderation actions taken (feeds the dashboard activity log).
 
@@ -56,7 +56,7 @@ created → provisioning → running ↔ degraded (reconnecting) → stopped
                              └→ suspended (billing) → resumed | reaped (30d, config retained)
 ```
 
-Desired state lives in Postgres; supervisors reconcile actual → desired (small k8s-style loop). Billing events only ever flip `desired_state`.
+Desired state lives in Postgres; supervisors reconcile actual → desired (small k8s-style loop). `desired_state` is `entitled && user_enabled` (see `specs/03-billing.md`) — billing webhooks and the customer's own dashboard start/stop action are the only two writers, and neither can run the bot alone.
 
 ## Deployment (v1, boring on purpose)
 

@@ -16,7 +16,12 @@ interface JsonSchemaLeaf {
   minimum?: number;
   maximum?: number;
   maxItems?: number;
+  maxLength?: number;
   enum?: string[];
+  /** Sibling boolean field key this one is only meaningful next to (e.g.
+   * `quiet_hours_start` depends on `quiet_hours_enabled`) — the dashboard
+   * hides the field while that sibling is unchecked. */
+  "x-enabled-by"?: string;
 }
 
 interface JsonSchemaObject {
@@ -24,37 +29,51 @@ interface JsonSchemaObject {
   title?: string;
   description?: string;
   properties?: Record<string, JsonSchemaLeaf | JsonSchemaObject>;
+  "x-module"?: string;
+}
+
+interface FieldSpecBase {
+  key: string;
+  title: string;
+  description?: string;
+  /** Sibling boolean field key that gates this field's visibility in the
+   * dashboard form, from the schema's `x-enabled-by` (see JsonSchemaLeaf). */
+  enabledBy?: string;
 }
 
 export type FieldSpec =
-  | { kind: "boolean"; key: string; title: string; description?: string }
-  | {
-      kind: "integer";
-      key: string;
-      title: string;
-      description?: string;
-      minimum?: number;
-      maximum?: number;
-    }
-  | { kind: "enum"; key: string; title: string; description?: string; options: string[] }
-  | { kind: "string-array"; key: string; title: string; description?: string; maxItems?: number };
+  | (FieldSpecBase & { kind: "boolean" })
+  | (FieldSpecBase & { kind: "integer"; minimum?: number; maximum?: number })
+  | (FieldSpecBase & { kind: "enum"; options: string[] })
+  | (FieldSpecBase & { kind: "string-array"; maxItems?: number })
+  | (FieldSpecBase & { kind: "string"; maxLength?: number });
 
 export interface SectionSpec {
   key: string;
   title: string;
   description?: string;
+  /** From the schema section's "x-module" — groups sections into dashboard
+   * tabs (e.g. "emote" vs. "concierge"). Undefined for a section that
+   * doesn't tag one. */
+  module?: string;
   fields: FieldSpec[];
 }
 
 function fieldSpecFor(key: string, leaf: JsonSchemaLeaf): FieldSpec | null {
-  const base = { key, title: leaf.title ?? key, description: leaf.description };
+  const base = {
+    key,
+    title: leaf.title ?? key,
+    description: leaf.description,
+    enabledBy: leaf["x-enabled-by"],
+  };
   if (leaf.enum) return { kind: "enum", ...base, options: leaf.enum };
   if (leaf.type === "boolean") return { kind: "boolean", ...base };
   if (leaf.type === "integer" || leaf.type === "number") {
     return { kind: "integer", ...base, minimum: leaf.minimum, maximum: leaf.maximum };
   }
   if (leaf.type === "array") return { kind: "string-array", ...base, maxItems: leaf.maxItems };
-  return null; // unhandled leaf shape (e.g. bare string) — extend when a bot needs one.
+  if (leaf.type === "string") return { kind: "string", ...base, maxLength: leaf.maxLength };
+  return null; // unhandled leaf shape — extend when a bot needs one.
 }
 
 export function sectionsFromSchema(schema: JsonSchemaObject): SectionSpec[] {
@@ -67,6 +86,7 @@ export function sectionsFromSchema(schema: JsonSchemaObject): SectionSpec[] {
       key: sectionKey,
       title: sectionObj.title ?? sectionKey,
       description: sectionObj.description,
+      module: sectionObj["x-module"],
       fields,
     };
   });
@@ -110,6 +130,7 @@ export function parseConfigFormData(
           values[field.key] = raw === null || raw === "" ? undefined : Number(raw);
           break;
         case "enum":
+        case "string":
           values[field.key] = raw === null ? undefined : String(raw);
           break;
         case "string-array":

@@ -19,9 +19,14 @@ workers/runtime/
   catalog/
     base.py              CatalogBot(BaseBot): config load+validate, safe-dispatch,
                          action throttle, event logging, common helpers
-    emote.py             EmoteBot(CatalogBot)        → specs/bots/emote.md (v1)
-    # moderation.py / greeter.py — deferred, specs kept in specs/bots/
+    emcee.py             EmceeBot(CatalogBot) — the one registered catalog slug ("emcee").
+                         Composes module engines behind one connection/throttle/config:
+    emote.py               EmoteEngine     → specs/bots/emote.md (v1)
+    greeter.py              GreeterEngine   → specs/bots/greeter.md (first post-v1 module)
+    # moderation.py — deferred, spec kept in specs/bots/
 ```
+
+Module engines (`EmoteEngine`, `GreeterEngine`) are plain classes, not `CatalogBot` subclasses — they read/write through the owning `EmceeBot` (`self.bot.highrise`/`.throttle`/`.config`). Only `EmceeBot` itself is an SDK handler target, so it's the only thing `CatalogBot.__init_subclass__`'s shielding wraps; each of its handlers just dispatches into the relevant engine(s) (`docs/decisions.md`, 2026-07-20 "Emcee merge"). This replaced an earlier shape where `EmoteBot`/`GreeterBot` were each their own `CatalogBot` subclass with their own catalog slug — correct data-plane code, but it meant Concierge and Emote would have been two separately-purchasable products (two tokens, two rooms) once wired into the control plane, contradicting every spec's "one bot, one instance" framing. Composing modules into one bot class is the pattern going forward as more modules ship.
 
 - Config arrives as JSONB + `schema_version`; runtime re-validates against the pinned schema in `packages/schemas/` before applying. Invalid config → keep last-good, emit event, flag dashboard.
 - **Hot-apply:** on `config.updated`, swap the validated config object atomically between events. Fields marked `requires_reconnect` in schema metadata trigger a graceful reconnect instead.

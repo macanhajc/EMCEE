@@ -50,7 +50,7 @@ async def test_unknown_catalog_slug_releases_lease_without_spawning(pool, make_i
         # Must restore the FK-valid slug before the make_instance fixture's
         # own teardown deletes this row, and clean up the throwaway catalog
         # row so it doesn't linger in the shared dev database.
-        await pool.execute("UPDATE bot_instances SET catalog_bot_slug = 'emote' WHERE id = $1", instance_id)
+        await pool.execute("UPDATE bot_instances SET catalog_bot_slug = 'emcee' WHERE id = $1", instance_id)
         await pool.execute("DELETE FROM catalog_bots WHERE slug = 'ghost'")
 
 
@@ -95,3 +95,33 @@ async def test_config_update_for_unrelated_instance_is_ignored(pool, redis_clien
 async def test_malformed_config_update_payload_is_ignored(supervisor):
     await supervisor._handle_config_update("not json")  # must not raise
     await supervisor._handle_config_update("{}")  # missing instanceId — must not raise
+
+
+async def test_avatar_position_update_for_unrelated_instance_is_ignored(supervisor):
+    """Same "not ours" guard as config.updated, mirrored for the dashboard
+    anchor-spot channel (specs/bots/avatar.md)."""
+    other_instance_id = "00000000-0000-0000-0000-000000000000"
+    await supervisor._handle_avatar_position_update(f'{{"instanceId": "{other_instance_id}"}}')  # must not raise
+
+
+async def test_malformed_avatar_position_update_payload_is_ignored(supervisor):
+    await supervisor._handle_avatar_position_update("not json")  # must not raise
+    await supervisor._handle_avatar_position_update("{}")  # missing instanceId — must not raise
+
+
+async def test_avatar_position_update_reaches_running_instance(pool, make_instance, supervisor):
+    """No `avatar_positions` row exists for this instance, so `restore_position`
+    (called via `EmceeBot.apply_avatar_position`) returns before touching
+    `bot.highrise` — unset under the `hold_forever` bot_runner fixture here.
+    This proves the supervisor-to-bot wiring itself; the actual teleport call
+    once a position is saved is covered at the bot level in test_avatar_bot.py."""
+    instance_id = await make_instance(desired_state="running")
+    await supervisor.reconcile()
+    assert instance_id in supervisor.running
+
+    await supervisor._handle_avatar_position_update(f'{{"instanceId": "{instance_id}"}}')
+
+    events = await fetch_events(pool, instance_id)
+    assert any(e["kind"] == "avatar_position_applied" for e in events)
+
+    await supervisor.shutdown()

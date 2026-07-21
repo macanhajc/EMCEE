@@ -1,15 +1,20 @@
 /**
  * The single place that interprets a raw Stripe subscription status into
- * our own status enum and the desired_state a bot_instance should have as
- * a result — the concrete implementation of "Billing events only ever flip
- * desired_state" (specs/02-architecture.md) and the state machine diagram
- * in specs/03-billing.md.
+ * our own status enum and the *entitlement* a bot_instance has as a result
+ * — the concrete implementation of "billing state drives entitlement"
+ * (specs/02-architecture.md) and the state machine diagram in
+ * specs/03-billing.md.
  *
  * Deliberately does not attempt the spec's "past_due day 0-3" sub-phase:
  * Stripe's own Smart Retries already span days before a subscription
  * leaves `past_due`, so "bot keeps running" falls out naturally from
- * mapping `past_due` -> desiredState "running" for the whole time Stripe
+ * mapping `past_due` -> entitlement "running" for the whole time Stripe
  * considers the subscription past_due. No separate timer needed.
+ *
+ * Naming note: the `desiredState` this function returns is entitlement —
+ * "billing would allow the bot to run" — not the final desired_state
+ * column value. See resolveDesiredState() below for the second gate
+ * (docs/decisions.md, 2026-07-21: the customer's own start/stop switch).
  */
 
 export type OurSubscriptionStatus = "trialing" | "active" | "past_due" | "suspended" | "canceled";
@@ -42,4 +47,16 @@ export function mapSubscriptionStatus(stripeStatus: string): {
     default:
       throw new Error(`unrecognized Stripe subscription status: ${stripeStatus}`);
   }
+}
+
+/**
+ * The final gate on bot_instances.desired_state: billing entitlement
+ * (mapSubscriptionStatus's return) AND the customer's own start/stop
+ * switch (bot_instances.user_enabled). Neither side can run the bot alone
+ * — a lapsed subscription stops it even if the customer left it "on", and
+ * a fresh or reactivated subscription doesn't start it back up until the
+ * customer presses Start (docs/decisions.md, 2026-07-21).
+ */
+export function resolveDesiredState(entitlement: DesiredState, userEnabled: boolean): DesiredState {
+  return entitlement === "running" && userEnabled ? "running" : "stopped";
 }

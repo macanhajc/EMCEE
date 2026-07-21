@@ -41,19 +41,29 @@ def test_get_by_id():
 
 def test_all_returns_every_entry():
     catalog = EmoteCatalog()
-    assert len(catalog.all()) == 5
-    assert {e.id for e in catalog.all()} == {
+    assert len(catalog.all()) == 232
+
+
+def test_every_entry_has_at_least_one_alias():
+    for emote in EmoteCatalog().all():
+        assert len(emote.aliases) >= 1, f"{emote.id} has no aliases"
+
+
+def test_doc_verified_entries_are_targetable_the_rest_are_not():
+    # See catalog/emotes.py's module docstring: only the original 5
+    # doc-verified entries carry the (still-assumed, never per-emote
+    # confirmed) `targetable: true`; every community-sourced addition
+    # defaults to False since we have no basis at all for that one.
+    doc_verified = {
         "dance-macarena",
         "emote-hello",
         "emote-tired",
         "emoji-angry",
         "emoji-thumbsup",
     }
-
-
-def test_every_entry_has_at_least_one_alias():
-    for emote in EmoteCatalog().all():
-        assert len(emote.aliases) >= 1, f"{emote.id} has no aliases"
+    catalog = EmoteCatalog()
+    for emote in catalog.all():
+        assert emote.targetable == (emote.id in doc_verified), emote.id
 
 
 def test_normalize_folds_accents_and_case():

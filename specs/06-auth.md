@@ -63,6 +63,6 @@ There is no Highrise OAuth. The real Highrise credential is **possession of a wo
 
 - Add Discord OAuth later if support interactions show heavy Discord overlap?
 - Do we need org/team accounts (multiple staff managing one room's bots) — or is shared login acceptable at this scale? Leaning: defer, single-owner accounts in v1.
-- Magic-link deliverability: dedicated transactional email provider (Resend/Postmark) choice — decide with hosting. Until then, `EMAIL_SERVER` unset means dev logs the link to console; unset in production throws rather than silently dropping mail.
+- ~~Magic-link deliverability: dedicated transactional email provider~~ → resolved 2026-07-20: Resend (`src/lib/mailer.ts`). `RESEND_API_KEY` unset means dev logs the link to console; unset in production throws rather than silently dropping mail.
 - In-memory rate limiter on magic-link requests (`src/lib/rate-limit.ts`) needs to move to Redis before the control plane runs more than one instance.
 - Admin surface has role gating (`src/proxy.ts`) but not yet the mandatory 2FA `05-security.md` calls for — needed before admin handles anything sensitive.

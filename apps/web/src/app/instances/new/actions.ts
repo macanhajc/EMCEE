@@ -2,7 +2,7 @@
 
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
-import emoteSchemaV1 from "@botmarket/schemas/emote/v1";
+import emceeSchemaV1 from "@botmarket/schemas/emcee/v1";
 import { auth } from "@/auth";
 import { db, tables } from "@/db";
 import { defaultsFromSchema } from "@/lib/schema-form";
@@ -10,9 +10,10 @@ import { normalizeRoomId } from "@/lib/room-id";
 import { sealToken, TokenFormatError, type SealedToken } from "@/lib/token-seal";
 import { tokenEntryLimiter } from "@/lib/rate-limit";
 
-// Only catalog bot today (specs: "v1 catalog focuses entirely on the Emote
-// bot"); add entries here as the catalog grows past one row.
-const SCHEMAS: Record<string, object> = { emote: emoteSchemaV1 };
+// Only catalog bot (specs: "v1: exactly one bot, not a catalog to choose
+// between" — docs/decisions.md, 2026-07-20); add entries here if that ever
+// changes.
+const SCHEMAS: Record<string, object> = { emcee: emceeSchemaV1 };
 
 export async function createInstance(formData: FormData): Promise<void> {
   const session = await auth();

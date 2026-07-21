@@ -1,10 +1,19 @@
-"""Emote bot ("Emcee") — v1 flagship. Spec: specs/bots/emote.md.
+"""Emote module — one of the modules composed into EmceeBot (catalog/emcee.py,
+docs/decisions.md 2026-07-20 "Emcee merge"). Spec: specs/bots/emote.md.
 
 Say an emote's name in chat → your avatar performs it. Permitted users can
 trigger "all <emote>" — a staggered room-wide wave through the BACKGROUND
 throttle class. "loop <emote>" repeats an emote for the speaker until they
 say "stop" or leave — the AFK-dance feature, off by default (see `loop`
 handlers below for why).
+
+`EmoteEngine` is a plain class, not a `CatalogBot` — it reads and writes
+through the `EmceeBot` instance passed to its constructor (`self.bot.highrise`,
+`.throttle`, `.config`, `._room_owner_id`) so two modules can share one
+connection, one throttle, and one config object without either module
+knowing the other exists. Nothing here is an SDK handler in its own right;
+`EmceeBot`'s own (shielded) handlers call into this engine's same-named
+methods.
 
 Read-only SDK calls (get_room_users, get_room_privilege) don't go through
 the action throttle — the throttle governs room-visible writes (chat,
@@ -27,12 +36,16 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
-from typing import Any
+from typing import TYPE_CHECKING
 
-from highrise import Error, SessionMetadata, User
+from highrise import Error, User
 
-from .base import CatalogBot, Priority
+from .base import Priority
 from .emotes import EmoteCatalog, normalize
+from .permissions import check_cooldown, check_tiered_permission
+
+if TYPE_CHECKING:
+    from .emcee import EmceeBot
 
 log = logging.getLogger("catalog.emote")
 
@@ -42,16 +55,6 @@ STOP_WORD = "stop"  # stops the speaker's own loop — distinct word, no collisi
 ALL_PREFIX = "all "
 LOOP_PREFIX = "loop "
 MAX_WHISPER_CHARS = 300  # unverified platform limit — conservative guess, not confirmed
-
-
-def _check_cooldown(store: dict[str, float], key: str, cooldown_s: float) -> bool:
-    """True and records `key` iff the cooldown has elapsed; false (no side effect) otherwise."""
-    now = time.monotonic()
-    last = store.get(key)
-    if last is not None and now - last < cooldown_s:
-        return False
-    store[key] = now
-    return True
 
 
 def _chunk_text(text: str, max_len: int) -> list[str]:
@@ -71,31 +74,24 @@ def _chunk_text(text: str, max_len: int) -> list[str]:
     return chunks
 
 
-class EmoteBot(CatalogBot):
-    SLUG = "emote"
-    SCHEMA_VERSION = 1
-
+class EmoteEngine:
     # One load per process — static data shared read-only across every
-    # EmoteBot instance the supervisor spawns, not per-instance state.
+    # EmoteEngine the supervisor spawns, not per-instance state.
     _catalog = EmoteCatalog()
 
-    def __init__(self, config: dict[str, Any] | None = None) -> None:
-        super().__init__(config)
-        self._room_owner_id: str | None = None
+    def __init__(self, bot: "EmceeBot") -> None:
+        self.bot = bot
         self._last_say_at: dict[str, float] = {}
         self._last_all_at: float = 0.0
         self._all_task: asyncio.Task | None = None
         self._loops: dict[str, asyncio.Task] = {}  # user_id -> their active loop task
         self._last_loop_start_at: dict[str, float] = {}
 
-    async def on_start(self, session_metadata: SessionMetadata) -> None:
-        self._room_owner_id = session_metadata.room_info.owner_id
-
     async def on_chat(self, user: User, message: str) -> None:
         text = normalize(message)
 
         if text in LIST_COMMAND_TRIGGERS:
-            if self.config.get("list_command", {}).get("enabled", True):
+            if self.bot.config.get("list_command", {}).get("enabled", True):
                 await self._send_emote_list(user)
             return
 
@@ -125,7 +121,7 @@ class EmoteBot(CatalogBot):
             task.cancel()
 
     async def _trigger_emote_on_say(self, user: User, text: str) -> None:
-        cfg = self.config.get("emote_on_say", {})
+        cfg = self.bot.config.get("emote_on_say", {})
         if not cfg.get("enabled", True):
             return
 
@@ -137,24 +133,24 @@ class EmoteBot(CatalogBot):
         if normalize(emote.id) in disabled or normalize(emote.name) in disabled:
             return
 
-        if not _check_cooldown(self._last_say_at, user.id, cfg.get("cooldown_s", 3)):
+        if not check_cooldown(self._last_say_at, user.id, cfg.get("cooldown_s", 3)):
             return
 
-        await self.throttle.acquire(Priority.NORMAL)
-        await self.highrise.send_emote(emote.id, user.id)
+        await self.bot.throttle.acquire(Priority.NORMAL)
+        await self.bot.highrise.send_emote(emote.id, user.id)
 
     async def _trigger_emote_all(self, user: User, emote_text: str) -> None:
-        cfg = self.config.get("emote_all", {})
+        cfg = self.bot.config.get("emote_all", {})
         if not cfg.get("enabled", True):
             return
-        if not await self._can_trigger_all(user, cfg):
+        if not await check_tiered_permission(user, cfg, self.bot._room_owner_id, self.bot.highrise):
             return
 
         emote = self._catalog.resolve(emote_text)
         if emote is None:
             return
 
-        # Room-wide cooldown, not per-user — _check_cooldown's dict-keyed
+        # Room-wide cooldown, not per-user — check_cooldown's dict-keyed
         # shape is for per-user state, so this one's a direct check instead.
         now = time.monotonic()
         if now - self._last_all_at < cfg.get("cooldown_s", 60):
@@ -166,18 +162,18 @@ class EmoteBot(CatalogBot):
         self._all_task = asyncio.create_task(self._run_emote_all(emote.id))
 
     async def _run_emote_all(self, emote_id: str) -> None:
-        response = await self.highrise.get_room_users()
+        response = await self.bot.highrise.get_room_users()
         if isinstance(response, Error):
             log.warning("emote-all: get_room_users failed: %s", response)
             return
         # Snapshot at trigger — users who join mid-wave are not included
         # (specs/bots/emote.md: "new joiners during a wave are not included").
         for room_user, _position in response.content:
-            await self.throttle.acquire(Priority.BACKGROUND)
-            await self.highrise.send_emote(emote_id, room_user.id)
+            await self.bot.throttle.acquire(Priority.BACKGROUND)
+            await self.bot.highrise.send_emote(emote_id, room_user.id)
 
     async def _trigger_loop(self, user: User, emote_text: str) -> None:
-        cfg = self.config.get("loop", {})
+        cfg = self.bot.config.get("loop", {})
         if not cfg.get("enabled", False):
             return
 
@@ -185,15 +181,15 @@ class EmoteBot(CatalogBot):
         if emote is None:
             return
 
-        if not _check_cooldown(self._last_loop_start_at, user.id, cfg.get("cooldown_s", 10)):
+        if not check_cooldown(self._last_loop_start_at, user.id, cfg.get("cooldown_s", 10)):
             return
 
         existing = self._loops.get(user.id)
         if existing is not None and not existing.done():
             existing.cancel()  # switch to the new emote, not stacking loops
         elif len(self._active_loops()) >= cfg.get("max_concurrent_loopers", 3):
-            await self.throttle.acquire(Priority.NORMAL)
-            await self.highrise.send_whisper(
+            await self.bot.throttle.acquire(Priority.NORMAL)
+            await self.bot.highrise.send_whisper(
                 user.id, "Loop limit reached for this room right now — try again in a bit."
             )
             return
@@ -210,13 +206,13 @@ class EmoteBot(CatalogBot):
         start = time.monotonic()
         try:
             while time.monotonic() - start < max_duration_s:
-                await self.throttle.acquire(Priority.BACKGROUND)
-                await self.highrise.send_emote(emote_id, user_id)
+                await self.bot.throttle.acquire(Priority.BACKGROUND)
+                await self.bot.highrise.send_emote(emote_id, user_id)
                 await asyncio.sleep(interval_s)
             # Safety cap hit, not an explicit "stop" — say why, since the
             # user's avatar just stopped for no reason they said.
-            await self.throttle.acquire(Priority.NORMAL)
-            await self.highrise.send_whisper(
+            await self.bot.throttle.acquire(Priority.NORMAL)
+            await self.bot.highrise.send_whisper(
                 user_id, 'Your loop timed out after a while — say "loop <emote>" to start again.'
             )
         finally:
@@ -234,29 +230,14 @@ class EmoteBot(CatalogBot):
     async def _maybe_abort(self, user: User) -> None:
         if self._all_task is None or self._all_task.done():
             return
-        cfg = self.config.get("emote_all", {})
-        if not await self._can_trigger_all(user, cfg):
+        cfg = self.bot.config.get("emote_all", {})
+        if not await check_tiered_permission(user, cfg, self.bot._room_owner_id, self.bot.highrise):
             return
         self._all_task.cancel()
-
-    async def _can_trigger_all(self, user: User, cfg: dict[str, Any]) -> bool:
-        if user.id == self._room_owner_id:
-            return True
-
-        permission = cfg.get("permission", "owner")
-        if permission == "owner":
-            return False
-        if permission == "owner_designers":
-            privilege = await self.highrise.get_room_privilege(user.id)
-            return not isinstance(privilege, Error) and bool(privilege.designer)
-        if permission == "allowlist":
-            allowlist = {normalize(name) for name in cfg.get("allowlist", [])}
-            return normalize(user.username) in allowlist
-        return False
 
     async def _send_emote_list(self, user: User) -> None:
         names = [e.name for e in self._catalog.all()]
         text = "Emotes: " + ", ".join(names)
         for chunk in _chunk_text(text, MAX_WHISPER_CHARS):
-            await self.throttle.acquire(Priority.NORMAL)
-            await self.highrise.send_whisper(user.id, chunk)
+            await self.bot.throttle.acquire(Priority.NORMAL)
+            await self.bot.highrise.send_whisper(user.id, chunk)

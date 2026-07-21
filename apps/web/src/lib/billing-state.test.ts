@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mapSubscriptionStatus } from "./billing-state";
+import { mapSubscriptionStatus, resolveDesiredState } from "./billing-state";
 
 describe("mapSubscriptionStatus", () => {
   it.each([
@@ -24,5 +24,16 @@ describe("mapSubscriptionStatus", () => {
     const stopped = ["canceled", "unpaid", "paused", "incomplete", "incomplete_expired"];
     for (const s of running) expect(mapSubscriptionStatus(s).desiredState).toBe("running");
     for (const s of stopped) expect(mapSubscriptionStatus(s).desiredState).toBe("stopped");
+  });
+});
+
+describe("resolveDesiredState", () => {
+  it.each([
+    ["running", true, "running"],
+    ["running", false, "stopped"],
+    ["stopped", true, "stopped"],
+    ["stopped", false, "stopped"],
+  ] as const)("entitlement %s + userEnabled %s -> %s", (entitlement, userEnabled, expected) => {
+    expect(resolveDesiredState(entitlement, userEnabled)).toBe(expected);
   });
 });

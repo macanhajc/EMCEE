@@ -29,3 +29,22 @@ export async function publishConfigUpdated(instanceId: string): Promise<void> {
     console.error("[redis] publish config.updated failed", err);
   }
 }
+
+/**
+ * Wakes the supervisor after a dashboard-set avatar anchor spot
+ * (specs/bots/avatar.md). Separate channel from config.updated: the saved
+ * position lives in `avatar_positions`, not `bot_instances.config`, so a
+ * plain config-update signal wouldn't tell the running bot to re-teleport.
+ * Same best-effort posture as publishConfigUpdated — a dropped publish just
+ * means the position takes effect on the instance's next reconnect instead
+ * of immediately.
+ */
+export async function publishAvatarPositionUpdated(instanceId: string): Promise<void> {
+  try {
+    const c = client();
+    if (!c.isOpen) await c.connect();
+    await c.publish("avatar_position.updated", JSON.stringify({ instanceId }));
+  } catch (err) {
+    console.error("[redis] publish avatar_position.updated failed", err);
+  }
+}

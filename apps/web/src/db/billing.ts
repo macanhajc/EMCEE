@@ -13,6 +13,18 @@ export async function getActiveSubscriptionForInstance(instanceId: string) {
   return row ?? null;
 }
 
+/** Batched form of getActiveSubscriptionForInstance, for list views (dashboard). */
+export async function getActiveSubscriptionsForInstances(instanceIds: string[]) {
+  if (instanceIds.length === 0) return new Map<string, Awaited<ReturnType<typeof getActiveSubscriptionForInstance>>>();
+  const rows = await db
+    .select()
+    .from(tables.subscriptions)
+    .where(
+      and(inArray(tables.subscriptions.botInstanceId, instanceIds), inArray(tables.subscriptions.status, ACTIVE_ISH)),
+    );
+  return new Map(rows.map((row) => [row.botInstanceId as string, row]));
+}
+
 /** Trial-abuse dedupe (specs/06-auth.md): has this room+token combination already run a trial? */
 export async function hasUsedTrial(roomId: string, tokenFingerprint: string): Promise<boolean> {
   const [row] = await db

@@ -22,6 +22,41 @@
       "when": 1784546828703,
       "tag": "0002_add_lease_claiming",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1784634227977,
+      "tag": "0003_rename_emote_to_emcee",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1784635277296,
+      "tag": "0004_add_greeter_visits",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1784637976503,
+      "tag": "0005_add_warden_strikes",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1784640073998,
+      "tag": "0006_add_avatar_positions",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1784661414700,
+      "tag": "0007_add_user_enabled",
+      "breakpoints": true
     }
   ]
 }

@@ -1,10 +1,11 @@
 "use server";
 
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { signIn } from "@/auth";
 import { magicLinkEmailLimiter, magicLinkIpLimiter } from "@/lib/rate-limit";
 import { safeRedirectPath } from "@/lib/safe-redirect";
+import { PENDING_EMAIL_COOKIE } from "./constants";
 
 export async function sendMagicLink(formData: FormData): Promise<void> {
   // signIn's own redirectTo is already same-origin-restricted by Auth.js's
@@ -25,6 +26,17 @@ export async function sendMagicLink(formData: FormData): Promise<void> {
   if (!magicLinkEmailLimiter.attempt(email) || !magicLinkIpLimiter.attempt(ip)) {
     backToLogin("rate_limited");
   }
+
+  // Auth.js's redirect to the verify-request page only carries its own
+  // `provider`/`type` query params, so `next` would otherwise be lost
+  // between here and that screen — stash both alongside it.
+  (await cookies()).set(PENDING_EMAIL_COOKIE, JSON.stringify({ email, next }), {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/login",
+    maxAge: 15 * 60, // matches the magic link's own expiry
+  });
 
   await signIn("nodemailer", { email, redirectTo: next });
 }

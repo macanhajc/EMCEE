@@ -4,13 +4,15 @@
  * Division of responsibility across event types:
  * - checkout.session.completed: links the purchase to its bot_instance
  *   (via client_reference_id) and captures the Stripe Customer id onto the
- *   user row. Flips desired_state to "running" — this is the one place a
- *   *new* purchase turns a bot on.
+ *   user row. Deliberately does NOT flip desired_state — a fresh purchase
+ *   entitles the bot to run but never starts it by itself; the customer
+ *   presses Start from the dashboard (docs/decisions.md, 2026-07-21).
  * - customer.subscription.{created,updated,deleted}: the authoritative
- *   state-machine driver. Every Stripe-side status transition (trial
- *   ending, renewal failing, retries exhausting, cancellation, recovery)
- *   fires one of these, so this is the single place mapSubscriptionStatus()
- *   gets applied and desired_state gets flipped afterward.
+ *   entitlement driver. Every Stripe-side status transition (trial ending,
+ *   renewal failing, retries exhausting, cancellation, recovery) fires one
+ *   of these, so this is the single place mapSubscriptionStatus() gets
+ *   applied and desired_state gets recomputed via resolveDesiredState()
+ *   (entitlement AND the customer's own user_enabled switch).
  * - invoice.paid / invoice.payment_failed: audit trail + future email hook
  *   (no transactional email provider chosen yet — specs/06-auth.md open
  *   question) — refreshes stripeStatus but does not independently decide
@@ -23,7 +25,7 @@ import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
-import { mapSubscriptionStatus } from "@/lib/billing-state";
+import { mapSubscriptionStatus, resolveDesiredState } from "@/lib/billing-state";
 import { db, tables } from "@/db";
 
 export async function POST(request: Request): Promise<NextResponse> {
@@ -95,11 +97,6 @@ async function onCheckoutCompleted(session: Stripe.Checkout.Session): Promise<vo
   const [instance] = await db.select().from(tables.botInstances).where(eq(tables.botInstances.id, instanceId));
   if (!instance) return;
 
-  await db
-    .update(tables.botInstances)
-    .set({ desiredState: "running" })
-    .where(eq(tables.botInstances.id, instanceId));
-
   const customerId = typeof session.customer === "string" ? session.customer : session.customer?.id;
   if (customerId) {
     await db.update(tables.users).set({ stripeCustomerId: customerId }).where(eq(tables.users.id, instance.userId));
@@ -117,9 +114,15 @@ async function onSubscriptionChanged(subscription: Stripe.Subscription): Promise
   const userId = subscription.metadata.user_id;
   if (!instanceId || !userId) return; // not one of our subscriptions
 
-  const { status, desiredState } = mapSubscriptionStatus(subscription.status);
+  const { status, desiredState: entitlement } = mapSubscriptionStatus(subscription.status);
   const priceId = subscription.items.data[0]?.price.id ?? "";
   const currentPeriodEnd = subscription.items.data[0]?.current_period_end;
+
+  // Fetched once, up front: needed both to gate desired_state by the
+  // customer's own start/stop switch below, and for the trial-registry
+  // write further down (instance may not exist — e.g. a subscription
+  // event arriving after the instance itself was deleted).
+  const [instance] = await db.select().from(tables.botInstances).where(eq(tables.botInstances.id, instanceId));
 
   await db
     .insert(tables.subscriptions)
@@ -148,19 +151,19 @@ async function onSubscriptionChanged(subscription: Stripe.Subscription): Promise
       },
     });
 
-  await db.update(tables.botInstances).set({ desiredState }).where(eq(tables.botInstances.id, instanceId));
+  if (instance) {
+    const desiredState = resolveDesiredState(entitlement, instance.userEnabled);
+    await db.update(tables.botInstances).set({ desiredState }).where(eq(tables.botInstances.id, instanceId));
+  }
 
   // First trial actually granted for this room+token: register it so it
   // can't be reused (specs/06-auth.md). Written here, not at checkout-
   // session creation, so an abandoned checkout never burns eligibility.
-  if (status === "trialing") {
-    const [instance] = await db.select().from(tables.botInstances).where(eq(tables.botInstances.id, instanceId));
-    if (instance?.tokenFingerprint) {
-      await db
-        .insert(tables.trialRegistry)
-        .values({ roomId: instance.roomId, tokenFingerprint: instance.tokenFingerprint })
-        .onConflictDoNothing();
-    }
+  if (status === "trialing" && instance?.tokenFingerprint) {
+    await db
+      .insert(tables.trialRegistry)
+      .values({ roomId: instance.roomId, tokenFingerprint: instance.tokenFingerprint })
+      .onConflictDoNothing();
   }
 
   await db.insert(tables.instanceEvents).values({

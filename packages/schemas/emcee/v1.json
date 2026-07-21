@@ -1,0 +1,638 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://botmarket.app/schemas/emcee/v1.json",
+  "title": "Emcee",
+  "description": "Configuration for Emcee, the one bot — one instance, one token, feature modules toggle within it. Sections are tagged x-module (\"emote\" or \"concierge\") so the dashboard can group them into tabs; the module boundary is a UI grouping only, not a schema-level one — every field still lives in one flat, shared config object.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "emote_on_say": {
+      "title": "Emote on say",
+      "description": "Someone types an emote's name in chat — no command needed — and their avatar performs it, even if they don't own it.",
+      "x-module": "emote",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "title": "Enabled",
+          "type": "boolean",
+          "default": true
+        },
+        "cooldown_s": {
+          "title": "Per-user cooldown (seconds)",
+          "description": "Minimum wait between one user's emote triggers.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 60,
+          "default": 3
+        },
+        "disabled_emotes": {
+          "title": "Blocked emotes",
+          "description": "These won't trigger just by saying their name in chat. \"all <emote>\" and \"loop <emote>\" can still use them directly — this only blocks the passive say-it trigger.",
+          "type": "array",
+          "items": { "type": "string", "maxLength": 64 },
+          "maxItems": 100,
+          "uniqueItems": true,
+          "default": []
+        }
+      }
+    },
+    "emote_all": {
+      "title": "Emote all",
+      "description": "\"all <emote>\" makes everyone in the room perform it as a staggered wave.",
+      "x-module": "emote",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "title": "Enabled",
+          "type": "boolean",
+          "default": true
+        },
+        "permission": {
+          "title": "Who can trigger it",
+          "description": "Who's allowed to start an all-room wave: just you, you plus anyone with Designer rights in this room, or a specific list of usernames.",
+          "type": "string",
+          "enum": ["owner", "owner_designers", "allowlist"],
+          "default": "owner"
+        },
+        "allowlist": {
+          "title": "Allowed usernames",
+          "description": "Only used when \"Who can trigger it\" is set to specific usernames.",
+          "type": "array",
+          "items": { "type": "string", "maxLength": 32 },
+          "maxItems": 50,
+          "uniqueItems": true,
+          "default": []
+        },
+        "cooldown_s": {
+          "title": "Room cooldown (seconds)",
+          "description": "Minimum wait between emote-all waves.",
+          "type": "integer",
+          "minimum": 10,
+          "maximum": 600,
+          "default": 60
+        }
+      }
+    },
+    "list_command": {
+      "title": "Emote list command",
+      "description": "\"emotes\" whispers a paginated list of available emote names.",
+      "x-module": "emote",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "title": "Enabled",
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "loop": {
+      "title": "Loop",
+      "description": "\"loop <emote>\" repeats that emote until the user says \"stop\" or leaves the room — the AFK-dance feature.",
+      "x-module": "emote",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "title": "Enabled",
+          "description": "Off by default. This is the most demanding feature we offer — if you turn it on, keep an eye on things at first, especially in busy rooms.",
+          "type": "boolean",
+          "default": false
+        },
+        "interval_s": {
+          "title": "Repeat interval (seconds)",
+          "description": "How often the looped emote re-triggers.",
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 60,
+          "default": 8
+        },
+        "max_concurrent_loopers": {
+          "title": "Max concurrent loopers",
+          "description": "Caps how many users can loop at once in this room.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10,
+          "default": 3
+        },
+        "max_duration_s": {
+          "title": "Max loop duration (seconds)",
+          "description": "Safety auto-stop in case someone forgets to say \"stop\" — for example if they close the app instead of properly leaving the room.",
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 7200,
+          "default": 1800
+        },
+        "cooldown_s": {
+          "title": "Per-user start cooldown (seconds)",
+          "description": "Minimum wait between one user starting new loops.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 120,
+          "default": 10
+        }
+      }
+    },
+    "welcome": {
+      "title": "Welcome messages",
+      "description": "Whispered to a guest when they join — skipped entirely for VIPs, who get their own greeting instead.",
+      "x-module": "concierge",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "title": "Enabled",
+          "type": "boolean",
+          "default": true
+        },
+        "templates": {
+          "title": "Greeting templates",
+          "description": "Use {username}, {room_name}. Rotates through the list on each greeting so the room doesn't feel canned.",
+          "type": "array",
+          "items": { "type": "string", "maxLength": 200 },
+          "minItems": 1,
+          "maxItems": 10,
+          "default": [
+            "Welcome to {room_name}, {username}!",
+            "Hey {username}, great to see you!",
+            "{username} just walked in — welcome!"
+          ]
+        },
+        "cooldown_h": {
+          "title": "Re-greet cooldown (hours)",
+          "description": "Don't whisper the same person again until this many hours have passed since their last greeting.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 168,
+          "default": 6
+        },
+        "busy_mode_enabled": {
+          "title": "Skip greetings when busy",
+          "description": "Skip greetings entirely while joins are coming in faster than the threshold below, so a raid or event doesn't flood whispers.",
+          "type": "boolean",
+          "default": true
+        },
+        "busy_mode_joins_per_min": {
+          "title": "Busy threshold (joins/min)",
+          "x-enabled-by": "busy_mode_enabled",
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 60,
+          "default": 15
+        },
+        "quiet_hours_enabled": {
+          "title": "Enable quiet hours",
+          "description": "Skip greetings during a daily window (e.g. overnight).",
+          "type": "boolean",
+          "default": false
+        },
+        "quiet_hours_start": {
+          "title": "Quiet hours start (24h, HH:MM)",
+          "x-enabled-by": "quiet_hours_enabled",
+          "type": "string",
+          "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$",
+          "default": "22:00"
+        },
+        "quiet_hours_end": {
+          "title": "Quiet hours end (24h, HH:MM)",
+          "x-enabled-by": "quiet_hours_enabled",
+          "type": "string",
+          "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$",
+          "default": "08:00"
+        },
+        "quiet_hours_tz": {
+          "title": "Quiet hours timezone",
+          "description": "IANA timezone name, e.g. America/Sao_Paulo.",
+          "x-enabled-by": "quiet_hours_enabled",
+          "type": "string",
+          "maxLength": 64,
+          "default": "UTC"
+        }
+      }
+    },
+    "vip": {
+      "title": "VIP recognition",
+      "description": "Named regulars get a distinct greeting instead of the generic welcome — always, even during busy mode or quiet hours.",
+      "x-module": "concierge",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "users": {
+          "title": "VIP usernames",
+          "type": "array",
+          "items": { "type": "string", "maxLength": 32 },
+          "maxItems": 200,
+          "uniqueItems": true,
+          "default": []
+        },
+        "template": {
+          "title": "VIP greeting template",
+          "description": "Use {username}, {room_name}.",
+          "type": "string",
+          "maxLength": 200,
+          "default": "Welcome back, {username} — always great to see you!"
+        },
+        "announce_to_room": {
+          "title": "Announce to room",
+          "description": "Also post a public chat line when a VIP joins, not just the whisper.",
+          "type": "boolean",
+          "default": false
+        },
+        "emote_celebration_enabled": {
+          "title": "Play an emote on VIP join",
+          "type": "boolean",
+          "default": false
+        },
+        "emote_celebration_id": {
+          "title": "Celebration emote",
+          "description": "Emote id from the Emote module's catalog.",
+          "x-enabled-by": "emote_celebration_enabled",
+          "type": "string",
+          "maxLength": 64,
+          "default": ""
+        }
+      }
+    },
+    "farewell": {
+      "title": "Farewell",
+      "description": "Logs when a regular (visits ≥ the threshold below) leaves. No whisper is possible — they're already gone — but an optional public send-off can post instead.",
+      "x-module": "concierge",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "log_enabled": {
+          "title": "Log farewells",
+          "type": "boolean",
+          "default": true
+        },
+        "min_visits": {
+          "title": "Minimum visits to count as a regular",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 3
+        },
+        "public_message": {
+          "title": "Post a public send-off",
+          "description": "Off by default — a public message on every qualifying leave gets noisy fast.",
+          "type": "boolean",
+          "default": false
+        },
+        "public_template": {
+          "title": "Send-off template",
+          "x-enabled-by": "public_message",
+          "type": "string",
+          "maxLength": 200,
+          "default": "Thanks for stopping by, {username}!"
+        }
+      }
+    },
+    "filter": {
+      "title": "Word filter",
+      "description": "Custom terms trigger a private, whisper-only warning to whoever said them — never a public callout — and count toward the strike ladder below.",
+      "x-module": "warden",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "title": "Enabled",
+          "type": "boolean",
+          "default": true
+        },
+        "custom_terms": {
+          "title": "Blocked terms",
+          "description": "Matching is normalized (case, common leetspeak, repeated-character squash) so simple obfuscation doesn't slip through.",
+          "type": "array",
+          "items": { "type": "string", "maxLength": 64 },
+          "maxItems": 300,
+          "uniqueItems": true,
+          "default": []
+        }
+      }
+    },
+    "anti_spam": {
+      "title": "Anti-spam",
+      "description": "Catches message flooding and copy-pasted repeats. A trip counts toward the strike ladder below, same as a filter hit.",
+      "x-module": "warden",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "title": "Enabled",
+          "type": "boolean",
+          "default": true
+        },
+        "message_rate_count": {
+          "title": "Max messages",
+          "description": "More than this many messages from one person within the window below trips the anti-spam rule.",
+          "type": "integer",
+          "minimum": 3,
+          "maximum": 20,
+          "default": 5
+        },
+        "message_rate_window_s": {
+          "title": "Window (seconds)",
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 60,
+          "default": 10
+        },
+        "duplicate_count": {
+          "title": "Duplicate message threshold",
+          "description": "Sending the exact same message this many times in a row trips the rule.",
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 10,
+          "default": 3
+        }
+      }
+    },
+    "ladder": {
+      "title": "Strike escalation",
+      "description": "A filter hit, anti-spam trip, or !warn command adds a strike. Crossing a threshold below takes the matching action — only the highest rung reached fires, not every one below it.",
+      "x-module": "warden",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "strike_decay_h": {
+          "title": "Strike decay (hours)",
+          "description": "A user's strike count resets after this many hours with no new strikes.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 168,
+          "default": 24
+        },
+        "mute_at_strikes": {
+          "title": "Mute at strikes",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20,
+          "default": 2
+        },
+        "mute_duration_s": {
+          "title": "Mute duration (seconds)",
+          "type": "integer",
+          "minimum": 10,
+          "maximum": 86400,
+          "default": 300
+        },
+        "kick_at_strikes": {
+          "title": "Kick at strikes",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20,
+          "default": 3
+        },
+        "ban_enabled": {
+          "title": "Enable ban",
+          "description": "Off by default — the most severe rung on the ladder, kept opt-in.",
+          "type": "boolean",
+          "default": false
+        },
+        "ban_at_strikes": {
+          "title": "Ban at strikes",
+          "description": "Always requires at least 2 strikes, regardless of this setting.",
+          "x-enabled-by": "ban_enabled",
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 20,
+          "default": 5
+        },
+        "ban_duration_s": {
+          "title": "Ban duration (seconds)",
+          "description": "0 = permanent.",
+          "x-enabled-by": "ban_enabled",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2592000,
+          "default": 0
+        }
+      }
+    },
+    "exemptions": {
+      "title": "Exemptions",
+      "description": "Exempt users skip the filter and anti-spam entirely, and can issue mod commands in chat. The room owner is always exempt.",
+      "x-module": "warden",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "designers_exempt": {
+          "title": "Exempt Designers",
+          "type": "boolean",
+          "default": true
+        },
+        "users": {
+          "title": "Exempt usernames",
+          "type": "array",
+          "items": { "type": "string", "maxLength": 32 },
+          "maxItems": 100,
+          "uniqueItems": true,
+          "default": []
+        }
+      }
+    },
+    "commands": {
+      "title": "Mod commands",
+      "description": "In-chat commands for exempt users: warn, mute, and kick a named user. Ban is dashboard-only, not available as a chat command.",
+      "x-module": "warden",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "title": "Enabled",
+          "type": "boolean",
+          "default": true
+        },
+        "prefix": {
+          "title": "Command prefix",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1,
+          "default": "!"
+        }
+      }
+    },
+    "position": {
+      "title": "Anchor spot",
+      "description": "Two ways to set where the bot stands: say \"anchor\" in-game, or enter coordinates directly on this page. Either one updates the same saved spot — the bot walks back there on every reconnect instead of spawning wherever the room drops it.",
+      "x-module": "avatar",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "title": "Enabled",
+          "description": "Turns off both ways of setting the spot — the in-game \"anchor\" command and the coordinate fields below.",
+          "type": "boolean",
+          "default": true
+        },
+        "permission": {
+          "title": "Who can say \"anchor\" in-game",
+          "description": "Who's allowed to say \"anchor\" in the room and move the bot: just you, you plus anyone with Designer rights in this room, or a specific list of usernames. Only governs the in-game command — setting coordinates below is always you-only, since it's already behind your dashboard login.",
+          "type": "string",
+          "enum": ["owner", "owner_designers", "allowlist"],
+          "default": "owner"
+        },
+        "allowlist": {
+          "title": "Allowed usernames",
+          "description": "Only used when the in-game anchor permission above is set to specific usernames.",
+          "type": "array",
+          "items": { "type": "string", "maxLength": 32 },
+          "maxItems": 50,
+          "uniqueItems": true,
+          "default": []
+        }
+      }
+    },
+    "idle_emote": {
+      "title": "Idle emote loop",
+      "description": "The bot performs a low-key emote on a repeat interval whenever it isn't busy responding to something — a little life instead of standing frozen.",
+      "x-module": "avatar",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "title": "Enabled",
+          "description": "Off by default — a sustained background action, same caution as the Emote module's loop feature.",
+          "type": "boolean",
+          "default": false
+        },
+        "emote_id": {
+          "title": "Idle emote",
+          "description": "Emote id from the Emote module's catalog.",
+          "type": "string",
+          "maxLength": 64,
+          "default": ""
+        },
+        "interval_s": {
+          "title": "Repeat interval (seconds)",
+          "type": "integer",
+          "minimum": 30,
+          "maximum": 600,
+          "default": 60
+        }
+      }
+    },
+    "reaction_back": {
+      "title": "Reaction back",
+      "description": "Someone reacts at the bot — the bot reacts back the same way.",
+      "x-module": "avatar",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "title": "Enabled",
+          "type": "boolean",
+          "default": true
+        },
+        "cooldown_s": {
+          "title": "Per-user cooldown (seconds)",
+          "description": "Minimum wait between reacting back at the same person, so repeated reactions can't be used to spam the bot's actions.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 60,
+          "default": 2
+        }
+      }
+    },
+    "default_outfit": {
+      "title": "Default outfit",
+      "description": "A fixed outfit the bot wears on connect. Item ids must be owned by the bot (or free) — anything it doesn't own is skipped rather than rejecting the whole outfit.",
+      "x-module": "avatar",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "title": "Enabled",
+          "type": "boolean",
+          "default": true
+        },
+        "item_ids": {
+          "title": "Item ids",
+          "description": "One Highrise item id per line, from the bot's own inventory.",
+          "type": "array",
+          "items": { "type": "string", "maxLength": 128 },
+          "maxItems": 40,
+          "uniqueItems": true,
+          "default": []
+        }
+      }
+    },
+    "outfit_presets": {
+      "title": "Named outfit presets",
+      "description": "\"look <name>\" switches the bot into a saved outfit.",
+      "x-module": "avatar",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "title": "Enabled",
+          "type": "boolean",
+          "default": true
+        },
+        "permission": {
+          "title": "Who can switch looks",
+          "type": "string",
+          "enum": ["owner", "owner_designers", "allowlist"],
+          "default": "owner"
+        },
+        "allowlist": {
+          "title": "Allowed usernames",
+          "description": "Only used when \"Who can switch looks\" is set to specific usernames.",
+          "type": "array",
+          "items": { "type": "string", "maxLength": 32 },
+          "maxItems": 50,
+          "uniqueItems": true,
+          "default": []
+        },
+        "presets": {
+          "title": "Presets",
+          "description": "One per line, formatted as \"name: item_id, item_id, ...\" — e.g. \"casual: shirt-basic-tee, pants-denim\".",
+          "type": "array",
+          "items": { "type": "string", "maxLength": 512 },
+          "maxItems": 20,
+          "default": []
+        }
+      }
+    },
+    "outfit_clone": {
+      "title": "Copy a look",
+      "description": "\"copy <username>\" makes the bot wear as much of that person's current outfit as it actually owns — items it doesn't own are skipped, never bought.",
+      "x-module": "avatar",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "title": "Enabled",
+          "type": "boolean",
+          "default": true
+        },
+        "permission": {
+          "title": "Who can trigger it",
+          "type": "string",
+          "enum": ["owner", "owner_designers", "allowlist"],
+          "default": "owner"
+        },
+        "allowlist": {
+          "title": "Allowed usernames",
+          "description": "Only used when \"Who can trigger it\" is set to specific usernames.",
+          "type": "array",
+          "items": { "type": "string", "maxLength": 32 },
+          "maxItems": 50,
+          "uniqueItems": true,
+          "default": []
+        },
+        "min_match": {
+          "title": "Minimum matching items",
+          "description": "If fewer than this many of the target's items are actually in the bot's own inventory, skip the copy entirely and say why, instead of applying a near-empty outfit.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20,
+          "default": 2
+        }
+      }
+    }
+  }
+}

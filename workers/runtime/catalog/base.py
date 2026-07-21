@@ -20,10 +20,13 @@ import logging
 import time
 from enum import Enum
 from pathlib import Path
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import jsonschema
 from highrise import BaseBot
+
+if TYPE_CHECKING:
+    import asyncpg
 
 log = logging.getLogger("catalog")
 
@@ -111,6 +114,11 @@ class CatalogBot(BaseBot):
         self._validator = jsonschema.Draft202012Validator(self._load_schema())
         self.config: dict[str, Any] = {}
         self.apply_config(config or {})
+        # Optional, set by the supervisor after construction (specs/04-bot-runtime.md:
+        # "catalog bots may only reach Highrise and our own Postgres/Redis"). None in
+        # standalone/unit-test construction — modules that use this must handle that.
+        self.db_pool: "asyncpg.Pool | None" = None
+        self.bot_instance_id: str | None = None
 
     @classmethod
     def _load_schema(cls) -> dict[str, Any]:

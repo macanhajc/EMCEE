@@ -41,16 +41,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Google({ allowDangerousEmailAccountLinking: true }),
     Nodemailer({
       // Never actually connected to: sendVerificationRequest is fully
-      // overridden below (mailer.ts owns the real SMTP-vs-console-log
+      // overridden below (mailer.ts owns the real Resend-vs-console-log
       // decision). Auth.js just requires `server` to be present at
       // construction time.
-      server: process.env.EMAIL_SERVER ?? "smtp://unused:unused@localhost:1025",
+      server: "smtp://unused:unused@localhost:1025",
       from: process.env.EMAIL_FROM ?? "BotMarket <noreply@botmarket.app>",
       maxAge: FIFTEEN_MIN_S, // link expiry per spec; single-use is adapter-default
       sendVerificationRequest,
     }),
   ],
-  pages: { signIn: "/login" },
+  pages: { signIn: "/login", verifyRequest: "/login/verify-request" },
   callbacks: {
     async session({ session, user }) {
       // Database strategy: `user` is the full adapter row, including our

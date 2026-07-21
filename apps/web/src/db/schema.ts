@@ -3,11 +3,16 @@
  *
  * The Python data plane reads bot_instances/instance_events with its own
  * least-privilege credentials (no billing tables — specs/05-security.md).
- * Billing state drives entitlement: only webhook handlers write desired_state.
+ * Billing state drives entitlement, but entitlement alone no longer starts
+ * the bot: desired_state is entitled && user_enabled (lib/billing-state.ts
+ * resolveDesiredState), so both the Stripe webhook and the dashboard's
+ * start/stop action are legitimate writers of desired_state — see
+ * docs/decisions.md, 2026-07-21.
  */
 import {
   boolean,
   bigint,
+  doublePrecision,
   index,
   integer,
   jsonb,
@@ -105,7 +110,7 @@ export const verificationTokens = pgTable(
 // ---------------------------------------------------------------------------
 
 export const catalogBots = pgTable("catalog_bots", {
-  slug: text("slug").primaryKey(), // "emote"
+  slug: text("slug").primaryKey(), // "emcee"
   name: text("name").notNull(),
   tagline: text("tagline"),
   // Schema version new instances pin; existing instances keep their own pin.
@@ -143,7 +148,11 @@ export const botInstances = pgTable(
     config: jsonb("config").notNull().default({}),
     schemaVersion: integer("schema_version").notNull(),
 
-    desiredState: desiredState("desired_state").notNull().default("stopped"), // billing-owned
+    // Customer's own power switch. A fresh subscription never flips this on
+    // by itself — the bot stays off until the customer presses Start, even
+    // once billing entitles it to run (docs/decisions.md, 2026-07-21).
+    userEnabled: boolean("user_enabled").notNull().default(false),
+    desiredState: desiredState("desired_state").notNull().default("stopped"), // derived: entitled && userEnabled
     status: instanceStatus("status").notNull().default("created"), // supervisor-observed
     errorKind: instanceErrorKind("error_kind"), // distinct customer-facing failure states
     // Reserved for a future coarse partition (e.g. IP-pool grouping) — not
@@ -252,3 +261,63 @@ export const instanceEvents = pgTable(
   },
   (t) => [index("instance_events_instance_time_idx").on(t.botInstanceId, t.createdAt.desc())],
 );
+
+// ---------------------------------------------------------------------------
+// Concierge module state (specs/bots/greeter.md)
+// ---------------------------------------------------------------------------
+
+export const greeterVisits = pgTable(
+  "greeter_visits",
+  {
+    botInstanceId: uuid("bot_instance_id")
+      .notNull()
+      .references(() => botInstances.id, { onDelete: "cascade" }),
+    userId: text("user_id").notNull(), // Highrise user id — not one of ours
+    username: text("username").notNull(), // last-seen username, for the dashboard "regulars" table
+    visitCount: integer("visit_count").notNull().default(1),
+    firstSeenAt: timestamptz("first_seen_at").notNull().defaultNow(),
+    lastSeenAt: timestamptz("last_seen_at").notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.botInstanceId, t.userId] }),
+    index("greeter_visits_instance_last_seen_idx").on(t.botInstanceId, t.lastSeenAt.desc()),
+  ],
+);
+
+// ---------------------------------------------------------------------------
+// Warden module state (specs/bots/moderation.md)
+// ---------------------------------------------------------------------------
+
+export const wardenStrikes = pgTable(
+  "warden_strikes",
+  {
+    botInstanceId: uuid("bot_instance_id")
+      .notNull()
+      .references(() => botInstances.id, { onDelete: "cascade" }),
+    userId: text("user_id").notNull(), // Highrise user id — not one of ours
+    username: text("username").notNull(), // last-known username, for the dashboard action log
+    strikes: integer("strikes").notNull().default(0),
+    lastStrikeAt: timestamptz("last_strike_at").notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.botInstanceId, t.userId] }),
+    index("warden_strikes_instance_last_strike_idx").on(t.botInstanceId, t.lastStrikeAt.desc()),
+  ],
+);
+
+// ---------------------------------------------------------------------------
+// Avatar module state (specs/bots/avatar.md) — one saved "anchor" spot per
+// instance, restored on every reconnect so the bot doesn't spawn wherever
+// the room happens to drop it.
+// ---------------------------------------------------------------------------
+
+export const avatarPositions = pgTable("avatar_positions", {
+  botInstanceId: uuid("bot_instance_id")
+    .primaryKey()
+    .references(() => botInstances.id, { onDelete: "cascade" }),
+  x: doublePrecision("x").notNull(),
+  y: doublePrecision("y").notNull(),
+  z: doublePrecision("z").notNull(),
+  facing: text("facing").notNull(), // Facing literal from the SDK: FrontRight | FrontLeft | BackRight | BackLeft
+  updatedAt: timestamptz("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
+});
