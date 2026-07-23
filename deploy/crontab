@@ -1,0 +1,33 @@
+# BotMarket prod crontab (R1, docs/cost-plan.md). Install on the VPS with:
+#   crontab deploy/crontab
+# (or merge these three lines into an existing crontab — check `crontab -l`
+# first so you don't clobber anything else already scheduled there).
+#
+# Edit REPO_DIR below if this repo doesn't live at /opt/botmarket. Both
+# scripts source REPO_DIR/.env.prod themselves for secrets (CRON_SECRET,
+# DOMAIN, RCLONE_REMOTE, ...) — nothing sensitive is typed into this file.
+
+REPO_DIR=/opt/botmarket
+
+# Crash-loop alert sweep (specs/02-architecture.md) — same schedule as
+# apps/web/vercel.json's Vercel Cron entry.
+*/5 * * * * $REPO_DIR/deploy/cron-hit.sh /api/cron/degraded-alerts >> /var/log/botmarket-cron.log 2>&1
+
+# Supervisor heartbeat sweep (docs/decisions.md, 2026-07-23) — catches "the
+# whole runtime container/process is down or never started," which the
+# crash-loop alert above can't: that one only fires from inside the
+# supervisor's own reconcile loop, so a supervisor that dies before that
+# loop even starts (bad env var, startup exception) never produces anything
+# for it to alert on. Every minute, not every 5 — this failure mode takes
+# every customer's bot down at once. Same schedule as apps/web/vercel.json's
+# Vercel Cron entry (Hobby-plan Vercel deploys can't run cron this often —
+# per-minute schedules need a paid plan; the VPS crontab path has no such
+# limit).
+* * * * * $REPO_DIR/deploy/cron-hit.sh /api/cron/supervisor-health >> /var/log/botmarket-cron.log 2>&1
+
+# Retention sweep (R3, docs/cost-plan.md) — same schedule as vercel.json.
+47 4 * * * $REPO_DIR/deploy/cron-hit.sh /api/cron/retention >> /var/log/botmarket-cron.log 2>&1
+
+# Nightly Postgres backup (R1) — before the retention sweep, so a backup
+# always reflects pre-retention data.
+17 3 * * * cd $REPO_DIR && ./deploy/backup.sh >> /var/log/botmarket-backup.log 2>&1

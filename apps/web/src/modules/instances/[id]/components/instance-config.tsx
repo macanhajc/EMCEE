@@ -2,7 +2,9 @@
 
 import { Plus, Shirt, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useActionState, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
+import type { ConfigActionState } from "@/app/[locale]/instances/[id]/actions";
 import { Button } from "@/components/UI/button";
 import { Checkbox } from "@/components/UI/checkbox";
 import { Input } from "@/components/UI/input";
@@ -30,6 +32,29 @@ const RARITY_COLORS: Record<string, string> = {
 
 const fieldControlClass =
   "border-paper/15 bg-ink/50 text-paper placeholder:text-dust/50 focus-visible:border-spotlight/50 focus-visible:ring-spotlight/30";
+
+// Stored config values are only ever present once something has actually
+// saved that key — an untouched section (a new field added to the schema
+// after an instance's config was last written, or a section nobody has
+// opened yet) leaves it `undefined`. Falling back to the schema's own
+// `default` here, rather than to `false`, keeps a true-by-default toggle
+// (e.g. Avatar's `position.enabled`) rendering checked until an owner
+// actually flips it — otherwise it renders unchecked, and the next
+// unrelated config save silently writes that wrong `false` in for good.
+function resolvedBoolean(value: unknown, fieldDefault: unknown): boolean {
+  return typeof value === "boolean" ? value : Boolean(fieldDefault);
+}
+
+/** Surfaces a `useActionState` result as a toast — `errors.${code}` if a
+ * translation exists for it, else the raw code/message the action returned
+ * (matches the fallback the old `?error=` query-param banner used). */
+function toastActionResult(state: ConfigActionState, tInstance: ReturnType<typeof useTranslations>): void {
+  if (state.ok) {
+    toast.success(tInstance("savedMessage"));
+    return;
+  }
+  toast.error(tInstance.has(`errors.${state.error}`) ? tInstance(`errors.${state.error}`) : state.error);
+}
 
 // id of the standalone <form> (rendered outside the main config form, see
 // InstanceConfig below) that the position editor's fields submit to via the
@@ -908,7 +933,7 @@ function ConfigField({
         <Checkbox
           id={name}
           name={name}
-          defaultChecked={Boolean(value)}
+          defaultChecked={resolvedBoolean(value, field.default)}
           onCheckedChange={(checked) => onCheckedChange?.(checked === true)}
           className="mt-0.5 border-paper/30 cursor-pointer data-checked:border-marquee data-checked:bg-marquee data-checked:text-ink"
         />
@@ -1078,8 +1103,13 @@ function SectionCard({
     (f): f is Extract<FieldSpec, { kind: "boolean" }> =>
       f.kind === "boolean" && f.key === "enabled",
   );
+  // A stored config that's missing this key entirely (an instance saved
+  // before this field/section existed, or before any save touched it) must
+  // fall back to the schema's own default, not to `false` — otherwise the
+  // checkbox renders unchecked against a true default, and the next
+  // unrelated config save silently persists that wrong `false` for good.
   const [enabled, setEnabled] = useState(() =>
-    enabledField ? Boolean(config.enabled) : true,
+    enabledField ? resolvedBoolean(config.enabled, enabledField.default) : true,
   );
   const otherFields = section.fields.filter((f) => f !== enabledField);
 
@@ -1096,7 +1126,7 @@ function SectionCard({
     Object.fromEntries(
       otherFields
         .filter((f) => gateKeys.has(f.key))
-        .map((f) => [f.key, Boolean(config[f.key])]),
+        .map((f) => [f.key, resolvedBoolean(config[f.key], f.default)]),
     ),
   );
 
@@ -1210,6 +1240,9 @@ export function InstanceConfig({
   outfitItems,
   onSearchOutfitItems,
   operationalEvents,
+  instanceId,
+  status,
+  errorKind,
   tokenLast4,
   replaceToken,
   roomId,
@@ -1224,12 +1257,15 @@ export function InstanceConfig({
 }: {
   sections: SectionSpec[];
   config: Record<string, Record<string, unknown>>;
-  action: (formData: FormData) => Promise<void>;
+  action: (prevState: ConfigActionState | null, formData: FormData) => Promise<ConfigActionState>;
   avatarPosition: AvatarPositionValue | null;
-  onSavePosition: (formData: FormData) => Promise<void>;
+  onSavePosition: (prevState: ConfigActionState | null, formData: FormData) => Promise<ConfigActionState>;
   outfitItems: Record<string, OutfitItemInfo>;
   onSearchOutfitItems: (query: string) => Promise<OutfitItemInfo[]>;
   operationalEvents: React.ComponentProps<typeof StatusLog>["events"];
+  instanceId: React.ComponentProps<typeof StatusLog>["instanceId"];
+  status: React.ComponentProps<typeof StatusLog>["status"];
+  errorKind: React.ComponentProps<typeof StatusLog>["errorKind"];
   tokenLast4: string;
   replaceToken: (formData: FormData) => Promise<void>;
   roomId: string;
@@ -1245,6 +1281,27 @@ export function InstanceConfig({
   const [activeModule, setActiveModule] = useState(LIVE_MODULES[0].key);
   const t = useTranslations("instanceDetail.config");
   const tBot = useTranslations("bot");
+  const tInstance = useTranslations("instanceDetail");
+
+  // Both forms below report success/error through `useActionState` instead
+  // of the server action redirecting — a redirect remounts the page and
+  // resets `activeModule` back to the first tab, which is exactly the
+  // "why did I get bounced out of Avatar" bug this was built to avoid.
+  const [configState, configFormAction] = useActionState(action, null);
+  const [positionState, positionFormAction] = useActionState(onSavePosition, null);
+
+  useEffect(() => {
+    if (configState) toastActionResult(configState, tInstance);
+    // Only `configState`'s identity should trigger a toast — `tInstance` is
+    // a fresh function every render and would otherwise refire this on any
+    // unrelated re-render (e.g. switching tabs).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [configState]);
+
+  useEffect(() => {
+    if (positionState) toastActionResult(positionState, tInstance);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [positionState]);
 
   return (
     <div className="mt-10">
@@ -1331,7 +1388,14 @@ export function InstanceConfig({
             replaceRoomId={replaceRoomId}
           />
 
-          <StatusLog events={operationalEvents} />
+          <StatusLog
+            events={operationalEvents}
+            instanceId={instanceId}
+            botName={botName}
+            roomId={roomId}
+            status={status}
+            errorKind={errorKind}
+          />
 
           <BotDangerZone
             isSubscribed={isSubscribed}
@@ -1342,7 +1406,7 @@ export function InstanceConfig({
         </TabsContent>
       </Tabs>
 
-      <form action={action} className="mt-5 grid gap-6">
+      <form action={configFormAction} className="mt-5 grid gap-6">
         {LIVE_MODULES.map((mod) => (
           <div
             key={mod.key}
@@ -1386,7 +1450,7 @@ export function InstanceConfig({
           fields target this one via the HTML `form=` attribute instead
           (see POSITION_FORM_ID), since a dashboard-set anchor spot writes
           straight to `avatar_positions`, not the JSON config. */}
-      <form id={POSITION_FORM_ID} action={onSavePosition} />
+      <form id={POSITION_FORM_ID} action={positionFormAction} />
     </div>
   );
 }

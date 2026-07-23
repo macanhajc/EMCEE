@@ -164,7 +164,7 @@
         "body": "Filtert unangemessene Sprache, blockiert Spam und verteilt Verwarnungen mit klarer Nachvollziehbarkeit — wacht rund um die Uhr über deinen Raum, alles eingerichtet mit einfachen Schaltern."
       },
       "avatar": {
-        "name": "Outfits",
+        "name": "Avatar",
         "body": "Zieh deinem Bot ein Outfit deiner Wahl an, gib ihm einen festen Platz zum Stehen und eine kleine Leerlauf-Animation — damit er wirkt, als wäre er wirklich da, statt einfach nur rumzustehen."
       }
     },
@@ -399,6 +399,16 @@
         "config_applied": "Einstellungsänderungen übernommen",
         "config_rejected": "Eine Einstellungsänderung wurde abgelehnt — vorherige Einstellungen beibehalten",
         "generic": "Bot-Aktivität"
+      },
+      "diagnostics": {
+        "copy": "Diagnose kopieren",
+        "copied": "Kopiert",
+        "heading": "BotMarket-Diagnose — {botName}",
+        "instance": "Instanz: {instanceId}",
+        "room": "Raum: {roomId}",
+        "status": "Status",
+        "generated": "Erstellt: {timestamp}",
+        "recentActivity": "Letzte Aktivität:"
       }
     },
     "tokenUpdate": {
@@ -501,7 +511,7 @@
   "schemaEmcee": {
     "emote_on_say": {
       "title": "Emote im Chat",
-      "description": "Jemand tippt den Namen einer Emote in den Chat — kein Befehl nötig — und sein Avatar führt sie aus, auch wenn er sie nicht besitzt.",
+      "description": "Jemand tippt den Namen einer Emote (oder ihre Nummer aus der „emotes“-Liste) in den Chat — kein Befehl nötig — und sein Avatar führt sie aus, auch wenn er sie nicht besitzt. Wird standardmäßig wiederholt geloopt (siehe Loop unten).",
       "enabled": {
         "title": "Aktiviert"
       },
@@ -542,18 +552,14 @@
     },
     "loop": {
       "title": "Loop",
-      "description": "„loop <emote>“ wiederholt diese Emote so lange, bis der Nutzer „stop“ sagt oder den Raum verlässt — die AFK-Tanz-Funktion.",
+      "description": "Standardmäßig aktiviert: Der Name einer Emote (oder explizit „loop <emote>“) wiederholt sie, bis der Nutzer „stop“ sagt oder den Raum verlässt — die AFK-Tanz-Funktion. Deaktivieren lässt Emotes wieder nur einmal ausführen, wie zuvor.",
       "enabled": {
         "title": "Aktiviert",
-        "description": "Standardmäßig aus. Das ist die anspruchsvollste Funktion, die wir anbieten — wenn du sie einschaltest, behalt anfangs ein Auge drauf, besonders in vollen Räumen."
+        "description": "Standardmäßig aktiviert — jede im Chat getippte Emote loopt, nicht nur „loop <emote>“. Das ist die anspruchsvollste Funktion, die wir anbieten; behalt es in vollen Räumen im Auge, und schalte es aus, um zu einer einzelnen Emote pro Auslösung zurückzukehren."
       },
       "interval_s": {
         "title": "Wiederholungsintervall (Sekunden)",
         "description": "Wie oft die geloopte Emote erneut ausgelöst wird."
-      },
-      "max_concurrent_loopers": {
-        "title": "Max. gleichzeitige Loop-Nutzer",
-        "description": "Begrenzt, wie viele Nutzer gleichzeitig in diesem Raum loopen können."
       },
       "max_duration_s": {
         "title": "Max. Loop-Dauer (Sekunden)",

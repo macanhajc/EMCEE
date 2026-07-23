@@ -3,9 +3,9 @@ packages:
   - packages/*
 
 allowBuilds:
-  '@parcel/watcher': set this to true or false
+  '@parcel/watcher': true
   '@sentry/cli': true
-  '@swc/core': set this to true or false
+  '@swc/core': true
   core-js: true
   esbuild: true
   sharp: true

@@ -1,0 +1,35 @@
+# Build context for both apps/web/Dockerfile and workers/runtime/Dockerfile
+# is the repo root (pnpm workspace; workers/runtime/catalog/base.py resolves
+# packages/schemas relative to the repo root — see that Dockerfile). Each
+# COPY is scoped to what that particular image needs; this file just strips
+# things neither image ever needs.
+**/node_modules
+**/.next
+**/out
+**/dist
+**/*.tsbuildinfo
+next-env.d.ts
+
+# Python — .venv/caches get rebuilt inside the image; tests aren't shipped
+**/__pycache__
+**/*.py[cod]
+**/.venv
+**/*.egg-info
+**/.pytest_cache
+workers/runtime/tests
+
+.git
+.github
+.claude
+
+# Secrets never enter a build context
+.env
+.env.*
+!.env.example
+
+docs/
+specs/
+scripts/
+*.md
+.DS_Store
+*.log

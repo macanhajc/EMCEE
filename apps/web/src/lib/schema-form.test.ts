@@ -125,6 +125,24 @@ describe("sectionsFromSchema (against the real emcee/v1 schema)", () => {
     );
   });
 
+  it("carries each leaf's schema default through as field.default", () => {
+    // Regression: a stored config missing this key entirely (an instance
+    // saved before `position` existed, or before any save touched it) must
+    // be able to fall back to this true default in the dashboard, not to
+    // `false` — see instance-config.tsx's `resolvedBoolean`.
+    const position = sections.find((s) => s.key === "position")!;
+    expect(position.fields).toEqual(
+      expect.arrayContaining([expect.objectContaining({ key: "enabled", default: true })]),
+    );
+
+    // Loop defaults to enabled since 2026-07-23 (specs/bots/emote.md) —
+    // was false when this test was first written.
+    const loop = sections.find((s) => s.key === "loop")!;
+    expect(loop.fields).toEqual(
+      expect.arrayContaining([expect.objectContaining({ key: "enabled", default: true })]),
+    );
+  });
+
   it("classifies the avatar module's presets/clone leaves correctly", () => {
     const presets = sections.find((s) => s.key === "outfit_presets")!;
     expect(presets.fields).toEqual(
@@ -148,7 +166,7 @@ describe("defaultsFromSchema (against the real emcee/v1 schema)", () => {
       emote_on_say: { enabled: true, cooldown_s: 3, disabled_emotes: [] },
       emote_all: { enabled: true, permission: "owner", allowlist: [], cooldown_s: 60 },
       list_command: { enabled: true },
-      loop: { enabled: false, interval_s: 8, max_concurrent_loopers: 3, max_duration_s: 1800, cooldown_s: 10 },
+      loop: { enabled: true, interval_s: 5, max_duration_s: 1800, cooldown_s: 10 },
       welcome: {
         enabled: true,
         templates: [
@@ -215,7 +233,6 @@ describe("parseConfigFormData", () => {
     fd.set("list_command.enabled", "on");
     fd.set("loop.enabled", "on");
     fd.set("loop.interval_s", "12");
-    fd.set("loop.max_concurrent_loopers", "5");
     fd.set("loop.max_duration_s", "600");
     fd.set("loop.cooldown_s", "15");
     fd.set("welcome.enabled", "on");
@@ -275,7 +292,7 @@ describe("parseConfigFormData", () => {
       emote_on_say: { enabled: true, cooldown_s: 5, disabled_emotes: ["wave", "macarena"] },
       emote_all: { enabled: true, permission: "allowlist", allowlist: ["alice", "bob"], cooldown_s: 90 },
       list_command: { enabled: true },
-      loop: { enabled: true, interval_s: 12, max_concurrent_loopers: 5, max_duration_s: 600, cooldown_s: 15 },
+      loop: { enabled: true, interval_s: 12, max_duration_s: 600, cooldown_s: 15 },
       welcome: {
         enabled: true,
         templates: ["Hey {username}!"],

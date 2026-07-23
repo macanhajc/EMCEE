@@ -69,3 +69,39 @@ def test_doc_verified_entries_are_targetable_the_rest_are_not():
 def test_normalize_folds_accents_and_case():
     assert normalize("  OLÁ  ") == "ola"
     assert normalize("Não") == "nao"
+
+
+# --- numbered trigger (added 2026-07-23) -------------------------------------
+
+
+def test_resolve_by_position_matches_all_order():
+    catalog = EmoteCatalog()
+    all_emotes = catalog.all()
+    assert catalog.resolve("1") is catalog.by_position(1) is all_emotes[0]
+    assert catalog.resolve("232") is all_emotes[231]
+
+
+def test_position_is_one_based_not_zero_based():
+    catalog = EmoteCatalog()
+    assert catalog.by_position(0) is None
+
+
+def test_position_out_of_range_returns_none():
+    catalog = EmoteCatalog()
+    assert catalog.resolve("233") is None
+    assert catalog.resolve("99999") is None
+
+
+def test_position_rejects_negative_and_non_numeric_lookalikes():
+    catalog = EmoteCatalog()
+    assert catalog.resolve("-1") is None  # "-1".isdigit() is False, falls through to name lookup
+    assert catalog.resolve("1.5") is None
+
+
+def test_no_real_emote_id_alias_or_name_is_purely_numeric():
+    # Guards the assumption that numeric text can be claimed exclusively by
+    # position lookup without ever shadowing a real trigger.
+    catalog = EmoteCatalog()
+    for emote in catalog.all():
+        for trigger in (emote.id, emote.name, *emote.aliases):
+            assert not normalize(trigger).isdigit(), f"{emote.id}: {trigger!r} looks numeric"

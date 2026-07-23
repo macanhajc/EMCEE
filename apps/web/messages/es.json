@@ -164,7 +164,7 @@
         "body": "Filtra el lenguaje ofensivo, bloquea el spam y reparte advertencias dejando un registro claro — vigila tu sala todo el día, todo configurable con simples interruptores."
       },
       "avatar": {
-        "name": "Vestuario",
+        "name": "Avatar",
         "body": "Viste a tu bot con el look que elijas, dale un lugar fijo donde pararse y una pequeña animación de espera — para que se sienta presente en vez de flotar sin hacer nada."
       }
     },
@@ -399,6 +399,16 @@
         "config_applied": "Se aplicaron los cambios de ajustes",
         "config_rejected": "Se rechazó un cambio de ajustes — se mantuvieron los anteriores",
         "generic": "Actividad del bot"
+      },
+      "diagnostics": {
+        "copy": "Copiar diagnóstico",
+        "copied": "Copiado",
+        "heading": "Diagnóstico de BotMarket — {botName}",
+        "instance": "Instancia: {instanceId}",
+        "room": "Sala: {roomId}",
+        "status": "Estado",
+        "generated": "Generado: {timestamp}",
+        "recentActivity": "Actividad reciente:"
       }
     },
     "tokenUpdate": {
@@ -501,7 +511,7 @@
   "schemaEmcee": {
     "emote_on_say": {
       "title": "Gesto al escribirlo",
-      "description": "Alguien escribe el nombre de un gesto en el chat — sin necesidad de ningún comando — y su avatar lo hace, incluso si no lo tiene.",
+      "description": "Alguien escribe el nombre de un gesto (o su número en la lista de \"emotes\") en el chat — sin necesidad de ningún comando — y su avatar lo hace, incluso si no lo tiene. Por defecto se repite en bucle (mira Repetir más abajo).",
       "enabled": {
         "title": "Activado"
       },
@@ -542,18 +552,14 @@
     },
     "loop": {
       "title": "Repetir",
-      "description": "El comando \"loop <emote>\" repite ese gesto hasta que el usuario diga \"stop\" o salga de la sala — la función para bailar mientras estás AFK (ausente).",
+      "description": "Activado por defecto: decir el nombre de un gesto (o \"loop <emote>\" explícitamente) lo repite hasta que el usuario diga \"stop\" o salga de la sala — la función para bailar mientras estás AFK (ausente). Desactívalo para que los gestos se hagan una sola vez, como antes.",
       "enabled": {
         "title": "Activado",
-        "description": "Desactivado por defecto. Es la función más exigente que ofrecemos — si la activas, vigila cómo va al principio, sobre todo en salas concurridas."
+        "description": "Activado por defecto — cada gesto escrito en el chat se repite en bucle, no solo con \"loop <emote>\". Es la función más exigente que ofrecemos; vigila cómo va en salas concurridas, y desactívala para volver a un solo gesto por activación."
       },
       "interval_s": {
         "title": "Intervalo de repetición (segundos)",
         "description": "Cada cuánto se vuelve a activar el gesto en repetición."
-      },
-      "max_concurrent_loopers": {
-        "title": "Máximo de personas repitiendo a la vez",
-        "description": "Limita cuántos usuarios pueden usar la repetición al mismo tiempo en esta sala."
       },
       "max_duration_s": {
         "title": "Duración máxima de la repetición (segundos)",

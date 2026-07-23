@@ -1,11 +1,16 @@
 """Emote module — one of the modules composed into EmceeBot (catalog/emcee.py,
 docs/decisions.md 2026-07-20 "Emcee merge"). Spec: specs/bots/emote.md.
 
-Say an emote's name in chat → your avatar performs it. Permitted users can
-trigger "all <emote>" — a staggered room-wide wave through the BACKGROUND
-throttle class. "loop <emote>" repeats an emote for the speaker until they
-say "stop" or leave — the AFK-dance feature, off by default (see `loop`
-handlers below for why).
+Say an emote's name in chat → your avatar performs it, on repeat, until you
+say "stop" or leave — Loop is on by default (2026-07-23) and merged into the
+bare-word trigger, not a separate opt-in command anymore. The explicit
+"loop <emote>" prefix still works and lands on the exact same mechanism; it's
+kept mostly so existing muscle memory (and any customer-facing copy already
+written around it) doesn't break. Turning `loop.enabled` off reverts
+emote-on-say to a single one-shot emote per trigger, matching the original
+(pre-2026-07-23) behavior. Permitted users can also trigger "all <emote>" —
+a staggered room-wide wave through the BACKGROUND throttle class; that one
+stays one-shot regardless of the `loop` setting.
 
 `EmoteEngine` is a plain class, not a `CatalogBot` — it reads and writes
 through the `EmceeBot` instance passed to its constructor (`self.bot.highrise`,
@@ -41,7 +46,7 @@ from typing import TYPE_CHECKING
 from highrise import Error, User
 
 from .base import Priority
-from .emotes import EmoteCatalog, normalize
+from .emotes import EmoteCatalog, EmoteDef, normalize
 from .permissions import check_cooldown, check_tiered_permission
 
 if TYPE_CHECKING:
@@ -133,9 +138,22 @@ class EmoteEngine:
         if normalize(emote.id) in disabled or normalize(emote.name) in disabled:
             return
 
+        loop_cfg = self.bot.config.get("loop", {})
+        if loop_cfg.get("enabled", True):
+            # Loop is on by default (specs/bots/emote.md, 2026-07-23): a bare
+            # emote word starts/switches the same repeating loop "loop
+            # <emote>" does, sharing its cooldown/cap state (`_start_or_
+            # switch_loop`) rather than firing once. `emote_on_say.cooldown_s`
+            # is only consulted below, on the one-shot fallback path — once
+            # looping, `loop.cooldown_s` is what governs restarting/switching.
+            await self._start_or_switch_loop(user, emote, loop_cfg)
+            return
+
         if not check_cooldown(self._last_say_at, user.id, cfg.get("cooldown_s", 3)):
             return
 
+        await self.bot.throttle.acquire(Priority.NORMAL)
+        await self.bot.highrise.send_whisper(user.id, f'Doing "{emote.name}"!')
         await self.bot.throttle.acquire(Priority.NORMAL)
         await self.bot.highrise.send_emote(emote.id, user.id)
 
@@ -174,32 +192,46 @@ class EmoteEngine:
 
     async def _trigger_loop(self, user: User, emote_text: str) -> None:
         cfg = self.bot.config.get("loop", {})
-        if not cfg.get("enabled", False):
+        if not cfg.get("enabled", True):
             return
 
         emote = self._catalog.resolve(emote_text)
         if emote is None:
             return
 
+        await self._start_or_switch_loop(user, emote, cfg)
+
+    async def _start_or_switch_loop(self, user: User, emote: EmoteDef, cfg: dict) -> None:
+        """Shared by the explicit "loop <emote>" command and (since Loop
+        defaults to on, 2026-07-23) the bare-word emote-on-say trigger — both
+        land on the same per-user cooldown/task state so alternating between
+        "macarena" and "loop macarena" can't be used to dodge
+        `loop.cooldown_s`. No cap on how many users in a room can loop at
+        once (`max_concurrent_loopers` removed 2026-07-23) — now that Loop is
+        every emote-on-say's default behavior, a cap would mean whoever's
+        past it gets nothing at all, not a plain emote."""
         if not check_cooldown(self._last_loop_start_at, user.id, cfg.get("cooldown_s", 10)):
             return
 
         existing = self._loops.get(user.id)
         if existing is not None and not existing.done():
             existing.cancel()  # switch to the new emote, not stacking loops
-        elif len(self._active_loops()) >= cfg.get("max_concurrent_loopers", 3):
-            await self.bot.throttle.acquire(Priority.NORMAL)
-            await self.bot.highrise.send_whisper(
-                user.id, "Loop limit reached for this room right now — try again in a bit."
-            )
-            return
 
-        self._loops[user.id] = asyncio.create_task(
-            self._run_loop(user.id, emote.id, cfg.get("interval_s", 8), cfg.get("max_duration_s", 1800))
+        interval_s = cfg.get("interval_s", 5)
+        max_duration_s = cfg.get("max_duration_s", 1800)
+        self._loops[user.id] = asyncio.create_task(self._run_loop(user.id, emote.id, interval_s, max_duration_s))
+
+        # Loop is the one trigger here that doesn't resolve in a single
+        # action, so tell the speaker what to expect up front — a forced
+        # timeout already explains itself (below); a successful start
+        # silently changing their avatar's future behavior for the next N
+        # minutes deserved the same.
+        await self.bot.throttle.acquire(Priority.NORMAL)
+        await self.bot.highrise.send_whisper(
+            user.id,
+            f'Looping {emote.name} every {interval_s}s — say "stop" anytime, '
+            f"or it'll auto-stop after {round(max_duration_s / 60)} min.",
         )
-
-    def _active_loops(self) -> list[asyncio.Task]:
-        return [t for t in self._loops.values() if not t.done()]
 
     async def _run_loop(self, user_id: str, emote_id: str, interval_s: float, max_duration_s: float) -> None:
         task = asyncio.current_task()
@@ -213,7 +245,7 @@ class EmoteEngine:
             # user's avatar just stopped for no reason they said.
             await self.bot.throttle.acquire(Priority.NORMAL)
             await self.bot.highrise.send_whisper(
-                user_id, 'Your loop timed out after a while — say "loop <emote>" to start again.'
+                user_id, "Your loop timed out after a while — say an emote's name again to restart it."
             )
         finally:
             # Compare-and-delete: if `_trigger_loop` already replaced this
@@ -236,7 +268,10 @@ class EmoteEngine:
         self._all_task.cancel()
 
     async def _send_emote_list(self, user: User) -> None:
-        names = [e.name for e in self._catalog.all()]
+        # Numbered so a player can say "1" instead of the full name
+        # (EmoteCatalog.resolve, added 2026-07-23) — the position shown here
+        # is exactly the position that lookup uses.
+        names = [f"{i}. {e.name}" for i, e in enumerate(self._catalog.all(), start=1)]
         text = "Emotes: " + ", ".join(names)
         for chunk in _chunk_text(text, MAX_WHISPER_CHARS):
             await self.bot.throttle.acquire(Priority.NORMAL)

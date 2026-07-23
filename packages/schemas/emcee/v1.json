@@ -8,7 +8,7 @@
   "properties": {
     "emote_on_say": {
       "title": "Emote on say",
-      "description": "Someone types an emote's name in chat — no command needed — and their avatar performs it, even if they don't own it.",
+      "description": "Someone types an emote's name in chat — no command needed — and their avatar performs it, even if they don't own it. Loops on repeat by default (see Loop below) rather than firing once.",
       "x-module": "emote",
       "type": "object",
       "additionalProperties": false,
@@ -91,16 +91,16 @@
     },
     "loop": {
       "title": "Loop",
-      "description": "\"loop <emote>\" repeats that emote until the user says \"stop\" or leaves the room — the AFK-dance feature.",
+      "description": "On by default: saying an emote's name (or \"loop <emote>\" explicitly) repeats that emote for the speaker until they say \"stop\" or leave the room — the AFK-dance feature. Turn this off to make emote-on-say fire once instead, like before.",
       "x-module": "emote",
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "enabled": {
           "title": "Enabled",
-          "description": "Off by default. This is the most demanding feature we offer — if you turn it on, keep an eye on things at first, especially in busy rooms.",
+          "description": "On by default — every emote-on-say trigger loops, not just \"loop <emote>\". This is the most demanding feature we offer; keep an eye on things in busy rooms, and turn it off to go back to a single emote per trigger.",
           "type": "boolean",
-          "default": false
+          "default": true
         },
         "interval_s": {
           "title": "Repeat interval (seconds)",
@@ -108,15 +108,7 @@
           "type": "integer",
           "minimum": 5,
           "maximum": 60,
-          "default": 8
-        },
-        "max_concurrent_loopers": {
-          "title": "Max concurrent loopers",
-          "description": "Caps how many users can loop at once in this room.",
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 10,
-          "default": 3
+          "default": 5
         },
         "max_duration_s": {
           "title": "Max loop duration (seconds)",

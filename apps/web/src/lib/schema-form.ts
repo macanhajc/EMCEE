@@ -39,6 +39,12 @@ interface FieldSpecBase {
   /** Sibling boolean field key that gates this field's visibility in the
    * dashboard form, from the schema's `x-enabled-by` (see JsonSchemaLeaf). */
   enabledBy?: string;
+  /** The schema leaf's own `default`, carried through so a stored config
+   * that's missing this key (an older instance saved before this field
+   * existed, or before any save touched this section at all) can still
+   * render its true default instead of silently falling back to `false`/
+   * blank — see instance-config.tsx's `SectionCard`/`ConfigField`. */
+  default?: unknown;
 }
 
 export type FieldSpec =
@@ -86,6 +92,7 @@ function fieldSpecFor(key: string, leaf: JsonSchemaLeaf, t: SchemaCopyLookup | u
     title: t?.(`${path}.title`) ?? leaf.title ?? key,
     description: t?.(`${path}.description`) ?? leaf.description,
     enabledBy: leaf["x-enabled-by"],
+    default: leaf.default,
   };
   if (leaf.enum) return { kind: "enum", ...base, options: leaf.enum };
   if (leaf.type === "boolean") return { kind: "boolean", ...base };

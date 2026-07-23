@@ -1,0 +1,8 @@
+# Single-box prod deploy (R1, docs/cost-plan.md). DOMAIN comes from
+# .env.prod via docker-compose.prod.yml's caddy service. Caddy handles
+# Let's Encrypt automatically for a real domain (HTTP-01/TLS-ALPN, no
+# extra config needed) and falls back to its internal self-signed CA for
+# "localhost" — fine for a smoke test, not for real traffic.
+{$DOMAIN} {
+	reverse_proxy web:3000
+}

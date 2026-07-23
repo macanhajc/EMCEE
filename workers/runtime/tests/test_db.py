@@ -110,6 +110,42 @@ async def test_insert_event_round_trips_jsonb(pool, make_instance):
     assert row["data"] == {"elapsed_s": 3.5}
 
 
+async def test_write_heartbeat_creates_row(pool):
+    await db.write_heartbeat(pool, "sup-hb-test-create", capacity=10, running_count=3)
+
+    row = await pool.fetchrow(
+        "SELECT capacity, running_count FROM supervisor_heartbeats WHERE supervisor_id = $1",
+        "sup-hb-test-create",
+    )
+    assert row["capacity"] == 10
+    assert row["running_count"] == 3
+
+
+async def test_write_heartbeat_upserts_in_place(pool):
+    """One row per supervisor_id, not one per tick — repeated calls must
+    update the existing row (fresh last_seen_at, latest running_count), not
+    accumulate history the health check would then have to sift through."""
+    await db.write_heartbeat(pool, "sup-hb-test-upsert", capacity=10, running_count=1)
+    first = await pool.fetchrow(
+        "SELECT last_seen_at FROM supervisor_heartbeats WHERE supervisor_id = $1", "sup-hb-test-upsert"
+    )
+
+    await asyncio.sleep(0.01)
+    await db.write_heartbeat(pool, "sup-hb-test-upsert", capacity=10, running_count=5)
+
+    second = await pool.fetchrow(
+        "SELECT running_count, last_seen_at FROM supervisor_heartbeats WHERE supervisor_id = $1",
+        "sup-hb-test-upsert",
+    )
+    assert second["running_count"] == 5
+    assert second["last_seen_at"] > first["last_seen_at"]
+
+    count = await pool.fetchval(
+        "SELECT count(*) FROM supervisor_heartbeats WHERE supervisor_id = $1", "sup-hb-test-upsert"
+    )
+    assert count == 1
+
+
 async def test_get_instance_none_for_missing_id(pool):
     assert await db.get_instance(pool, "00000000-0000-0000-0000-000000000000") is None
 

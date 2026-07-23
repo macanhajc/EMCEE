@@ -24,40 +24,77 @@ def user(uid: str, name: str = "someuser") -> User:
 # --- emote on say -----------------------------------------------------------
 
 
-async def test_known_emote_word_triggers_send_targeted_at_speaker():
+async def test_known_emote_word_starts_a_loop_by_default():
+    # Loop defaults to enabled since 2026-07-23 — a bare word now loops
+    # rather than firing once (specs/bots/emote.md, "Loop / stop").
     bot = make_bot()
     await bot.on_chat(user("u1"), "macarena")
+    await asyncio.sleep(0.02)
+    assert "u1" in bot._emote._loops
+    assert bot.highrise.sent_emotes  # at least the first repeat fired
+    assert all(call == ("dance-macarena", "u1") for call in bot.highrise.sent_emotes)
+
+    bot._emote._loops["u1"].cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await bot._emote._loops["u1"]
+
+
+async def test_known_emote_word_whispers_loop_start_by_default():
+    bot = make_bot()
+    await bot.on_chat(user("u1"), "macarena")
+    assert bot.highrise.whispers and "Looping Macarena" in bot.highrise.whispers[0][1]
+
+    bot._emote._loops["u1"].cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await bot._emote._loops["u1"]
+
+
+async def test_known_emote_word_is_one_shot_when_loop_disabled():
+    # Turning `loop` off restores the pre-2026-07-23 one-shot behavior.
+    bot = make_bot({"loop": {"enabled": False}})
+    await bot.on_chat(user("u1"), "macarena")
     assert bot.highrise.sent_emotes == [("dance-macarena", "u1")]
+    assert bot._emote._loops == {}
+
+
+async def test_known_emote_word_whispers_what_will_happen_when_loop_disabled():
+    bot = make_bot({"loop": {"enabled": False}})
+    await bot.on_chat(user("u1"), "macarena")
+    assert bot.highrise.whispers == [("u1", 'Doing "Macarena"!')]
 
 
 async def test_unknown_word_is_ignored_silently():
     bot = make_bot()
     await bot.on_chat(user("u1"), "this means nothing")
     assert bot.highrise.sent_emotes == []
+    assert bot._emote._loops == {}
 
 
 async def test_emote_on_say_disabled_in_config():
     bot = make_bot({"emote_on_say": {"enabled": False}})
     await bot.on_chat(user("u1"), "macarena")
     assert bot.highrise.sent_emotes == []
+    assert bot._emote._loops == {}
 
 
 async def test_per_user_cooldown_blocks_repeat_trigger():
-    bot = make_bot({"emote_on_say": {"cooldown_s": 60}})
+    # loop disabled so this exercises emote_on_say's own cooldown in
+    # isolation, not loop's separate cooldown/switch-instead-of-block path.
+    bot = make_bot({"emote_on_say": {"cooldown_s": 60}, "loop": {"enabled": False}})
     await bot.on_chat(user("u1"), "macarena")
     await bot.on_chat(user("u1"), "hello")
     assert bot.highrise.sent_emotes == [("dance-macarena", "u1")]
 
 
 async def test_cooldown_is_per_user_not_global():
-    bot = make_bot({"emote_on_say": {"cooldown_s": 60}})
+    bot = make_bot({"emote_on_say": {"cooldown_s": 60}, "loop": {"enabled": False}})
     await bot.on_chat(user("u1"), "macarena")
     await bot.on_chat(user("u2"), "macarena")
     assert bot.highrise.sent_emotes == [("dance-macarena", "u1"), ("dance-macarena", "u2")]
 
 
 async def test_disabled_emotes_list_blocks_by_name_or_id():
-    bot = make_bot({"emote_on_say": {"disabled_emotes": ["Macarena"]}})
+    bot = make_bot({"emote_on_say": {"disabled_emotes": ["Macarena"]}, "loop": {"enabled": False}})
     await bot.on_chat(user("u1"), "macarena")
     assert bot.highrise.sent_emotes == []
     # a different emote still works
@@ -66,9 +103,47 @@ async def test_disabled_emotes_list_blocks_by_name_or_id():
 
 
 async def test_alias_and_accent_variants_all_resolve():
-    bot = make_bot()
+    bot = make_bot({"loop": {"enabled": False}})
     await bot.on_chat(user("u1"), "OLÁ")
     assert bot.highrise.sent_emotes == [("emote-hello", "u1")]
+
+
+# --- numbered emote trigger ---------------------------------------------
+
+
+async def test_number_triggers_the_emote_at_that_catalog_position():
+    bot = make_bot({"loop": {"enabled": False}})
+    first = bot._emote._catalog.all()[0]
+    await bot.on_chat(user("u1"), "1")
+    assert bot.highrise.sent_emotes == [(first.id, "u1")]
+
+
+async def test_number_out_of_range_is_ignored_silently():
+    bot = make_bot({"loop": {"enabled": False}})
+    await bot.on_chat(user("u1"), "99999")
+    assert bot.highrise.sent_emotes == []
+
+
+async def test_number_works_with_loop_prefix():
+    bot = make_bot({"loop": {"enabled": True, "cooldown_s": 0}})
+    first = bot._emote._catalog.all()[0]
+    await bot.on_chat(user("u1"), "loop 1")
+    await asyncio.sleep(0.01)
+    assert "u1" in bot._emote._loops
+    assert bot.highrise.sent_emotes and bot.highrise.sent_emotes[0] == (first.id, "u1")
+
+    bot._emote._loops["u1"].cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await bot._emote._loops["u1"]
+
+
+async def test_number_works_with_all_prefix():
+    bot = make_bot(owner_id="owner-1")
+    bot.highrise.room_users = [(user("u1"), Position(x=0, y=0, z=0))]
+    first = bot._emote._catalog.all()[0]
+    await bot.on_chat(user("owner-1"), "all 1")
+    await bot._emote._all_task
+    assert bot.highrise.sent_emotes == [(first.id, "u1")]
 
 
 # --- emote list command -------------------------------------------------
@@ -83,7 +158,11 @@ async def test_list_command_whispers_never_public_chat():
     # asker, never public chat.
     assert len(bot.highrise.whispers) > 1
     assert all(recipient == "u1" for recipient, _ in bot.highrise.whispers)
-    assert "Macarena" in " ".join(text for _, text in bot.highrise.whispers)
+    full_text = " ".join(text for _, text in bot.highrise.whispers)
+    assert "Macarena" in full_text
+    # Numbered (added 2026-07-23) so the position doubles as a trigger.
+    first = bot._emote._catalog.all()[0]
+    assert f"1. {first.name}" in full_text
 
 
 async def test_list_command_bang_alias():
@@ -261,8 +340,20 @@ async def test_stopall_with_no_active_wave_is_a_noop():
 # --- loop / stop -----------------------------------------------------------
 
 
-async def test_loop_is_disabled_by_default():
-    bot = make_bot()  # no explicit loop config — schema default is enabled: false
+async def test_loop_is_enabled_by_default():
+    bot = make_bot()  # no explicit loop config — schema default is now enabled: true
+    await bot.on_chat(user("u1"), "loop macarena")
+    await asyncio.sleep(0.05)
+    assert "u1" in bot._emote._loops
+    assert bot.highrise.sent_emotes  # at least one repeat fired
+
+    bot._emote._loops["u1"].cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await bot._emote._loops["u1"]
+
+
+async def test_loop_disabled_in_config_blocks_the_explicit_command_too():
+    bot = make_bot({"loop": {"enabled": False}})
     await bot.on_chat(user("u1"), "loop macarena")
     await asyncio.sleep(0.05)
     assert bot._emote._loops == {}
@@ -285,6 +376,25 @@ async def test_loop_starts_and_repeats_to_the_speaker():
 
     assert len(bot.highrise.sent_emotes) >= 2
     assert all(call == ("dance-macarena", "u1") for call in bot.highrise.sent_emotes)
+
+
+async def test_loop_start_whispers_what_will_happen():
+    bot = make_bot({"loop": {"enabled": True, "interval_s": 5, "max_duration_s": 300, "cooldown_s": 0}})
+
+    await bot.on_chat(user("u1"), "loop macarena")
+    await asyncio.sleep(0.01)
+
+    assert bot.highrise.whispers
+    recipient, text = bot.highrise.whispers[0]
+    assert recipient == "u1"
+    assert "Macarena" in text
+    assert "5s" in text
+    assert "stop" in text
+    assert "5 min" in text  # 300s max_duration_s
+
+    bot._emote._loops["u1"].cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await bot._emote._loops["u1"]
 
 
 async def test_unknown_emote_does_not_start_a_loop():
@@ -371,43 +481,27 @@ async def test_switching_loop_emote_cancels_old_and_starts_new():
     with pytest.raises(asyncio.CancelledError):
         await new_task
 
-    # switching emotes doesn't count against the concurrent-looper cap
+    # only the two emotes actually in play, nothing left over from switching
     assert set(bot.highrise.sent_emotes) <= {("dance-macarena", "u1"), ("emote-hello", "u1")}
 
 
-async def test_max_concurrent_loopers_blocks_new_looper_and_whispers():
-    bot = make_bot({"loop": {"enabled": True, "max_concurrent_loopers": 2, "cooldown_s": 0}})
-    await bot.on_chat(user("u1"), "loop macarena")
-    await bot.on_chat(user("u2"), "loop hello")
-    await bot.on_chat(user("u3"), "loop tired")  # over the cap
+async def test_many_concurrent_loopers_are_all_allowed():
+    # max_concurrent_loopers removed 2026-07-23 — Loop is every emote-on-say's
+    # default behavior now, so a cap would mean whoever's past it gets
+    # nothing at all, not a plain emote (specs/bots/emote.md).
+    bot = make_bot({"loop": {"enabled": True, "cooldown_s": 0}})
+    for i in range(10):
+        await bot.on_chat(user(f"u{i}"), "loop macarena")
     await asyncio.sleep(0.02)
 
-    assert set(bot._emote._loops.keys()) == {"u1", "u2"}
-    assert bot.highrise.whispers and bot.highrise.whispers[-1][0] == "u3"
+    assert len(bot._emote._loops) == 10
+    assert not any("limit" in text.lower() for _, text in bot.highrise.whispers)
 
     for task in bot._emote._loops.values():
         task.cancel()
     for task in list(bot._emote._loops.values()):
         with pytest.raises(asyncio.CancelledError):
             await task
-
-
-async def test_cap_does_not_block_switching_an_existing_loopers_emote():
-    bot = make_bot({"loop": {"enabled": True, "max_concurrent_loopers": 1, "cooldown_s": 0}})
-    bot.config["loop"]["interval_s"] = 0.02
-
-    await bot.on_chat(user("u1"), "loop macarena")  # fills the cap (max 1)
-    await asyncio.sleep(0.01)
-    await bot.on_chat(user("u1"), "loop hello")  # switching, not adding — must not be blocked
-    await asyncio.sleep(0.03)
-
-    assert "u1" in bot._emote._loops
-    assert not bot._emote._loops["u1"].done()
-    assert not any(w[1].startswith("Loop limit") for w in bot.highrise.whispers)
-
-    bot._emote._loops["u1"].cancel()
-    with pytest.raises(asyncio.CancelledError):
-        await bot._emote._loops["u1"]
 
 
 async def test_loop_auto_stops_after_max_duration_and_whispers_why():

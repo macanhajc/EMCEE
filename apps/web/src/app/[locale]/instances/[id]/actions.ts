@@ -26,6 +26,18 @@ const VALID_FACINGS = new Set(["FrontRight", "FrontLeft", "BackRight", "BackLeft
 
 const SCHEMAS: Record<string, object> = { emcee: emceeSchemaV1 };
 
+/**
+ * Result shape for the two `useActionState`-driven forms below (the config
+ * form and the Anchor spot position form) — both stay on the instance page
+ * and report success/error inline (a client-side toast, `instance-config.tsx`)
+ * instead of redirecting with a `?saved=1`/`?error=` query param. A redirect
+ * remounts the page's server-rendered tree, which reset whichever module tab
+ * (`activeModule` in `instance-config.tsx`) the owner had open — every other
+ * action on this page still redirects (that's fine for one-off forms outside
+ * the tab-switcher), this pair specifically needed to stop.
+ */
+export type ConfigActionState = { ok: true } | { ok: false; error: string };
+
 async function requireOwnedInstance(instanceId: string) {
   const session = await auth();
   if (!session?.user) await redirect("/login");
@@ -34,7 +46,11 @@ async function requireOwnedInstance(instanceId: string) {
   return instance;
 }
 
-export async function updateConfig(instanceId: string, formData: FormData): Promise<void> {
+export async function updateConfig(
+  instanceId: string,
+  _prevState: ConfigActionState | null,
+  formData: FormData,
+): Promise<ConfigActionState> {
   const instance = await requireOwnedInstance(instanceId);
 
   const schema = SCHEMAS[instance.catalogBotSlug];
@@ -43,14 +59,14 @@ export async function updateConfig(instanceId: string, formData: FormData): Prom
 
   const { valid, errors } = validateConfig(schema, config);
   if (!valid) {
-    await redirect(`/instances/${instanceId}?error=${encodeURIComponent(errors[0] ?? "invalid_config")}`);
+    return { ok: false, error: errors[0] ?? "invalid_config" };
   }
 
   await db.update(tables.botInstances).set({ config }).where(eq(tables.botInstances.id, instanceId));
   await db.insert(tables.instanceEvents).values({ botInstanceId: instanceId, kind: "config_updated", data: {} });
   await publishConfigUpdated(instanceId);
 
-  await redirect(`/instances/${instanceId}?saved=1`);
+  return { ok: true };
 }
 
 function parseCoordinate(raw: FormDataEntryValue | null): number | null {
@@ -67,7 +83,11 @@ function parseCoordinate(raw: FormDataEntryValue | null): number | null {
  * wakes the running instance over a dedicated Postgres NOTIFY channel so it
  * re-teleports live, no reconnect needed.
  */
-export async function updateAvatarPosition(instanceId: string, formData: FormData): Promise<void> {
+export async function updateAvatarPosition(
+  instanceId: string,
+  _prevState: ConfigActionState | null,
+  formData: FormData,
+): Promise<ConfigActionState> {
   await requireOwnedInstance(instanceId);
 
   const x = parseCoordinate(formData.get("x"));
@@ -76,14 +96,14 @@ export async function updateAvatarPosition(instanceId: string, formData: FormDat
   const facing = String(formData.get("facing") ?? "");
 
   if (x === null || y === null || z === null || !VALID_FACINGS.has(facing)) {
-    await redirect(`/instances/${instanceId}?error=bad_position`);
+    return { ok: false, error: "bad_position" };
   }
 
-  await setAvatarPosition(instanceId, { x: x!, y: y!, z: z!, facing });
+  await setAvatarPosition(instanceId, { x, y, z, facing });
   await db.insert(tables.instanceEvents).values({ botInstanceId: instanceId, kind: "avatar_position_updated", data: {} });
   await publishAvatarPositionUpdated(instanceId);
 
-  await redirect(`/instances/${instanceId}?saved=1`);
+  return { ok: true };
 }
 
 export async function replaceToken(instanceId: string, formData: FormData): Promise<void> {

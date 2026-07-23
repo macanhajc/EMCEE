@@ -385,3 +385,39 @@ export const avatarPositions = pgTable("avatar_positions", {
   facing: text("facing").notNull(), // Facing literal from the SDK: FrontRight | FrontLeft | BackRight | BackLeft
   updatedAt: timestamptz("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
 });
+
+// ---------------------------------------------------------------------------
+// Supervisor health / operator alerting (docs/decisions.md, 2026-07-23) —
+// a dead-man's-switch, distinct from the per-instance crash-loop alert
+// (instance_events "degraded" + db/instance-alerts.ts). That alert can only
+// fire from *inside* the supervisor's reconcile loop, so a supervisor that
+// crashes at startup (bad env, code error before `Supervisor.run()`) or
+// hangs never produces one — every bot_instance just sits wherever it was,
+// silently, with nothing in this DB ever recording that anything is wrong.
+// workers/runtime/supervisor.py writes a heartbeat row here on every
+// reconcile tick (RECONCILE_INTERVAL_S, ~10s); the /api/cron/supervisor-
+// health sweep (every minute, deploy/crontab + vercel.json) alerts us —
+// not the customer — when the newest heartbeat goes stale.
+// ---------------------------------------------------------------------------
+
+export const supervisorHeartbeats = pgTable("supervisor_heartbeats", {
+  // One row per supervisor process. Today's single-VPS deploy (R1,
+  // docs/cost-plan.md) only ever runs one, so the health check just takes
+  // MAX(last_seen_at) across every row — good enough for "is the data plane
+  // running at all," not precise enough to catch one shard dying while
+  // others live if this ever becomes multi-shard.
+  supervisorId: text("supervisor_id").primaryKey(),
+  capacity: integer("capacity").notNull(),
+  runningCount: integer("running_count").notNull(),
+  lastSeenAt: timestamptz("last_seen_at").notNull().defaultNow(),
+});
+
+// Generic dedup/cooldown marker for platform-wide (not per-instance) ops
+// alerts — same shape as instance_events' "degraded_alert_sent" kind, but
+// keyed by alert kind rather than instance id since there's no instance to
+// key off here. Row present = an alert is currently active (down, not yet
+// recovered); absent = healthy. Only "supervisor_down" exists today.
+export const opsAlerts = pgTable("ops_alerts", {
+  kind: text("kind").primaryKey(),
+  lastSentAt: timestamptz("last_sent_at").notNull().defaultNow(),
+});

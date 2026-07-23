@@ -221,6 +221,28 @@ async def resolve_moderation_request(
         )
 
 
+async def write_heartbeat(pool: asyncpg.Pool, supervisor_id: str, capacity: int, running_count: int) -> None:
+    """Dead-man's-switch for the whole process (specs/04-bot-runtime.md,
+    docs/decisions.md 2026-07-23): written on every reconcile tick, so a
+    stale row here means the supervisor crashed, hung, or never started —
+    catchable even when it dies before any bot_instance/instance_events row
+    is ever touched (the per-instance degraded alert can't see that far
+    back). Read by apps/web's /api/cron/supervisor-health sweep.
+    """
+    async with pool.acquire() as conn:
+        await conn.execute(
+            """
+            INSERT INTO supervisor_heartbeats (supervisor_id, capacity, running_count, last_seen_at)
+            VALUES ($1, $2, $3, now())
+            ON CONFLICT (supervisor_id) DO UPDATE
+            SET capacity = $2, running_count = $3, last_seen_at = now()
+            """,
+            supervisor_id,
+            capacity,
+            running_count,
+        )
+
+
 async def bump_strikes(
     pool: asyncpg.Pool, instance_id: str, user_id: str, username: str, decay_h: float
 ) -> int:

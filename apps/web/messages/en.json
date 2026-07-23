@@ -164,7 +164,7 @@
         "body": "Filters bad language, blocks spam, and hands out warnings with a clear paper trail — watching your room around the clock, all set up with simple toggles."
       },
       "avatar": {
-        "name": "Outfits",
+        "name": "Avatar",
         "body": "Dress your bot in an outfit you choose, give it a spot to stand, and a little idle animation — so it feels present instead of just floating there."
       }
     },
@@ -399,6 +399,16 @@
         "config_applied": "Settings changes applied",
         "config_rejected": "A settings change was rejected — previous settings kept",
         "generic": "Bot activity"
+      },
+      "diagnostics": {
+        "copy": "Copy diagnostics",
+        "copied": "Copied",
+        "heading": "BotMarket diagnostics — {botName}",
+        "instance": "Instance: {instanceId}",
+        "room": "Room: {roomId}",
+        "status": "Status",
+        "generated": "Generated: {timestamp}",
+        "recentActivity": "Recent activity:"
       }
     },
     "tokenUpdate": {
@@ -501,7 +511,7 @@
   "schemaEmcee": {
     "emote_on_say": {
       "title": "Emote on say",
-      "description": "Someone types an emote's name in chat — no command needed — and their avatar performs it, even if they don't own it.",
+      "description": "Someone types an emote's name (or its number from the \"emotes\" list) in chat — no command needed — and their avatar performs it, even if they don't own it. Loops on repeat by default (see Loop below).",
       "enabled": {
         "title": "Enabled"
       },
@@ -542,18 +552,14 @@
     },
     "loop": {
       "title": "Loop",
-      "description": "\"loop <emote>\" repeats that emote until the user says \"stop\" or leaves the room — the AFK-dance feature.",
+      "description": "On by default: saying an emote's name (or \"loop <emote>\" explicitly) repeats that emote until the user says \"stop\" or leaves the room — the AFK-dance feature. Turn off to make emotes fire once instead, like before.",
       "enabled": {
         "title": "Enabled",
-        "description": "Off by default. This is the most demanding feature we offer — if you turn it on, keep an eye on things at first, especially in busy rooms."
+        "description": "On by default — every emote-on-say trigger loops, not just \"loop <emote>\". This is the most demanding feature we offer; keep an eye on things in busy rooms, and turn it off to go back to a single emote per trigger."
       },
       "interval_s": {
         "title": "Repeat interval (seconds)",
         "description": "How often the looped emote re-triggers."
-      },
-      "max_concurrent_loopers": {
-        "title": "Max concurrent loopers",
-        "description": "Caps how many users can loop at once in this room."
       },
       "max_duration_s": {
         "title": "Max loop duration (seconds)",

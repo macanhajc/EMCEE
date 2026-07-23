@@ -39,9 +39,11 @@ import signal
 import time
 import uuid
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Awaitable, Callable
 
 import asyncpg
+from dotenv import load_dotenv
 
 import db
 from catalog.base import CatalogBot
@@ -132,6 +134,11 @@ class Supervisor:
         try:
             while True:
                 await self.reconcile()
+                # Unconditional, after reconcile() rather than inside it —
+                # reconcile() has early returns (e.g. no free capacity), and
+                # the heartbeat needs to prove the loop itself is alive every
+                # tick regardless of which branch reconcile() took.
+                await db.write_heartbeat(self.pool, self.supervisor_id, self.capacity, len(self.running))
                 await asyncio.sleep(self.reconcile_interval_s)
         finally:
             self._config_listener_task.cancel()
@@ -467,6 +474,12 @@ async def main(supervisor_id: str, capacity: int) -> None:
 
 
 if __name__ == "__main__":
+    # No-op if the file doesn't exist (prod: docker-compose.prod.yml injects
+    # DATABASE_URL/TOKEN_SEAL_PRIVATE_KEY directly, no .env ships in the
+    # image) and never overrides an already-set env var (default
+    # override=False), so real container/CI env always wins over this file.
+    load_dotenv(Path(__file__).resolve().parent / ".env")
+
     parser = argparse.ArgumentParser(description="BotMarket bot supervisor")
     parser.add_argument("--supervisor-id", default=f"sup-{uuid.uuid4().hex[:12]}")
     parser.add_argument("--capacity", type=int, default=DEFAULT_CAPACITY)

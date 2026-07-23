@@ -1,6 +1,7 @@
 import { ArrowLeft, Play, Square } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import type { ConfigActionState } from "@/app/[locale]/instances/[id]/actions";
 import { DashboardShell } from "@/components/Elements/dashboard-shell";
 import {
   InstanceStatusBadge,
@@ -74,8 +75,8 @@ export function InstanceDetailTemplate({
   browserAlertsEnabled: boolean;
   setBotRunning: () => Promise<void>;
   openBillingPortal: () => Promise<void>;
-  updateConfig: (formData: FormData) => Promise<void>;
-  updateAvatarPosition: (formData: FormData) => Promise<void>;
+  updateConfig: (prevState: ConfigActionState | null, formData: FormData) => Promise<ConfigActionState>;
+  updateAvatarPosition: (prevState: ConfigActionState | null, formData: FormData) => Promise<ConfigActionState>;
   searchOutfitItems: (query: string) => Promise<OutfitItemInfo[]>;
   replaceToken: (formData: FormData) => Promise<void>;
   replaceRoomId: (formData: FormData) => Promise<void>;
@@ -200,6 +201,9 @@ export function InstanceDetailTemplate({
         outfitItems={outfitItems}
         onSearchOutfitItems={searchOutfitItems}
         operationalEvents={operationalEvents}
+        instanceId={instance.id}
+        status={instance.status}
+        errorKind={instance.errorKind}
         tokenLast4={instance.tokenLast4 ?? ""}
         replaceToken={replaceToken}
         roomId={instance.roomId}

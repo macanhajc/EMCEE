@@ -1,6 +1,7 @@
 {
   "crons": [
     { "path": "/api/cron/degraded-alerts", "schedule": "*/5 * * * *" },
+    { "path": "/api/cron/supervisor-health", "schedule": "* * * * *" },
     { "path": "/api/cron/retention", "schedule": "47 4 * * *" }
   ]
 }

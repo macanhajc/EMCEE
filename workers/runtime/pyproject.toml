@@ -22,6 +22,11 @@ dependencies = [
     # a real gap in the SDK's own packaging. Pinned <81: setuptools split
     # pkg_resources out of the default install above that version.
     "setuptools<81",
+    # Loads workers/runtime/.env for the bare `uv run python supervisor.py`
+    # dev path (README). Prod's docker-compose.prod.yml injects real secrets
+    # via `environment:` instead — no .env file ships in the image, so this
+    # is a no-op there.
+    "python-dotenv>=1.0",
 ]
 
 [dependency-groups]

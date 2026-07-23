@@ -108,6 +108,46 @@ async def test_unknown_catalog_slug_releases_lease_without_spawning(pool, make_i
         await pool.execute("DELETE FROM catalog_bots WHERE slug = 'ghost'")
 
 
+async def test_run_writes_heartbeat_every_tick(pool, listen_conn, token_box):
+    """The dead-man's-switch (docs/decisions.md, 2026-07-23): run()'s loop
+    must write a heartbeat unconditionally, not just when reconcile() has
+    instances to claim/renew — an idle supervisor is still an alive one."""
+    sup = Supervisor(
+        pool,
+        listen_conn,
+        token_box,
+        supervisor_id="sup-heartbeat-unit-test",
+        capacity=5,
+        bot_runner=hold_forever,
+        reconcile_interval_s=0.02,
+    )
+    run_task = asyncio.create_task(sup.run())
+    try:
+        async def has_heartbeat():
+            row = await pool.fetchrow(
+                "SELECT capacity, running_count FROM supervisor_heartbeats WHERE supervisor_id = $1",
+                "sup-heartbeat-unit-test",
+            )
+            return row
+
+        async def _poll():
+            row = None
+            while row is None:
+                row = await has_heartbeat()
+                if row is None:
+                    await asyncio.sleep(0.01)
+            return row
+
+        row = await asyncio.wait_for(_poll(), timeout=2.0)
+        assert row["capacity"] == 5
+        assert row["running_count"] == 0
+    finally:
+        run_task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await run_task
+        await sup.shutdown()
+
+
 async def test_reconcile_keeps_healthy_instance_running_across_ticks(pool, make_instance, supervisor):
     instance_id = await make_instance(desired_state="running")
 

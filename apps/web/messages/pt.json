@@ -164,7 +164,7 @@
         "body": "Filtra palavrões, bloqueia spam e aplica avisos com um histórico bem organizado — de olho na sua sala o tempo todo, tudo configurado com controles simples."
       },
       "avatar": {
-        "name": "Visual",
+        "name": "Avatar",
         "body": "Vista seu bot com uma roupa à sua escolha, dê um lugar fixo para ele ficar, e uma animaçãozinha de espera — assim ele parece presente, não só flutuando por aí."
       }
     },
@@ -399,6 +399,16 @@
         "config_applied": "Mudanças nas configurações aplicadas",
         "config_rejected": "Uma mudança nas configurações foi rejeitada — as configurações anteriores foram mantidas",
         "generic": "Atividade do bot"
+      },
+      "diagnostics": {
+        "copy": "Copiar diagnóstico",
+        "copied": "Copiado",
+        "heading": "Diagnóstico do BotMarket — {botName}",
+        "instance": "Instância: {instanceId}",
+        "room": "Sala: {roomId}",
+        "status": "Status",
+        "generated": "Gerado em: {timestamp}",
+        "recentActivity": "Atividade recente:"
       }
     },
     "tokenUpdate": {
@@ -501,7 +511,7 @@
   "schemaEmcee": {
     "emote_on_say": {
       "title": "Emote ao falar",
-      "description": "Alguém digita o nome de um emote no chat — sem precisar de nenhum comando — e o avatar da pessoa faz o movimento, mesmo que ela não tenha esse emote.",
+      "description": "Alguém digita o nome de um emote (ou o número dele na lista \"emotes\") no chat — sem precisar de nenhum comando — e o avatar da pessoa faz o movimento, mesmo que ela não tenha esse emote. Fica em loop por padrão (veja Loop abaixo).",
       "enabled": {
         "title": "Ativado"
       },
@@ -542,18 +552,14 @@
     },
     "loop": {
       "title": "Loop",
-      "description": "O comando \"loop <emote>\" repete esse emote até a pessoa dizer \"stop\" ou sair da sala — é a função de dança automática para quando você fica ausente (AFK).",
+      "description": "Ativado por padrão: dizer o nome de um emote (ou \"loop <emote>\" diretamente) repete esse emote até a pessoa dizer \"stop\" ou sair da sala — é a função de dança automática para quando você fica ausente (AFK). Desative para os emotes voltarem a acontecer só uma vez, como antes.",
       "enabled": {
         "title": "Ativado",
-        "description": "Desativado por padrão. Essa é a função mais pesada que oferecemos — se você ativar, fique de olho no começo, principalmente em salas cheias."
+        "description": "Ativado por padrão — todo emote digitado no chat entra em loop, não só o \"loop <emote>\". Essa é a função mais pesada que oferecemos; fique de olho em salas cheias, e desative para voltar a um único emote por vez."
       },
       "interval_s": {
         "title": "Intervalo de repetição (segundos)",
         "description": "Com que frequência o emote em loop se repete."
-      },
-      "max_concurrent_loopers": {
-        "title": "Máximo de pessoas em loop ao mesmo tempo",
-        "description": "Limita quantos usuários podem usar o loop ao mesmo tempo nessa sala."
       },
       "max_duration_s": {
         "title": "Duração máxima do loop (segundos)",
