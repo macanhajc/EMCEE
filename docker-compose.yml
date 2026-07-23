@@ -1,4 +1,7 @@
-# Local dev only — production uses managed Postgres + Redis (specs/02-architecture.md).
+# Local dev only — production uses managed Postgres (specs/02-architecture.md).
+# No Redis: config pub/sub runs over Postgres LISTEN/NOTIFY on this same
+# database since 2026-07-22 (docs/cost-plan.md, R6) — one fewer service to
+# run, here and in production.
 services:
   postgres:
     image: postgres:17-alpine
@@ -10,11 +13,6 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-
-  redis:
-    image: redis:8-alpine
-    ports:
-      - "6379:6379"
 
 volumes:
   pgdata:

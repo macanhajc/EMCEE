@@ -41,29 +41,41 @@ async def test_claim_instances_reclaims_expired_lease(pool, make_instance):
     assert instance_id in {str(r["id"]) for r in claimed}
 
 
-async def test_renew_lease_true_while_owned_and_running(pool, make_instance):
+async def test_renew_leases_renews_owned_running_and_extends_lease(pool, make_instance):
     instance_id = await make_instance(desired_state="running")
     claimed = await db.claim_instances(pool, "sup-a", capacity=10, lease_ttl_s=60)
     assert instance_id in {str(r["id"]) for r in claimed}
 
-    assert await db.renew_lease(pool, instance_id, "sup-a", lease_ttl_s=60) is True
+    renewed = await db.renew_leases(pool, [instance_id], "sup-a", lease_ttl_s=300)
+    assert renewed == {instance_id}
+
+    # The lease actually moved forward, not just "a row came back": renewing
+    # with a 300s TTL must land well past the original 60s claim.
+    row = await db.get_instance(pool, instance_id)
+    remaining = row["lease_expires_at"] - datetime.now(timezone.utc)
+    assert remaining > timedelta(seconds=120)
 
 
-async def test_renew_lease_false_when_desired_state_flips(pool, pool2, make_instance):
-    instance_id = await make_instance(desired_state="running")
+async def test_renew_leases_excludes_flipped_and_foreign_in_one_batch(pool, make_instance):
+    """One batched UPDATE per reconcile tick (docs/cost-plan.md, R4): the
+    returned set must be exactly the owned-and-still-running slice, so a
+    flipped desired_state and a lease owned by another supervisor both fall
+    out of the same single round trip."""
+    healthy_id = await make_instance(desired_state="running")
+    flipped_id = await make_instance(desired_state="running")
+    stolen_id = await make_instance(desired_state="running")
     await db.claim_instances(pool, "sup-a", capacity=10, lease_ttl_s=60)
 
     async with pool.acquire() as conn:
-        await conn.execute("UPDATE bot_instances SET desired_state = 'stopped' WHERE id = $1", instance_id)
+        await conn.execute("UPDATE bot_instances SET desired_state = 'stopped' WHERE id = $1", flipped_id)
+        await conn.execute("UPDATE bot_instances SET supervisor_id = 'sup-b' WHERE id = $1", stolen_id)
 
-    assert await db.renew_lease(pool, instance_id, "sup-a", lease_ttl_s=60) is False
+    renewed = await db.renew_leases(pool, [healthy_id, flipped_id, stolen_id], "sup-a", lease_ttl_s=60)
+    assert renewed == {healthy_id}
 
 
-async def test_renew_lease_false_for_wrong_owner(pool, make_instance):
-    instance_id = await make_instance(desired_state="running")
-    await db.claim_instances(pool, "sup-a", capacity=10, lease_ttl_s=60)
-
-    assert await db.renew_lease(pool, instance_id, "sup-b", lease_ttl_s=60) is False
+async def test_renew_leases_empty_input_returns_empty_without_querying(pool):
+    assert await db.renew_leases(pool, [], "sup-a", lease_ttl_s=60) == set()
 
 
 async def test_release_lease_clears_columns(pool, make_instance):

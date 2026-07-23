@@ -11,6 +11,7 @@ export function getRegulars(botInstanceId: string) {
   const since = new Date(Date.now() - REGULARS_WINDOW_DAYS * 24 * 60 * 60 * 1000);
   return db
     .select({
+      userId: tables.greeterVisits.userId, // Highrise user id — what a dashboard ban/unban targets
       username: tables.greeterVisits.username,
       visitCount: tables.greeterVisits.visitCount,
       lastSeenAt: tables.greeterVisits.lastSeenAt,

@@ -13,10 +13,14 @@
  *   of these, so this is the single place mapSubscriptionStatus() gets
  *   applied and desired_state gets recomputed via resolveDesiredState()
  *   (entitlement AND the customer's own user_enabled switch).
- * - invoice.paid / invoice.payment_failed: audit trail + future email hook
- *   (no transactional email provider chosen yet — specs/06-auth.md open
- *   question) — refreshes stripeStatus but does not independently decide
- *   desired_state, to keep exactly one source of truth for that decision.
+ * - invoice.paid / invoice.payment_failed: audit trail, plus (payment_failed
+ *   only) a best-effort customer email via sendPaymentFailedEmail — Stripe's
+ *   own Smart Retries and the past_due grace period are what actually keep
+ *   the bot running, this is just the "grace before cut-off feels like a
+ *   nudge, not an outage" notice (specs/03-billing.md). invoice.paid gets no
+ *   confirmation email: Stripe's own receipt already covers that. Neither
+ *   independently decides desired_state, to keep exactly one source of
+ *   truth for that decision.
  *
  * This handler never writes bot_instances.status — that column is
  * supervisor-observed, not billing-owned (specs/02-architecture.md).
@@ -26,6 +30,8 @@ import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
 import { mapSubscriptionStatus, resolveDesiredState } from "@/lib/billing-state";
+import { getSubscriptionContact } from "@/db/billing";
+import { sendPaymentFailedEmail } from "@/lib/payment-failed-mailer";
 import { db, tables } from "@/db";
 
 export async function POST(request: Request): Promise<NextResponse> {
@@ -118,10 +124,9 @@ async function onSubscriptionChanged(subscription: Stripe.Subscription): Promise
   const priceId = subscription.items.data[0]?.price.id ?? "";
   const currentPeriodEnd = subscription.items.data[0]?.current_period_end;
 
-  // Fetched once, up front: needed both to gate desired_state by the
-  // customer's own start/stop switch below, and for the trial-registry
-  // write further down (instance may not exist — e.g. a subscription
-  // event arriving after the instance itself was deleted).
+  // Fetched once, up front: needed to gate desired_state by the customer's
+  // own start/stop switch below (instance may not exist — e.g. a
+  // subscription event arriving after the instance itself was deleted).
   const [instance] = await db.select().from(tables.botInstances).where(eq(tables.botInstances.id, instanceId));
 
   await db
@@ -156,16 +161,6 @@ async function onSubscriptionChanged(subscription: Stripe.Subscription): Promise
     await db.update(tables.botInstances).set({ desiredState }).where(eq(tables.botInstances.id, instanceId));
   }
 
-  // First trial actually granted for this room+token: register it so it
-  // can't be reused (specs/06-auth.md). Written here, not at checkout-
-  // session creation, so an abandoned checkout never burns eligibility.
-  if (status === "trialing" && instance?.tokenFingerprint) {
-    await db
-      .insert(tables.trialRegistry)
-      .values({ roomId: instance.roomId, tokenFingerprint: instance.tokenFingerprint })
-      .onConflictDoNothing();
-  }
-
   await db.insert(tables.instanceEvents).values({
     botInstanceId: instanceId,
     kind: "subscription_updated",
@@ -195,4 +190,20 @@ async function onInvoiceEvent(
     kind: type === "invoice.paid" ? "invoice_paid" : "invoice_payment_failed",
     data: { invoiceId: invoice.id },
   });
+
+  if (type === "invoice.payment_failed") {
+    const contact = await getSubscriptionContact(sub.botInstanceId!);
+    if (contact) {
+      await sendPaymentFailedEmail({
+        to: contact.userEmail,
+        userName: contact.userName,
+        roomId: contact.roomId,
+        instanceId: sub.botInstanceId!,
+        appOrigin: process.env.APP_ORIGIN ?? "http://localhost:3000",
+        locale: contact.userLocale,
+        amountDue: invoice.amount_due,
+        currency: invoice.currency,
+      });
+    }
+  }
 }

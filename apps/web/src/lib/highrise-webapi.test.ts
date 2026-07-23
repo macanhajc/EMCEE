@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { getOutfitItemsByIds, getRoomInfo, searchOutfitItems } from "./highrise-webapi";
+import { getOutfitItemsByIds, getRoomInfo, getUserByUsername, searchOutfitItems } from "./highrise-webapi";
 
 describe("getRoomInfo", () => {
   beforeEach(() => {
@@ -124,6 +124,51 @@ describe("searchOutfitItems", () => {
   it("returns [] instead of throwing on a network failure", async () => {
     vi.mocked(fetch).mockRejectedValue(new Error("network down"));
     await expect(searchOutfitItems("tee")).resolves.toEqual([]);
+  });
+});
+
+describe("getUserByUsername", () => {
+  beforeEach(() => {
+    vi.stubGlobal("fetch", vi.fn());
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("resolves via the singular /users/{username} endpoint", async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      new Response(JSON.stringify({ user: { user_id: "usr_123", username: "Troublemaker123" } }), { status: 200 }),
+    );
+
+    await expect(getUserByUsername("troublemaker123")).resolves.toEqual({
+      userId: "usr_123",
+      username: "Troublemaker123",
+    });
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringContaining("/users/troublemaker123"),
+      expect.anything(),
+    );
+  });
+
+  it("returns null on a 404 (Highrise's real 'User not found.' response)", async () => {
+    vi.mocked(fetch).mockResolvedValue(new Response("User not found.", { status: 404 }));
+    await expect(getUserByUsername("nobody-by-this-name")).resolves.toBeNull();
+  });
+
+  it("returns null for a blank username without hitting the network", async () => {
+    await expect(getUserByUsername("   ")).resolves.toBeNull();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("returns null on a non-200 response", async () => {
+    vi.mocked(fetch).mockResolvedValue(new Response("nope", { status: 500 }));
+    await expect(getUserByUsername("troublemaker123")).resolves.toBeNull();
+  });
+
+  it("returns null instead of throwing on a network failure", async () => {
+    vi.mocked(fetch).mockRejectedValue(new Error("network down"));
+    await expect(getUserByUsername("troublemaker123")).resolves.toBeNull();
   });
 });
 

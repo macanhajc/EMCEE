@@ -2,20 +2,21 @@
 
 Python workers running catalog bots on the official `highrise-bot-sdk`. This is the part of the system that is the revenue: if it flaps, we churn.
 
-Wired 2026-07-20 (`workers/runtime/supervisor.py`, `db.py`, `heartbeat.py`). See `docs/decisions.md` for what's verified vs. still open — no real Highrise credentials exist in this environment, so verification used a fake WebSocket server speaking the real wire protocol against the real SDK's `bot_runner()`, not the live platform.
+Wired 2026-07-20 (`workers/runtime/supervisor.py`, `db.py`). See `docs/decisions.md` for what's verified vs. still open — no real Highrise credentials exist in this environment, so verification used a fake WebSocket server speaking the real wire protocol against the real SDK's `bot_runner()`, not the live platform.
 
 ## Process model
 
 - **Supervisor** process per shard (start with 1–2 shards). On boot: claim `BotInstance` rows for its shard from Postgres (`desired_state = running`), spawn each as an SDK bot. SDK supports multiple bots per process (≥23.1.0b11); each bot ↔ one room WebSocket, one asyncio task tree.
 - **Isolation inside the process:** every handler invocation wrapped so one tenant's exception never escapes its instance. A crashing instance restarts with exponential backoff (cap ~5 min); after N consecutive failures → `degraded`, alert, and surface status to the customer dashboard.
-- **Reconciliation loop:** supervisor periodically diffs actual vs. desired (Postgres) — picks up new instances, stops suspended ones, applies shard rebalances. Redis pub/sub (`config.updated`, `instance.desired_state`) makes it snappy; the loop makes it correct even if pub/sub drops.
-- **Heartbeats:** per-instance state (connected/reconnecting/stopped, last event ts) → Redis; control plane renders it as the status page. Supervisor-level liveness → uptime monitor.
+- **Reconciliation loop:** supervisor periodically diffs actual vs. desired (Postgres) — picks up new instances, stops suspended ones, applies shard rebalances. Lease renewal is **one batched UPDATE per tick** for everything the supervisor runs, not a round trip per instance (2026-07-22, `docs/cost-plan.md` R4) — steady-state DB load stays flat as instance count grows. Postgres `LISTEN`/`NOTIFY` (`config.updated`, `avatar_position.updated` — Redis pub/sub before 2026-07-22, `docs/cost-plan.md` R6) makes it snappy; the loop makes it correct even if a notification is dropped.
+- **Connection state for the dashboard is Postgres `status`, nothing else.** Redis heartbeats existed here until 2026-07-22 and were removed (`docs/cost-plan.md` R2): no control-plane code ever read them, and they were already broken as a liveness signal (45s TTL, only refreshed on state *changes*, so a healthy long-running bot's key expired anyway). `status` has been connect-confirmed (not optimistic) since 2026-07-21, which is what the heartbeats were originally imagined to provide. Supervisor-level liveness → uptime monitor on the process, still an open deployment item.
+- **No Redis anywhere in this plane.** The supervisor holds one dedicated (non-pooled) `asyncpg` connection for `LISTEN` (`db.connect_for_listen` — a pool connection can't hold a `LISTEN` registration across acquire/release cycles) alongside its normal pool for everything else; the control plane sends `NOTIFY` over its regular pooled connection via `pg_notify()` (`src/lib/notify.ts`). One fewer service to run, deploy, and pay for (`docs/cost-plan.md`, R6).
 
 ## Catalog bot structure
 
 ```
 workers/runtime/
-  supervisor.py          claim/spawn/reconcile/heartbeat
+  supervisor.py          claim/spawn/reconcile/stop
   catalog/
     base.py              CatalogBot(BaseBot): config load+validate, safe-dispatch,
                          action throttle, event logging, common helpers
@@ -30,7 +31,7 @@ Module engines (`EmoteEngine`, `GreeterEngine`) are plain classes, not `CatalogB
 
 - Config arrives as JSONB + `schema_version`; runtime re-validates against the pinned schema in `packages/schemas/` before applying. Invalid config → keep last-good, emit event, flag dashboard.
 - **Hot-apply:** on `config.updated`, swap the validated config object atomically between events. Fields marked `requires_reconnect` in schema metadata trigger a graceful reconnect instead.
-- Catalog bots may only reach Highrise (SDK) and our own Postgres/Redis. No other outbound network. Not customer code today — but build the habit.
+- Catalog bots may only reach Highrise (SDK) and our own Postgres. No other outbound network. Not customer code today — but build the habit.
 
 ## Rate limiting (empirical — no published numbers)
 
@@ -49,7 +50,7 @@ Highrise documents only "respect rate limits or get banned." So:
 | Room deleted/renamed | room lookup fails | `error: room` — prompt for new room ID |
 | Network/server blip | WS drop | SDK auto-reconnect + our backoff; `degraded` if >2 min |
 | Platform protocol change | connect errors fleet-wide | global alert; kill switch; ship SDK bump — the existential scenario, keep SDK pinned + a canary instance in our own test room |
-| Instance crash-loop | N restarts | `degraded`, alert us, customer sees honest status |
+| Instance crash-loop | N restarts | `degraded`, customer emailed (cron-polled sweep, deduped with a cooldown — see `docs/decisions.md`), honest dashboard status |
 
 ## Upgrades
 
@@ -63,9 +64,12 @@ Bots are I/O-bound WS clients; expect O(hundreds) instances per small VM. First 
 ## Open questions
 
 - ~~Shard assignment: static column vs. lease-based claiming~~ → resolved 2026-07-20: lease-based (`bot_instances.supervisor_id` + `lease_expires_at`, `FOR UPDATE SKIP LOCKED` claim). `shard` column kept but unused — reserved for a future coarse partition (e.g. IP-pool grouping) if per-IP ceilings turn out to require it.
-- Precise `error_kind` classification (token/permissions/room) isn't achievable yet: the SDK's `bot_runner()` doesn't surface *why* it returned, only stdout prints. The supervisor currently detects "fails fast repeatedly" generically → `degraded`, with `error_kind` unset except for the one failure mode we can classify ourselves (token unseal failure). Refine once a canary instance gives us real failure signatures to key off (matches "measure real platform limits" below — same empirical posture).
+- Precise `error_kind` classification (token/permissions/room) isn't achievable yet: the SDK's `bot_runner()` doesn't surface *why* it returned, only stdout prints. The supervisor currently detects "fails fast repeatedly" generically → `degraded`, with `error_kind` unset except for the one failure mode we can classify ourselves (token unseal failure). A stuck-forever connect attempt is now at least distinguishable in the status log (`connect_timed_out` vs. generic `disconnected`, 2026-07-21), but that's a symptom, not a root cause — still can't tell "bad room" from "no designer rights" from "Highrise just never replied this time." Refine once a canary instance gives us real failure signatures to key off (matches "measure real platform limits" below — same empirical posture).
 - Measure real platform limits: connects/min per IP? actions/min per bot? multiple bots from one IP — any per-IP ceiling that forces IP diversity across shards?
-- Event log volume: every `user_joined` in a busy room is a lot of rows — sample or aggregate `InstanceEvent` beyond moderation actions?
+- Event log volume: every `user_joined` in a busy room is a lot of rows — sample or aggregate `InstanceEvent` beyond moderation actions? *(Partially addressed 2026-07-22: rows older than 90 days are rolled up into `instance_event_rollups` and deleted by the daily retention sweep, so growth is bounded to ~90 days of raw events. Whether high-volume kinds need sampling inside that window is still open.)*
 - Is `on_moderate` sufficient to detect our own bot being kicked/banned from a room (owner removed bot) → auto-stop instance vs. reconnect loop?
-- `status`/heartbeat are written optimistically when a (re)connect attempt starts, not confirmed after a successful handshake — `bot_runner()` offers no such callback. Fine in practice (fast failures still escalate to `degraded` within a few attempts) but worth knowing if the dashboard's "running" ever reads as briefly optimistic.
+- ~~`status`/heartbeat are written optimistically when a (re)connect attempt starts, not confirmed after a successful handshake~~ → resolved 2026-07-21: turned out not fine in practice — a room the bot can never join can leave `bot_runner()` hanging on Highrise's first reply forever (no timeout in the SDK, no typed error either), which left `status` stuck at `running` and the event log empty indefinitely. Now: status goes to `provisioning` first; `CatalogBot._confirm_connected()` (called from `on_start`) is the real "connected" signal, raced against a `connect_confirm_timeout_s` (default 20s) in the supervisor. A stuck attempt times out, logs `connect_timed_out`, and counts toward the same consecutive-failures → `degraded` escalation as any other failure.
 - `highrise-bot-sdk==25.1.0`'s `__main__.py` imports the deprecated `pkg_resources`, "slated for removal as early as 2025-11-30" per its own deprecation warning — already past that date. Pinned `setuptools<81` as a stopgap (`workers/runtime/pyproject.toml`); this may force an SDK bump sooner than otherwise planned if that pin becomes unsatisfiable.
+- Crash-loop email alert's cooldown resets from last-alert-sent, not from outage onset — a recovery-then-re-crash inside the 30-minute cooldown window defers the reminder rather than re-alerting instantly. A true "new incident" detector would need episode/gap-grouping over the event history; more machinery than a v1 crash alert needs (`apps/web/src/lib/degraded-alerts.ts`).
+- Nothing monitors the alerting pipeline itself — a broken Resend account, or a cron job that silently stops firing, degrades to silence with no meta-alert.
+- ~~The alert sweep (`apps/web/src/db/instance-alerts.ts`) scans `instance_events` by `kind` with no supporting index~~ → resolved 2026-07-22: `instance_events_kind_time_idx` (`(kind, created_at desc)`, migration `0009_add_retention`) landed with the retention work; it serves both the alert sweep and the retention cutoff scan.

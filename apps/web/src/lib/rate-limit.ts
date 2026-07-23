@@ -5,7 +5,8 @@
  * Same shape as the runtime's ActionThrottle (workers/runtime/catalog/base.py)
  * but per-key instead of per-instance. In-memory only — resets on deploy and
  * doesn't share state across instances. Fine for one Next.js process; swap
- * for a Redis-backed limiter before running multiple control-plane instances.
+ * for a Postgres-backed limiter before running multiple control-plane
+ * instances (this app has no Redis dependency to reach for — docs/cost-plan.md R6).
  */
 import "server-only";
 

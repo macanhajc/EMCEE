@@ -7,7 +7,6 @@ cd "$(dirname "$0")/.."
 
 eval "$(cd workers/runtime && uv run python keygen.py --export)"
 export TOKEN_SEAL_PUBLIC_KEY TOKEN_SEAL_PRIVATE_KEY
-export TOKEN_FINGERPRINT_PEPPER="crosscheck-pepper"
 export CROSSCHECK_TOKEN="hr-crosscheck-$(date +%s)-secret-77f3"
 
 SEALED_JSON=$(cd apps/web && NODE_OPTIONS="--conditions=react-server" pnpm exec tsx test/seal-cli.ts)

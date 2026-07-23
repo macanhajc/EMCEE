@@ -3,17 +3,39 @@ from __future__ import annotations
 import base64
 import os
 import uuid
+from urllib.parse import urlsplit
 
 import pytest
 import pytest_asyncio
-import redis.asyncio as redis
 from nacl.public import PrivateKey, SealedBox
 
 import db as db_module
 from tokenbox import TokenBox
 
-DATABASE_URL = os.environ.get("DATABASE_URL", "postgres://botmarket:botmarket@localhost:5432/botmarket")
-REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379")
+DATABASE_URL = os.environ.get("DATABASE_URL", "postgres://botmarket:botmarket@localhost:5432/botmarket_test")
+
+
+def _require_test_database(url: str) -> None:
+    """Supervisor.reconcile()/claim_instances() (db.py) claims *any* unclaimed
+    running instance in the whole bot_instances table, not just rows a test
+    created — so pointing this suite at a shared/dev database lets a test
+    supervisor (throwaway token_box keypair) seize a real bot instance,
+    fail to unseal its token, and mark it degraded (docs/decisions.md,
+    2026-07-22). Failing fast here beats a confusing "token looks invalid"
+    on somebody's real instance.
+    """
+    db_name = urlsplit(url).path.lstrip("/")
+    if not db_name.endswith("_test"):
+        raise RuntimeError(
+            f"DATABASE_URL points at {db_name!r}, which doesn't look like a dedicated test "
+            "database (expected a name ending in '_test'). Refusing to run — these tests "
+            "claim and mutate rows table-wide and can stomp real bot instances. Point "
+            "DATABASE_URL at a database created just for tests, e.g. "
+            "postgres://botmarket:botmarket@localhost:5432/botmarket_test."
+        )
+
+
+_require_test_database(DATABASE_URL)
 
 
 @pytest_asyncio.fixture
@@ -39,10 +61,13 @@ async def pool2():
 
 
 @pytest_asyncio.fixture
-async def redis_client():
-    c = redis.from_url(REDIS_URL, decode_responses=True)
-    yield c
-    await c.aclose()
+async def listen_conn():
+    """Dedicated LISTEN/NOTIFY connection (docs/cost-plan.md, R6) — separate
+    from `pool` since a pool connection can't hold a LISTEN registration
+    across acquire/release cycles (db.connect_for_listen's docstring)."""
+    conn = await db_module.connect_for_listen(DATABASE_URL)
+    yield conn
+    await conn.close()
 
 
 @pytest.fixture

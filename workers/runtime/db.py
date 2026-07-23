@@ -24,6 +24,16 @@ async def create_pool(dsn: str) -> asyncpg.Pool:
     return await asyncpg.create_pool(dsn=dsn, min_size=2, max_size=10, init=_init_connection)
 
 
+async def connect_for_listen(dsn: str) -> asyncpg.Connection:
+    """Dedicated, non-pooled connection for Postgres LISTEN/NOTIFY
+    (docs/cost-plan.md, R6 — replaces the Redis pub/sub channels for
+    config.updated / avatar_position.updated). LISTEN registers interest for
+    the life of a session; a pool connection can't be used for this because
+    releasing it back to the pool resets its session state (asyncpg issues
+    an implicit UNLISTEN on release), silently dropping the subscription."""
+    return await asyncpg.connect(dsn=dsn)
+
+
 _CLAIM_SQL = """
 WITH claimed AS (
     UPDATE bot_instances
@@ -56,24 +66,30 @@ async def claim_instances(
         return await conn.fetch(_CLAIM_SQL, supervisor_id, lease_ttl_s, capacity)
 
 
-async def renew_lease(pool: asyncpg.Pool, instance_id: str, supervisor_id: str, lease_ttl_s: float) -> bool:
-    """Extends the lease iff we still own it and desired_state is still
-    'running'. False means stop running this instance — either
-    desired_state flipped (the common case: billing turned it off) or we
-    somehow lost the lease."""
+async def renew_leases(
+    pool: asyncpg.Pool, instance_ids: list[str], supervisor_id: str, lease_ttl_s: float
+) -> set[str]:
+    """Extends the lease on every listed instance we still own whose
+    desired_state is still 'running' — one round trip for the whole
+    reconcile tick, however many instances are running (docs/cost-plan.md,
+    R4). Returns the renewed ids; an id missing from the result means stop
+    running that instance — either desired_state flipped (the common case:
+    billing or the customer turned it off) or we somehow lost the lease."""
+    if not instance_ids:
+        return set()
     async with pool.acquire() as conn:
-        row = await conn.fetchrow(
+        rows = await conn.fetch(
             """
             UPDATE bot_instances
             SET lease_expires_at = now() + ($3 * interval '1 second')
-            WHERE id = $1 AND supervisor_id = $2 AND desired_state = 'running'
+            WHERE id = ANY($1::uuid[]) AND supervisor_id = $2 AND desired_state = 'running'
             RETURNING id
             """,
-            instance_id,
+            instance_ids,
             supervisor_id,
             lease_ttl_s,
         )
-        return row is not None
+        return {str(r["id"]) for r in rows}
 
 
 async def release_lease(pool: asyncpg.Pool, instance_id: str, supervisor_id: str) -> None:
@@ -159,6 +175,49 @@ async def set_avatar_position(
             y,
             z,
             facing,
+        )
+
+
+_CLAIM_MODERATION_SQL = """
+WITH claimed AS (
+    UPDATE moderation_requests
+    SET status = 'processing'
+    WHERE id IN (
+        SELECT id FROM moderation_requests
+        WHERE bot_instance_id = ANY($1::uuid[]) AND status = 'pending'
+        ORDER BY id
+        FOR UPDATE SKIP LOCKED
+    )
+    RETURNING *
+)
+SELECT * FROM claimed;
+"""
+
+
+async def claim_pending_moderation_requests(pool: asyncpg.Pool, instance_ids: list[str]) -> list[asyncpg.Record]:
+    """Dashboard-initiated ban/unban (specs/bots/moderation.md's "proposed"
+    section): atomically claims (marks 'processing') any pending requests for
+    the given instances — one batched round trip for the whole list, same
+    posture as `renew_leases` (docs/cost-plan.md R4), not one query per
+    instance. FOR UPDATE SKIP LOCKED so the moderation.requested NOTIFY
+    handler and the reconcile-loop sweep can't double-claim the same row if
+    both fire close together.
+    """
+    if not instance_ids:
+        return []
+    async with pool.acquire() as conn:
+        return await conn.fetch(_CLAIM_MODERATION_SQL, instance_ids)
+
+
+async def resolve_moderation_request(
+    pool: asyncpg.Pool, request_id: int, status: str, error: str | None = None
+) -> None:
+    async with pool.acquire() as conn:
+        await conn.execute(
+            "UPDATE moderation_requests SET status = $2, error = $3, resolved_at = now() WHERE id = $1",
+            request_id,
+            status,
+            error,
         )
 
 

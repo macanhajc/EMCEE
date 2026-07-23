@@ -57,6 +57,41 @@
       "when": 1784661414700,
       "tag": "0007_add_user_enabled",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1784748433611,
+      "tag": "0008_add_users_locale",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1784751356162,
+      "tag": "0009_add_retention",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1784807576190,
+      "tag": "0010_remove_trial",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1784810443892,
+      "tag": "0011_dizzy_punisher",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1784814734676,
+      "tag": "0012_add_notification_prefs",
+      "breakpoints": true
     }
   ]
 }

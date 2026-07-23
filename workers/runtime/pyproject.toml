@@ -12,9 +12,11 @@ dependencies = [
     "jsonschema>=4.17,<4.18",
     # Token unseal (libsodium sealed boxes) — the only decrypt path in the system.
     "pynacl>=1.5",
-    # Lease claiming + status/heartbeats against the shared Postgres/Redis.
+    # Lease claiming, status/events, and config pub/sub (via LISTEN/NOTIFY)
+    # all against the one shared Postgres — no Redis in this plane at all
+    # (heartbeats removed 2026-07-22 R2; pub/sub moved off Redis 2026-07-22
+    # R6 — docs/cost-plan.md).
     "asyncpg>=0.30",
-    "redis>=5.2",
     # highrise.__main__ imports pkg_resources at module load (to read its
     # own version) but doesn't declare setuptools as a runtime dependency —
     # a real gap in the SDK's own packaging. Pinned <81: setuptools split
@@ -26,7 +28,7 @@ dependencies = [
 dev = ["pytest>=8", "pytest-asyncio>=0.24", "aiohttp>=3.12"]
 
 [tool.setuptools]
-py-modules = ["supervisor", "tokenbox", "keygen", "db", "heartbeat"]
+py-modules = ["supervisor", "tokenbox", "keygen", "db"]
 packages = ["catalog"]
 
 [tool.pytest.ini_options]

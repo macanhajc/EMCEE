@@ -26,9 +26,9 @@ The crown jewels are **customer bot tokens**: a leaked token = attacker controls
 
 ## Data plane
 
-- Supervisor hosts: private network only (no inbound from internet), outbound allowlist ≈ Highrise endpoints + Postgres/Redis + Sentry.
+- Supervisor hosts: private network only (no inbound from internet), outbound allowlist ≈ Highrise endpoints + Postgres + Sentry. No Redis in the stack as of 2026-07-22 (`docs/cost-plan.md`, R6) — config pub/sub runs over Postgres LISTEN/NOTIFY on the same database.
 - No tenant code execution (first-party catalog only — decision logged 2026-07-19). Config is data, validated against JSON Schema; string config fields that get echoed in-room (welcome messages, filter responses) are length-capped and content-sanitized — a customer must not be able to make *our* bot spam or slur (that's their room, but our fleet pattern and their ban risk).
-- Redis/Postgres credentials per-plane (control plane creds ≠ data plane creds); data plane gets least privilege (e.g. no access to billing tables).
+- Postgres credentials per-plane (control plane creds ≠ data plane creds); data plane gets least privilege (e.g. no access to billing tables).
 
 ## Abuse & platform safety
 
@@ -39,8 +39,8 @@ The crown jewels are **customer bot tokens**: a leaked token = attacker controls
 
 ## Compliance posture (v1, lightweight)
 
-- PII minimized: email + billing via Stripe; room event logs keyed by Highrise user IDs, retained 90 days then aggregated.
-- Privacy policy + ToS pages required before charging money; note the audience skews young — no dark patterns, honest cancel flow (also just good churn hygiene).
+- PII minimized: email + billing via Stripe; room event logs keyed by Highrise user IDs, retained 90 days then aggregated *(implemented 2026-07-22: daily `/api/cron/retention` rolls `instance_events` >90d up into per-day counts and deletes the raw rows — `docs/cost-plan.md` R3)*.
+- Privacy policy + ToS pages required before charging money; note the audience skews young — no dark patterns, honest cancel flow (also just good churn hygiene) *(implemented 2026-07-23: `/privacy`, `/terms`, all 5 locales — first draft grounded in this spec, not yet lawyer-reviewed; legal entity name/CNPJ still pending incorporation — `docs/decisions.md`)*.
 - Independent operator stance: clear "not affiliated with Highrise/Pocket Worlds" branding.
 
 ## Open questions

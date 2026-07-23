@@ -291,3 +291,39 @@ async def test_on_moderate_from_external_moderator_does_not_double_strike():
     await bot.on_moderate("some-other-moderator", "u1", "kick", None)
     assert "u1" not in bot._warden._strikes_fallback
     assert bot.highrise.moderate_room_calls == []
+
+
+# --- dashboard-initiated ban/unban (specs/bots/moderation.md's "proposed" section) --------
+
+
+async def test_apply_dashboard_action_ban_calls_moderate_room():
+    bot = make_bot()
+    status, error = await bot._warden.apply_dashboard_action("u1", "troublemaker", "ban", 0)
+    assert bot.highrise.moderate_room_calls == [("u1", "ban", 0)]
+    assert status == "applied"
+    assert error is None
+
+
+async def test_apply_dashboard_action_unban_calls_moderate_room():
+    bot = make_bot()
+    status, error = await bot._warden.apply_dashboard_action("u1", "troublemaker", "unban", None)
+    assert bot.highrise.moderate_room_calls == [("u1", "unban", None)]
+    assert status == "applied"
+
+
+async def test_apply_dashboard_action_denied_does_not_crash_and_reports_error():
+    bot = make_bot()
+    bot.highrise.moderate_room_error = ResponseError("insufficient privilege")
+
+    status, error = await bot._warden.apply_dashboard_action("u1", "troublemaker", "ban", 0)
+
+    assert status == "denied"
+    assert error == "insufficient privilege"
+
+
+async def test_apply_dashboard_action_never_touches_the_strike_ladder():
+    # An owner-initiated ban is a direct action, not a ladder escalation — it
+    # must not bump warden_strikes as a side effect.
+    bot = make_bot({"ladder": {"ban_enabled": True, "ban_at_strikes": 1}})
+    await bot._warden.apply_dashboard_action("u1", "troublemaker", "ban", 0)
+    assert "u1" not in bot._warden._strikes_fallback

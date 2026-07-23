@@ -59,11 +59,32 @@ export interface SectionSpec {
   fields: FieldSpec[];
 }
 
-function fieldSpecFor(key: string, leaf: JsonSchemaLeaf): FieldSpec | null {
+/**
+ * Looks up a translated title/description for a schema node from the
+ * `schemaEmcee` messages namespace (see /messages), falling back to the
+ * schema's own English `title`/`description` if a key is missing — so
+ * adding a new schema field never hard-fails the dashboard, it just shows
+ * untranslated English until someone fills in the message.
+ *
+ * Callers MUST resolve this via `t.raw(path)`, never plain `t(path)` — these
+ * strings are field documentation, not ICU templates, and routinely contain
+ * literal `<command>` / `{placeholder}` syntax (e.g. "\"all <emote>\" makes
+ * everyone in the room perform it") describing bot commands or template
+ * variables available to the *customer's own* config, not something meant
+ * for next-intl to interpolate. Running that text through real ICU parsing
+ * throws (`INVALID_MESSAGE: UNCLOSED_TAG` / `FORMATTING_ERROR`) on every
+ * affected field — this bit both instance-page renders before `t.raw` was
+ * used here (2026-07-23, `docs/decisions.md`).
+ */
+export interface SchemaCopyLookup {
+  (path: string): string | undefined;
+}
+
+function fieldSpecFor(key: string, leaf: JsonSchemaLeaf, t: SchemaCopyLookup | undefined, path: string): FieldSpec | null {
   const base = {
     key,
-    title: leaf.title ?? key,
-    description: leaf.description,
+    title: t?.(`${path}.title`) ?? leaf.title ?? key,
+    description: t?.(`${path}.description`) ?? leaf.description,
     enabledBy: leaf["x-enabled-by"],
   };
   if (leaf.enum) return { kind: "enum", ...base, options: leaf.enum };
@@ -76,16 +97,18 @@ function fieldSpecFor(key: string, leaf: JsonSchemaLeaf): FieldSpec | null {
   return null; // unhandled leaf shape — extend when a bot needs one.
 }
 
-export function sectionsFromSchema(schema: JsonSchemaObject): SectionSpec[] {
+export function sectionsFromSchema(schema: JsonSchemaObject, t?: SchemaCopyLookup): SectionSpec[] {
   return Object.entries(schema.properties ?? {}).map(([sectionKey, section]) => {
     const sectionObj = section as JsonSchemaObject;
     const fields = Object.entries(sectionObj.properties ?? {})
-      .map(([fieldKey, leaf]) => fieldSpecFor(fieldKey, leaf as JsonSchemaLeaf))
+      .map(([fieldKey, leaf]) =>
+        fieldSpecFor(fieldKey, leaf as JsonSchemaLeaf, t, `${sectionKey}.${fieldKey}`),
+      )
       .filter((f): f is FieldSpec => f !== null);
     return {
       key: sectionKey,
-      title: sectionObj.title ?? sectionKey,
-      description: sectionObj.description,
+      title: t?.(`${sectionKey}.title`) ?? sectionObj.title ?? sectionKey,
+      description: t?.(`${sectionKey}.description`) ?? sectionObj.description,
       module: sectionObj["x-module"],
       fields,
     };

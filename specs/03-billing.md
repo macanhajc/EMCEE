@@ -34,21 +34,20 @@ Entity will be Brazil-based, which is the only path to Pix: Stripe supports **Pi
 
 ## Trial
 
-**7 days, payment method required** (card or Pix Automático mandate authorized at checkout). Rationale: hard brake on trial farming (pairs with room-ID + token-fingerprint dedupe from `06-auth.md`), honest conversion data.
-
-- Cancel during trial → no charge, instance stops at trial end.
-- **Verify at build:** Pix Automático mandate setup with `trial_period_days` (mandate authorized now, first charge at day 7). If unsupported, fallback: Pix customers skip trial and rely on the 7-day money-back window — functionally identical to the customer.
+~~7 days, payment method required~~ → **removed 2026-07-23**: no free trial. Every subscription is charged immediately at checkout (see `docs/decisions.md`). The 7-day money-back window (below) is the funnel's honesty mechanism now, not a trial.
 
 ## Subscription → instance state machine
 
 ```
-trialing(7d) ─→ active ─→ past_due (day 0–3, bot keeps running, emails) ─→ suspended (bot stopped, config kept)
-   │               │                                                          │
-   └─ cancel ──────┴─────→ canceled (end of period) ─────────────────────────┴→ reaped after 30d (config export offered)
+active ─→ past_due (day 0–3, bot keeps running, emails) ─→ suspended (bot stopped, config kept)
+   │                                                            │
+   └─ cancel ─────────────────────────→ canceled (end of period) ─────────→ reaped after 30d (config export offered)
 ```
 
-- **Entitlement vs. running (2026-07-21):** every state above is *entitlement*, not "the bot is live." A new instance is created stopped by default; checkout completing and entering `trialing` doesn't start it either — the customer presses **Start** on the dashboard, both right after checkout and any time they've stopped it themselves. "Bot keeps running" during `past_due` and "bot stopped" at `suspended` describe what billing *allows*; if the customer never started it, it stays stopped through all of that. Resuming from `suspended` still requires the customer to press Start again — payment alone doesn't restart it.
-- Webhooks we act on: `checkout.session.completed`, `invoice.paid`, `invoice.payment_failed`, `customer.subscription.updated/deleted`, and **mandate events** (Pix mandate revoked ≈ card removed → prompt for new payment method, then past_due flow). Idempotent handlers; raw events archived.
+`trialing` is no longer a state this app puts a subscription into — `mapSubscriptionStatus` (`lib/billing-state.ts`) still recognizes it defensively (maps to entitlement "running", same as `active`) in case Stripe ever reports it through a mechanism outside this app's control (e.g. a trial granted by hand in the Stripe Dashboard), but nothing in the checkout flow requests one anymore.
+
+- **Entitlement vs. running (2026-07-21):** every state above is *entitlement*, not "the bot is live." A new instance is created stopped by default; checkout completing doesn't start it either — the customer presses **Start** on the dashboard, both right after checkout and any time they've stopped it themselves. "Bot keeps running" during `past_due` and "bot stopped" at `suspended` describe what billing *allows*; if the customer never started it, it stays stopped through all of that. Resuming from `suspended` still requires the customer to press Start again — payment alone doesn't restart it.
+- Webhooks we act on: `checkout.session.completed`, `invoice.paid`, `invoice.payment_failed`, `customer.subscription.updated/deleted`, and **mandate events** (Pix mandate revoked ≈ card removed → prompt for new payment method, then past_due flow). Idempotent handlers; raw events archived — payloads stripped after 90 days by the daily retention sweep, but the rows themselves are kept forever since the event-id PK is the idempotency check (2026-07-22, `docs/cost-plan.md` R3).
 - `past_due` grace: 3 days, Stripe Smart Retries on (verify retry behavior for Pix charges specifically).
 - Bots never mention billing in-room. All billing comms via email + dashboard banner.
 - Resume from `suspended` = pay → restart with retained config. Win-back email day 7 and day 25.
@@ -65,7 +64,7 @@ trialing(7d) ─→ active ─→ past_due (day 0–3, bot keeps running, emails
 
 ## Open questions
 
-- Verify: Pix Automático + trial periods; Smart Retries on Pix; Stripe BR presentment currencies for international cards. (The sandbox account used to build this has Pix disabled by default — `payment_method_options.pix: null` on the real test subscription created 2026-07-20 — expected for a non-BR test account; must reverify once the real BR entity/account exists.)
+- Verify: Smart Retries on Pix; Stripe BR presentment currencies for international cards. (The sandbox account used to build this has Pix disabled by default — `payment_method_options.pix: null` on the real test subscription created 2026-07-20 — expected for a non-BR test account; must reverify once the real BR entity/account exists.)
 - NFS-e automation provider choice.
 - Annual plan dunning: if the yearly Pix/card charge fails, is 3-day grace too short? (Leaning: 7 days for annual.)
 - Do we email a pre-renewal notice for monthly too (good faith, tiny churn cost) or annual-only?

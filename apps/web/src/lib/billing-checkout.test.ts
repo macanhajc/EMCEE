@@ -24,7 +24,6 @@ describe("buildCheckoutSessionParams", () => {
     userEmail: "founder@botmarket.app",
     existingStripeCustomerId: null,
     priceId: "price_monthly_123",
-    trialEligible: true,
     origin: "https://botmarket.app",
   };
 
@@ -38,14 +37,8 @@ describe("buildCheckoutSessionParams", () => {
     expect(buildCheckoutSessionParams(base).client_reference_id).toBe("inst-1");
   });
 
-  it("includes trial_period_days: 7 when trial-eligible", () => {
-    const params = buildCheckoutSessionParams({ ...base, trialEligible: true });
-    expect(params.subscription_data).toMatchObject({ trial_period_days: 7 });
-  });
-
-  it("omits trial_period_days entirely when not trial-eligible (not 0 or undefined-but-present)", () => {
-    const params = buildCheckoutSessionParams({ ...base, trialEligible: false });
-    expect(params.subscription_data).not.toHaveProperty("trial_period_days");
+  it("never sends trial_period_days (no free trial)", () => {
+    expect(buildCheckoutSessionParams(base).subscription_data).not.toHaveProperty("trial_period_days");
   });
 
   it("carries bot_instance_id and user_id on subscription metadata", () => {

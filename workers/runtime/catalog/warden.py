@@ -279,6 +279,51 @@ class WardenEngine:
             requester=requester.username if requester is not None else "auto",
         )
 
+    # --- dashboard-initiated ban/unban ----------------------------------------------------
+    # specs/bots/moderation.md's "proposed, not built" section, 2026-07-23 —
+    # the owner's Regulars-table buttons and "ban by username" form both
+    # resolve to one `moderation_requests` row apiece; supervisor.py claims
+    # pending rows for this instance and calls this method for each one. Not
+    # built via _apply_action above: that method's `requester` is a Highrise
+    # `User` from the room (an in-chat mod command's caller), which doesn't
+    # exist here — the dashboard's own account isn't a room participant, and
+    # the target may never have visited at all (the "ban by username" path).
+    # Same throttle-acquire + ResponseError handling either way; only the
+    # logged event shape (`dashboard_moderation_applied`/`_denied`, distinct
+    # from the ladder/mod-command's `moderation_applied`/`_denied`) differs,
+    # so the activity feed can tell "the owner clicked this" apart from "the
+    # automated ladder did this".
+
+    async def apply_dashboard_action(
+        self, user_id: str, username: str, action: str, duration: int | None
+    ) -> tuple[str, str | None]:
+        """Returns (status, error) — "applied" or "denied" — for the caller
+        (supervisor.py) to persist back onto the `moderation_requests` row."""
+        await self.bot.throttle.acquire(Priority.NORMAL)
+        try:
+            await self.bot.highrise.moderate_room(user_id, action, duration)
+        except ResponseError as exc:
+            await self._insert_event(
+                {
+                    "type": "dashboard_moderation_denied",
+                    "user_id": user_id,
+                    "username": username,
+                    "action": action,
+                    "error": str(exc),
+                }
+            )
+            return "denied", str(exc)
+        await self._insert_event(
+            {
+                "type": "dashboard_moderation_applied",
+                "user_id": user_id,
+                "username": username,
+                "action": action,
+                "duration": duration,
+            }
+        )
+        return "applied", None
+
     # --- shared helpers ----------------------------------------------------
 
     async def _whisper(self, user_id: str, text: str) -> None:

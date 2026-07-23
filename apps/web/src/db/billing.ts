@@ -25,13 +25,24 @@ export async function getActiveSubscriptionsForInstances(instanceIds: string[]) 
   return new Map(rows.map((row) => [row.botInstanceId as string, row]));
 }
 
-/** Trial-abuse dedupe (specs/06-auth.md): has this room+token combination already run a trial? */
-export async function hasUsedTrial(roomId: string, tokenFingerprint: string): Promise<boolean> {
+export interface SubscriptionContact {
+  userEmail: string;
+  userName: string | null;
+  userLocale: string | null;
+  roomId: string;
+}
+
+/** Who to email about a subscription event (payment-failed alert) — joins through to the owning user. */
+export async function getSubscriptionContact(botInstanceId: string): Promise<SubscriptionContact | null> {
   const [row] = await db
-    .select({ id: tables.trialRegistry.id })
-    .from(tables.trialRegistry)
-    .where(
-      and(eq(tables.trialRegistry.roomId, roomId), eq(tables.trialRegistry.tokenFingerprint, tokenFingerprint)),
-    );
-  return row !== undefined;
+    .select({
+      userEmail: tables.users.email,
+      userName: tables.users.name,
+      userLocale: tables.users.locale,
+      roomId: tables.botInstances.roomId,
+    })
+    .from(tables.botInstances)
+    .innerJoin(tables.users, eq(tables.users.id, tables.botInstances.userId))
+    .where(eq(tables.botInstances.id, botInstanceId));
+  return row ?? null;
 }

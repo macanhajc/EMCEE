@@ -12,6 +12,7 @@
 import {
   boolean,
   bigint,
+  date,
   doublePrecision,
   index,
   integer,
@@ -64,6 +65,20 @@ export const users = pgTable("users", {
   // Set on first successful checkout.session.completed (specs/03-billing.md)
   // so repeat purchases and the Customer Portal reuse one Stripe Customer.
   stripeCustomerId: text("stripe_customer_id").unique(),
+  // Last-seen URL locale (proxy.ts, opportunistic). Null until their first
+  // authenticated request lands; async transactional emails (crash alerts,
+  // payment-failed) fall back to routing.defaultLocale when null.
+  locale: text("locale"),
+  // Account-wide notification preferences (instance detail page's
+  // notifications card) — not per-instance: the degraded-alert email already
+  // targets the account address regardless of which bot triggered it, and
+  // browser Notification permission is per-origin, not per-instance, so a
+  // second toggle wouldn't reflect anything real. emailAlertsEnabled gates
+  // the existing degraded-alert cron send (db/instance-alerts.ts);
+  // browserAlertsEnabled records the user's opt-in on top of whatever the
+  // browser's own Notification.permission says.
+  emailAlertsEnabled: boolean("email_alerts_enabled").notNull().default(true),
+  browserAlertsEnabled: boolean("browser_alerts_enabled").notNull().default(false),
   createdAt: timestamptz("created_at").notNull().defaultNow(),
 });
 
@@ -143,7 +158,6 @@ export const botInstances = pgTable(
     tokenCiphertext: text("token_ciphertext"), // base64 sealed box
     tokenKeyRef: text("token_key_ref"),
     tokenLast4: varchar("token_last4", { length: 4 }), // "token ending …a9f2"
-    tokenFingerprint: text("token_fingerprint"), // peppered HMAC — trial dedupe, never reversible
 
     config: jsonb("config").notNull().default({}),
     schemaVersion: integer("schema_version").notNull(),
@@ -178,7 +192,6 @@ export const botInstances = pgTable(
     index("bot_instances_user_idx").on(t.userId),
     index("bot_instances_claim_idx").on(t.desiredState, t.leaseExpiresAt), // lease claim query
     index("bot_instances_room_idx").on(t.roomId),
-    index("bot_instances_fingerprint_idx").on(t.tokenFingerprint),
   ],
 );
 
@@ -227,25 +240,11 @@ export const webhookEvents = pgTable("webhook_events", {
   processedAt: timestamptz("processed_at"),
 });
 
-// Trial-abuse dedupe (specs/06-auth.md): keyed on room + token fingerprint,
-// deliberately no user FK — must survive account deletion, holds no PII.
-export const trialRegistry = pgTable(
-  "trial_registry",
-  {
-    id: bigint("id", { mode: "number" }).generatedAlwaysAsIdentity().primaryKey(),
-    roomId: text("room_id").notNull(),
-    tokenFingerprint: text("token_fingerprint").notNull(),
-    startedAt: timestamptz("started_at").notNull().defaultNow(),
-  },
-  (t) => [
-    index("trial_registry_room_idx").on(t.roomId),
-    index("trial_registry_fingerprint_idx").on(t.tokenFingerprint),
-  ],
-);
-
 // ---------------------------------------------------------------------------
 // Activity log — append-only, feeds dashboard + chargeback evidence packs.
-// Retained 90 days then aggregated (specs/05-security.md).
+// Retained 90 days, then rolled up into instance_event_rollups and deleted
+// by the daily /api/cron/retention sweep (specs/05-security.md,
+// docs/cost-plan.md R3).
 // ---------------------------------------------------------------------------
 
 export const instanceEvents = pgTable(
@@ -259,7 +258,29 @@ export const instanceEvents = pgTable(
     data: jsonb("data").notNull().default({}),
     createdAt: timestamptz("created_at").notNull().defaultNow(),
   },
-  (t) => [index("instance_events_instance_time_idx").on(t.botInstanceId, t.createdAt.desc())],
+  (t) => [
+    index("instance_events_instance_time_idx").on(t.botInstanceId, t.createdAt.desc()),
+    // Serves the by-kind scans: the degraded-alert sweep (db/instance-alerts.ts)
+    // and the retention cutoff query.
+    index("instance_events_kind_time_idx").on(t.kind, t.createdAt.desc()),
+  ],
+);
+
+// Daily per-kind counts of pruned instance_events: the retention cron folds
+// rows older than the retention window into these before deleting, so
+// "the bot was live and doing its job" evidence (chargeback packs,
+// specs/03-billing.md) survives pruning at negligible storage cost.
+export const instanceEventRollups = pgTable(
+  "instance_event_rollups",
+  {
+    botInstanceId: uuid("bot_instance_id")
+      .notNull()
+      .references(() => botInstances.id, { onDelete: "cascade" }),
+    day: date("day").notNull(),
+    kind: text("kind").notNull(),
+    count: integer("count").notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.botInstanceId, t.day, t.kind] })],
 );
 
 // ---------------------------------------------------------------------------
@@ -302,6 +323,49 @@ export const wardenStrikes = pgTable(
   (t) => [
     primaryKey({ columns: [t.botInstanceId, t.userId] }),
     index("warden_strikes_instance_last_strike_idx").on(t.botInstanceId, t.lastStrikeAt.desc()),
+  ],
+);
+
+// Dashboard-initiated ban/unban (specs/bots/moderation.md's "proposed"
+// section) — a work queue, not a log: instance_events is append-only and
+// warden_strikes has decay-counter semantics, neither fits a one-off owner
+// action the data plane needs to claim and mark done. The control plane only
+// ever inserts a "pending" row and NOTIFYs; the supervisor/WardenEngine own
+// every status transition after that, same "control plane never touches a
+// Highrise WebSocket" split as everything else (specs/02-architecture.md).
+export const moderationAction = pgEnum("moderation_action", ["ban", "unban"]);
+export const moderationRequestStatus = pgEnum("moderation_request_status", [
+  "pending",
+  "processing",
+  "applied",
+  "denied",
+  "failed",
+]);
+
+export const moderationRequests = pgTable(
+  "moderation_requests",
+  {
+    id: bigint("id", { mode: "number" }).generatedAlwaysAsIdentity().primaryKey(),
+    botInstanceId: uuid("bot_instance_id")
+      .notNull()
+      .references(() => botInstances.id, { onDelete: "cascade" }),
+    targetUserId: text("target_user_id").notNull(), // Highrise user id — resolved before insert
+    targetUsername: text("target_username").notNull(), // last-known username, for display/audit
+    action: moderationAction("action").notNull(),
+    durationS: integer("duration_s"), // ban only; null/0 = permanent
+    requestedBy: uuid("requested_by")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    status: moderationRequestStatus("status").notNull().default("pending"),
+    error: text("error"),
+    createdAt: timestamptz("created_at").notNull().defaultNow(),
+    resolvedAt: timestamptz("resolved_at"),
+  },
+  (t) => [
+    // Serves the data-plane's pending-work sweep (one batched query per
+    // reconcile tick, across every running instance's id, same shape as
+    // renew_leases — docs/cost-plan.md R4) and the NOTIFY-triggered handler.
+    index("moderation_requests_instance_status_idx").on(t.botInstanceId, t.status),
   ],
 );
 

@@ -10,7 +10,7 @@
 - Owner (or anyone the `position` permission tier allows) says **"anchor"** while standing on the floor (not seated) — the bot teleports to their current position and remembers it (`avatar_positions`, one row per instance), walking back there on every reconnect.
 - Not driven by dragging the bot's own avatar around — see "SDK mapping" for why that path doesn't exist. The mechanism instead tracks the *speaker's* last-known floor position (from `on_user_join`/`on_user_move`, both real handlers) and teleports the bot there on command.
 - Saying "anchor" while seated (no floor position cached) gets a whisper asking them to stand first, rather than silently no-op'ing.
-- **Also settable from the dashboard** (2026-07-21 fast-follow): the same `avatar_positions` row can be edited directly as raw x/y/z/facing on the instance page's "Anchor spot" card, for an owner who already knows the coordinates rather than standing in the room. Still not part of the JSON config (see "Config schema shape" below) — the dashboard write goes straight to `avatar_positions`, then a dedicated `avatar_position.updated` Redis message (separate from `config.updated`) tells the supervisor to re-apply the saved position on the running bot live, no reconnect required (`EmceeBot.apply_avatar_position` → `AvatarEngine.restore_position`).
+- **Also settable from the dashboard** (2026-07-21 fast-follow): the same `avatar_positions` row can be edited directly as raw x/y/z/facing on the instance page's "Anchor spot" card, for an owner who already knows the coordinates rather than standing in the room. Still not part of the JSON config (see "Config schema shape" below) — the dashboard write goes straight to `avatar_positions`, then a dedicated `avatar_position.updated` Postgres NOTIFY (separate from `config.updated`; Redis message before 2026-07-22, `docs/cost-plan.md` R6) tells the supervisor to re-apply the saved position on the running bot live, no reconnect required (`EmceeBot.apply_avatar_position` → `AvatarEngine.restore_position`).
 - The `position.permission`/`allowlist` tier gates only the in-game "anchor" command — the dashboard editor has no separate tier, since it's already behind the owner's own BotMarket login. The instance page's card labels the two groups ("In-game" vs. "From the dashboard") separately so this distinction is visible, not just documented here.
 
 ### Idle emote loop
@@ -58,7 +58,7 @@ outfit_clone:
   min_match: int 1..20 (default 2)
 ```
 
-No coordinates ever live in config — the anchor spot is captured either at command time (the speaker's position, in-game) or typed directly into the dashboard's "Anchor spot" card, but either way it's persisted to `avatar_positions`, never to this JSON blob. All fields hot-apply except that idle-loop re-enable needs a reconnect (see above); the dashboard-set position also hot-applies, over its own Redis channel rather than `config.updated` (see "Anchor spot" above).
+No coordinates ever live in config — the anchor spot is captured either at command time (the speaker's position, in-game) or typed directly into the dashboard's "Anchor spot" card, but either way it's persisted to `avatar_positions`, never to this JSON blob. All fields hot-apply except that idle-loop re-enable needs a reconnect (see above); the dashboard-set position also hot-applies, over its own Postgres NOTIFY channel rather than `config.updated` (see "Anchor spot" above).
 
 ## SDK mapping — verified 2026-07-21 against the pinned SDK source (`highrise-bot-sdk` 25.1.0), not just the docs
 

@@ -1,0 +1,1126 @@
+{
+  "metadata": {
+    "title": "BotMarket — hosted Highrise bots, bring your own account",
+    "description": "Rent a ready-made Highrise bot for your room in about two minutes. Pick a bot, paste your bot's access code, set it up on a simple dashboard — we keep it online 24/7."
+  },
+  "common": {
+    "brand": "BOTMARKET",
+    "dash": "—",
+    "genericError": "Something went wrong. Please try again.",
+    "loginLink": "Log in"
+  },
+  "nav": {
+    "theBot": "The bot",
+    "howItWorks": "How it works",
+    "pricing": "Pricing",
+    "getStarted": "Get started"
+  },
+  "footer": {
+    "disclaimer": "Independent project. Not affiliated with Highrise or Pocket Worlds.",
+    "privacy": "Privacy",
+    "terms": "Terms"
+  },
+  "home": {
+    "marqueeTicker": {
+      "live": "LIVE",
+      "items": [
+        "EMCEE IS ONLINE — HOSTING ROOMS RIGHT NOW",
+        "SAY AN EMOTE'S NAME, YOUR AVATAR DOES IT — EVEN ONES YOU DON'T OWN",
+        "OWNER CALLS \"ALL <EMOTE>\" — THE WHOLE ROOM MOVES AT ONCE",
+        "YOUR OWN BOT ACCOUNT — ALWAYS YOURS, NEVER OURS",
+        "REAL MONEY ONLY — NEVER HIGHRISE GOLD",
+        "BUILT ON HIGHRISE'S OWN OFFICIAL BOT TECHNOLOGY"
+      ]
+    },
+    "hero": {
+      "eyebrow": "An official Highrise bot, hosted for you",
+      "titleLine1": "Book the host",
+      "titleLine2": "that never leaves",
+      "titleLine3": "the stage.",
+      "subtitle": "Rent a ready-made Highrise bot for your room in about two minutes. Paste your bot's access code, set it up on a dashboard — we keep it dancing 24/7.",
+      "ctaPrimary": "Get started",
+      "ctaSecondary": "See the bot",
+      "note": "Card or Pix required · cancel anytime · 7-day money-back guarantee · we never touch Highrise Gold",
+      "demoLabel": "TONIGHT'S ACT",
+      "live": "LIVE",
+      "demoBotTagline": "Emotes + Greeter + Moderation + Outfits · your room",
+      "demoUptime": "online 99.9% of the time",
+      "demoSpeakerGuest": "guest says",
+      "demoSpeakerOwner": "owner says",
+      "demoSpeakerBot": "the bot →",
+      "demoLine1Text": "macarena",
+      "demoLine1Result": "performs the macarena dance — even if they don't own it",
+      "demoLine2Text": "all wave",
+      "demoLine2Result": "gets the whole room to wave, one after another"
+    },
+    "howItWorks": {
+      "eyebrow": "Getting started",
+      "title": "Two minutes, four steps.",
+      "steps": [
+        {
+          "title": "Sign up",
+          "body": "Use Google or an email link. You'll also confirm you're 18 or older before checkout — that's required to run a paid bot."
+        },
+        {
+          "title": "Meet Emcee",
+          "body": "One bot, Emcee. It already does emotes, greets guests, keeps the room in check, and has an outfit — more skills are on the way."
+        },
+        {
+          "title": "Connect your bot",
+          "body": "Paste your bot's access code and your room's ID. We show you exactly where to find both, and how to give the bot permission to work in your room."
+        },
+        {
+          "title": "Go live",
+          "body": "The bot joins your room and the dashboard shows it's live. Change any setting and it updates in seconds — no restart needed."
+        }
+      ]
+    },
+    "comparison": {
+      "eyebrow": "Why not just...",
+      "title": "Everyone else made the room owner do the work.",
+      "rows": [
+        {
+          "alt": "Renting a bot for in-game Gold",
+          "weakness": "Against Highrise's rules, no dashboard, no one to call if it breaks — you're trusting a stranger.",
+          "answer": "Pay with a card or Pix, manage everything yourself, and see exactly how your bot is doing at all times."
+        },
+        {
+          "alt": "Building your own with a coding template",
+          "weakness": "You'd need to know how to code, settings are buried in files, and nobody's watching if it goes offline.",
+          "answer": "Two-minute setup, plain forms instead of code — we take care of keeping it running."
+        },
+        {
+          "alt": "Doing nothing",
+          "weakness": "An unwatched room. It feels quieter and less fun when you're not around.",
+          "answer": "Cheap enough that trying it is an easy yes."
+        }
+      ]
+    },
+    "trustStrip": {
+      "items": [
+        {
+          "title": "Your bot, your account",
+          "body": "You create the Highrise bot account and its access code — we just host and run it for you. We never own or control your bot's account."
+        },
+        {
+          "title": "Never any Highrise Gold",
+          "body": "Every price on this page is real money (cards or Pix). We never accept, hold, or move Highrise Gold — that's against the rules and we won't touch it."
+        },
+        {
+          "title": "Built the right way",
+          "body": "Our bots run on Highrise's own official bot technology, made by the game's creators. You just fill in settings — there's no coding involved."
+        }
+      ]
+    },
+    "pricing": {
+      "eyebrow": "Pricing",
+      "title": "One price. One bot. One room.",
+      "subtitle": "Each bot instance connects to one room. Pay by card or Pix — your bot is live as soon as checkout completes.",
+      "monthly": {
+        "label": "Monthly",
+        "period": "/mo",
+        "reference": "~US$7 reference",
+        "features": [
+          "Billed every month, cancel anytime",
+          "7-day money-back guarantee",
+          "Live dashboard — changes apply instantly"
+        ],
+        "cta": "Subscribe now"
+      },
+      "annual": {
+        "label": "Annual",
+        "period": "/yr",
+        "reference": "~US$70 reference",
+        "badge": "2 months free",
+        "features": [
+          "Pay once for 10 months, get 12",
+          "7-day money-back guarantee",
+          "Live dashboard — changes apply instantly"
+        ],
+        "cta": "Subscribe now"
+      }
+    },
+    "botShowcase": {
+      "eyebrow": "The bot",
+      "title": "Meet Emcee. It grows with you.",
+      "subtitle": "One bot, one subscription, one setup — it doesn't get swapped out as new skills are added. Your room's full-time host: it entertains, greets guests, keeps things in order, and looks the part.",
+      "badge": "4 skills — ready now",
+      "tagline": "Ready to use · you just fill in the settings, no coding needed",
+      "comingSoonLabel": "Coming soon — same bot, new skills"
+    }
+  },
+  "bot": {
+    "features": {
+      "emote": {
+        "name": "Emotes",
+        "body": "Type an emote's name in chat and your avatar performs it — even ones you don't own. The room owner can call one out for everyone to do at once."
+      },
+      "concierge": {
+        "name": "Greeter",
+        "body": "Privately welcomes every guest, remembers regulars each time they come back, and gives VIPs on your list an extra-special welcome."
+      },
+      "warden": {
+        "name": "Moderation",
+        "body": "Filters bad language, blocks spam, and hands out warnings with a clear paper trail — watching your room around the clock, all set up with simple toggles."
+      },
+      "avatar": {
+        "name": "Outfits",
+        "body": "Dress your bot in an outfit you choose, give it a spot to stand, and a little idle animation — so it feels present instead of just floating there."
+      }
+    },
+    "roadmap": {
+      "music": {
+        "name": "Music",
+        "role": "Room soundtrack",
+        "body": "Still an early idea, not yet planned out — more details soon."
+      }
+    }
+  },
+  "login": {
+    "eyebrow": "Account access",
+    "title": "Sign in",
+    "subtitle": "One account for your dashboard, your bots, and your billing.",
+    "errors": {
+      "missing_email": "Enter an email address.",
+      "rate_limited": "Too many attempts — try again in a few minutes.",
+      "generic": "Something went wrong."
+    },
+    "continueWithGoogle": "Continue with Google",
+    "or": "or",
+    "emailLabel": "Email",
+    "emailPlaceholder": "you@example.com",
+    "sendMagicLink": "Send sign-in link"
+  },
+  "verifyRequest": {
+    "eyebrow": "Account access",
+    "title": "Check your email",
+    "subtitleWithEmail": "We sent a sign-in link to {email}. It expires in 15 minutes and works once.",
+    "subtitleGeneric": "We sent a sign-in link to your email address. It expires in 15 minutes and works once.",
+    "body": "Didn't get it? Check your spam folder, or give it a minute — delivery can sometimes be a little slow.",
+    "useDifferentEmail": "Use a different email"
+  },
+  "attestAge": {
+    "eyebrow": "One more thing",
+    "title": "Confirm your age",
+    "subtitle": "Running a bot and paying for a subscription requires you to be an adult.",
+    "error": "Please confirm to continue.",
+    "checkboxLabel": "I am 18 or older (or the age of majority where I live).",
+    "submit": "Confirm and continue"
+  },
+  "account": {
+    "eyebrow": "Account",
+    "title": "Profile",
+    "rows": {
+      "email": "Email",
+      "signInMethods": "Sign-in methods",
+      "memberSince": "Member since",
+      "ageAttestation": "Age confirmation"
+    },
+    "providerLabels": {
+      "google": "Google",
+      "nodemailer": "Email link"
+    },
+    "confirmed": "Confirmed {date}",
+    "confirmYourAge": "Confirm your age",
+    "backToDashboard": "Back to dashboard"
+  },
+  "dashboard": {
+    "eyebrow": "Dashboard",
+    "title": "Your bots",
+    "newInstance": "New bot",
+    "deletedMessage": "Bot deleted.",
+    "empty": {
+      "title": "No bots yet",
+      "body": "Pick a bot, paste your access code, and it'll be live in your room in about two minutes.",
+      "cta": "Create your first bot"
+    },
+    "card": {
+      "room": "room {roomId}",
+      "subscribeToActivate": "Subscribe to activate →",
+      "manage": "Manage"
+    }
+  },
+  "checkout": {
+    "eyebrow": "Checkout",
+    "roomSubtitle": "Room {roomId}",
+    "back": "Back",
+    "errors": {
+      "bad_plan": "Pick a plan.",
+      "unavailable": "This bot isn't available for purchase yet.",
+      "stripe_error": "Something went wrong starting checkout — try again.",
+      "generic": "Something went wrong."
+    },
+    "plans": {
+      "monthly": {
+        "label": "Monthly"
+      },
+      "annual": {
+        "label": "Annual",
+        "badge": "2 months free"
+      }
+    },
+    "billingNote": "Card or Pix required. You’re charged today for your first period — cancel anytime, and get a full refund within 7 days if it’s not for you.",
+    "continueToPayment": "Continue to payment",
+    "stripeNote": "Payments handled by Stripe — we never see your card details."
+  },
+  "instancesNew": {
+    "eyebrow": "New bot",
+    "title": "Create a bot",
+    "subtitle": "Connect it to your room and paste your bot's access code — it'll be live in about two minutes. Nothing is charged here: you'll set it up first and subscribe when you're ready.",
+    "errors": {
+      "rate_limited": "Too many attempts — try again in a few minutes.",
+      "missing_room": "Enter a room ID or paste your room's share link.",
+      "missing_token": "Paste your bot's access code.",
+      "unknown_bot": "That bot isn't available anymore — refresh and try again.",
+      "bad_token": "That access code doesn't look right.",
+      "generic": "Something went wrong."
+    },
+    "empty": {
+      "title": "No bot available right now",
+      "body": "Check back soon."
+    },
+    "lifecycle": {
+      "beta": "Beta",
+      "ga": "Live",
+      "retired": "Retired"
+    },
+    "comingSoonLabel": "Coming soon — same bot, new skills",
+    "roomLabel": "Room share link or ID",
+    "roomPlaceholder": "Paste the room's share link, or just the ID",
+    "roomHint": "Paste the whole share link and we'll pull the room ID out of it automatically — or just paste the ID directly. Your bot needs designer rights in this room to work.",
+    "tokenLabel": "Bot access code",
+    "tokenHint": "Encrypted the moment you submit this. From then on it's write-only — nobody, including us, can ever view it again. The dashboard only ever shows its last 4 characters.",
+    "tokenHelp": {
+      "summary": "How do I get an access code?",
+      "step1": "Go to create.highrise.game → Dashboard → Bots & API Keys.",
+      "step2": "Create a bot (or pick one you already made) and copy its access code (API token).",
+      "step3": "This option only shows up once your Highrise account is eligible for bot access — Highrise checks this automatically."
+    },
+    "submit": "Create bot"
+  },
+  "instanceDetail": {
+    "allBots": "All bots",
+    "room": "Room",
+    "subscription": "Subscription",
+    "notSubscribed": "Not subscribed",
+    "bot": "Bot",
+    "stopBot": "Stop bot",
+    "startBot": "Start bot",
+    "manageBilling": "Manage billing",
+    "subscribeToActivate": "Subscribe to activate",
+    "checkoutSuccessMessage": "Thanks! Your subscription is starting — this page will reflect it shortly.",
+    "savedMessage": "Saved.",
+    "errors": {
+      "rate_limited": "Too many attempts — try again in a few minutes.",
+      "bad_token": "That access code doesn't look right.",
+      "missing_room": "Enter a room ID or share link first.",
+      "bad_position": "That position doesn't look right — check the coordinates and facing direction.",
+      "delete_not_confirmed": "Check the confirmation box to delete this bot.",
+      "active_subscription": "Cancel the subscription first, then this bot can be deleted.",
+      "not_subscribed": "Subscribe first — there's nothing to start yet.",
+      "invalid_config": "Something in these settings isn't valid — check the highlighted fields and try again.",
+      "invalid_moderation_action": "That's not a valid moderation action.",
+      "missing_target": "Enter a username first.",
+      "user_not_found": "Couldn't find a Highrise user with that username."
+    },
+    "roomInfo": {
+      "title": "Room",
+      "onlineNow": "{count, plural, one {# person online now} other {# people online now}}",
+      "notLoaded": "Couldn't load room details from Highrise right now — the bot still runs on room ID <code>{roomId}</code> regardless."
+    },
+    "notifications": {
+      "title": "Notifications",
+      "subtitle": "Get told if this bot needs attention.",
+      "emailLabel": "Email alerts",
+      "emailHint": "We'll email your account address if this bot goes down.",
+      "browserLabel": "Browser alerts",
+      "browserHintDefault": "Get a browser notification too, while this page is open.",
+      "browserHintGranted": "On for this browser, while this page is open.",
+      "browserHintDenied": "Blocked — allow notifications for this site in your browser settings to turn this on.",
+      "browserHintUnsupported": "Not supported in this browser.",
+      "enableBrowser": "Enable",
+      "pushTitle": "{bot} needs attention"
+    },
+    "regulars": {
+      "title": "Regulars",
+      "subtitle": "Your most frequent visitors over the last 30 days.",
+      "empty": "No regulars yet — guests who come back a few times will show up here.",
+      "table": {
+        "username": "Username",
+        "visits": "Visits",
+        "lastSeen": "Last seen"
+      },
+      "actions": {
+        "ban": "Ban",
+        "unban": "Unban",
+        "confirmBan": "Ban {username} from this room? This can be permanent."
+      }
+    },
+    "activityLog": {
+      "title": "Activity log",
+      "subtitle": "The most recent moderation events in this room.",
+      "empty": "Nothing logged yet — filter hits and moderation actions will show up here.",
+      "actionPast": {
+        "warn": "warned",
+        "mute": "muted",
+        "kick": "kicked",
+        "ban": "banned",
+        "unban": "unbanned"
+      },
+      "actionInfinitive": {
+        "warn": "warn",
+        "mute": "mute",
+        "kick": "kick",
+        "ban": "ban",
+        "unban": "unban"
+      },
+      "events": {
+        "filterHit": "{username} tripped the word filter",
+        "strike": "{username} got a warning ({reason}) — now at {count}",
+        "moderationAppliedBy": "{username} was {action} by {requester}",
+        "moderationApplied": "{username} was {action}",
+        "moderationDenied": "Tried to {action} {username}, but the bot doesn't have permission here",
+        "external": "{target} was {action} by another moderator",
+        "generic": "Moderation event",
+        "dashboardModerationApplied": "{username} was {action} from the dashboard",
+        "dashboardModerationDenied": "Tried to {action} {username} from the dashboard, but the bot doesn't have permission here"
+      }
+    },
+    "statusLog": {
+      "title": "Status log",
+      "subtitle": "Connection and settings history for this bot.",
+      "empty": "Nothing logged yet.",
+      "events": {
+        "degraded": "The bot kept crashing and was flagged as needing attention",
+        "disconnected": "The bot disconnected and reconnected",
+        "connect_timed_out": "The bot couldn't confirm a connection to the room in time — retrying",
+        "token_unseal_failed": "The bot couldn't start — its access code looks invalid",
+        "stopped": "The bot was stopped",
+        "config_applied": "Settings changes applied",
+        "config_rejected": "A settings change was rejected — previous settings kept",
+        "generic": "Bot activity"
+      }
+    },
+    "tokenUpdate": {
+      "title": "Bot access code",
+      "currentlyEnding": "Currently ending …{last4}",
+      "body": "Connects this bot to your Highrise account. You only need to touch this if you know what you're doing — replacing a code you think leaked, or switching to a different bot account. Otherwise leave it alone: the bot keeps running fine on the code it already has.",
+      "replaceSummary": "Replace access code",
+      "newTokenLabel": "New bot access code",
+      "encryptedNote": "Encrypted the moment you submit it. From then on it's write-only — nobody, including us, can ever view it again.",
+      "replaceSubmit": "Replace access code",
+      "roomLabel": "Room: <paper>{roomId}</paper>",
+      "changeRoomSummary": "Change room",
+      "newRoomLabel": "New room ID or share link",
+      "changeRoomNote": "Moves this bot to a different room. It needs designer rights there, same as any room it joins.",
+      "changeRoomSubmit": "Change room"
+    },
+    "dangerZone": {
+      "title": "Danger zone",
+      "body": "Permanently deletes this bot — its saved access code, settings, activity log, and room memory (regulars, warnings, saved position). This can't be undone.",
+      "activeSubNote": "This bot has an active subscription. Cancel it first, then come back here to delete the bot.",
+      "deleteSummary": "Delete this bot",
+      "confirmLabel": "I understand this permanently deletes {name} and everything tied to it.",
+      "deleteSubmit": "Delete bot"
+    },
+    "config": {
+      "heading": "Configuration",
+      "settingsTab": "Settings",
+      "activityTab": "Activity",
+      "soon": "soon",
+      "inGameHeading": "In-game",
+      "comingSoon": "{name} is coming soon",
+      "saveChanges": "Save changes",
+      "enumLabels": {
+        "owner": "Just the room owner",
+        "owner_designers": "Owner + Designers",
+        "allowlist": "Specific usernames"
+      },
+      "facingLabels": {
+        "FrontRight": "Front right",
+        "FrontLeft": "Front left",
+        "BackRight": "Back right",
+        "BackLeft": "Back left"
+      },
+      "position": {
+        "fromDashboard": "From the dashboard",
+        "withPosition": "Nudge the saved spot's coordinates directly — an alternative to standing in the room and saying \"anchor\". Always just you; the in-game permission above doesn't apply here.",
+        "withoutPosition": "No spot saved yet. Say \"anchor\" in-game once to set a starting point, or enter coordinates directly if you already know them. Always just you; the in-game permission above doesn't apply here.",
+        "x": "X",
+        "y": "Y",
+        "z": "Z",
+        "facing": "Facing",
+        "save": "Save position"
+      },
+      "tagListPlaceholder": "Type a name and press comma to add",
+      "removeTag": "Remove {tag}",
+      "emotePicker": {
+        "chooseEmote": "Choose an emote…",
+        "searchPlaceholder": "Search emotes…",
+        "availableOf": "{available} of {total} available",
+        "allowAll": "Allow all",
+        "blockAll": "Block all",
+        "blockedTitle": "Blocked — click to allow",
+        "availableTitle": "Available — click to block",
+        "noMatches": "No emotes match \"{query}\"."
+      },
+      "outfitPicker": {
+        "itemFallback": "item",
+        "searchCatalogLabel": "Search catalog",
+        "searchPlaceholder": "Search Highrise items…",
+        "noMatches": "No items match \"{query}\".",
+        "typeToSearch": "Type to search Highrise's item catalog, then click a result to equip it.",
+        "equippedLabel": "Equipped",
+        "noItemsYet": "No items yet — add some from the search on the left.",
+        "full": "Full — remove an item to equip another."
+      },
+      "presetEditor": {
+        "namePlaceholder": "Preset name (e.g. casual)",
+        "itemCount": "{count} items",
+        "removePreset": "Remove preset {name}",
+        "untitled": "untitled",
+        "addItem": "Add item",
+        "close": "Close",
+        "typeToSearch": "Type to search Highrise's item catalog, then click a result to add it.",
+        "noneYet": "No presets yet — add one below.",
+        "addPreset": "Add preset",
+        "maxPresets": "Max {max} presets."
+      }
+    },
+    "banByUsername": {
+      "title": "Ban by username",
+      "subtitle": "Ban or unban someone who hasn't shown up in Regulars yet — no need for them to be in the room.",
+      "usernameLabel": "Highrise username",
+      "usernamePlaceholder": "e.g. troublemaker123",
+      "banSubmit": "Ban",
+      "unbanSubmit": "Unban",
+      "confirmBan": "Ban {username} from this room? This can be permanent.",
+      "note": "Applies as soon as your bot is connected — instantly if it's already running, otherwise on its next connect."
+    }
+  },
+  "schemaEmcee": {
+    "emote_on_say": {
+      "title": "Emote on say",
+      "description": "Someone types an emote's name in chat — no command needed — and their avatar performs it, even if they don't own it.",
+      "enabled": {
+        "title": "Enabled"
+      },
+      "cooldown_s": {
+        "title": "Per-user cooldown (seconds)",
+        "description": "Minimum wait between one user's emote triggers."
+      },
+      "disabled_emotes": {
+        "title": "Blocked emotes",
+        "description": "These won't trigger just by saying their name in chat. \"all <emote>\" and \"loop <emote>\" can still use them directly — this only blocks the passive say-it trigger."
+      }
+    },
+    "emote_all": {
+      "title": "Emote all",
+      "description": "\"all <emote>\" makes everyone in the room perform it as a staggered wave.",
+      "enabled": {
+        "title": "Enabled"
+      },
+      "permission": {
+        "title": "Who can trigger it",
+        "description": "Who's allowed to start an all-room wave: just you, you plus anyone with Designer rights in this room, or a specific list of usernames."
+      },
+      "allowlist": {
+        "title": "Allowed usernames",
+        "description": "Only used when \"Who can trigger it\" is set to specific usernames."
+      },
+      "cooldown_s": {
+        "title": "Room cooldown (seconds)",
+        "description": "Minimum wait between emote-all waves."
+      }
+    },
+    "list_command": {
+      "title": "Emote list command",
+      "description": "\"emotes\" whispers a paginated list of available emote names.",
+      "enabled": {
+        "title": "Enabled"
+      }
+    },
+    "loop": {
+      "title": "Loop",
+      "description": "\"loop <emote>\" repeats that emote until the user says \"stop\" or leaves the room — the AFK-dance feature.",
+      "enabled": {
+        "title": "Enabled",
+        "description": "Off by default. This is the most demanding feature we offer — if you turn it on, keep an eye on things at first, especially in busy rooms."
+      },
+      "interval_s": {
+        "title": "Repeat interval (seconds)",
+        "description": "How often the looped emote re-triggers."
+      },
+      "max_concurrent_loopers": {
+        "title": "Max concurrent loopers",
+        "description": "Caps how many users can loop at once in this room."
+      },
+      "max_duration_s": {
+        "title": "Max loop duration (seconds)",
+        "description": "Safety auto-stop in case someone forgets to say \"stop\" — for example if they close the app instead of properly leaving the room."
+      },
+      "cooldown_s": {
+        "title": "Per-user start cooldown (seconds)",
+        "description": "Minimum wait between one user starting new loops."
+      }
+    },
+    "welcome": {
+      "title": "Welcome messages",
+      "description": "Whispered to a guest when they join — skipped entirely for VIPs, who get their own greeting instead.",
+      "enabled": {
+        "title": "Enabled"
+      },
+      "templates": {
+        "title": "Greeting templates",
+        "description": "Use {username}, {room_name}. Rotates through the list on each greeting so the room doesn't feel repetitive."
+      },
+      "cooldown_h": {
+        "title": "Re-greet cooldown (hours)",
+        "description": "Don't whisper the same person again until this many hours have passed since their last greeting."
+      },
+      "busy_mode_enabled": {
+        "title": "Skip greetings when busy",
+        "description": "Skip greetings entirely while joins are coming in faster than the threshold below, so a raid or event doesn't flood whispers."
+      },
+      "busy_mode_joins_per_min": {
+        "title": "Busy threshold (joins/min)"
+      },
+      "quiet_hours_enabled": {
+        "title": "Enable quiet hours",
+        "description": "Skip greetings during a daily window (e.g. overnight)."
+      },
+      "quiet_hours_start": {
+        "title": "Quiet hours start (24h, HH:MM)"
+      },
+      "quiet_hours_end": {
+        "title": "Quiet hours end (24h, HH:MM)"
+      },
+      "quiet_hours_tz": {
+        "title": "Quiet hours time zone",
+        "description": "Time zone name, e.g. America/Sao_Paulo."
+      }
+    },
+    "vip": {
+      "title": "VIP recognition",
+      "description": "Named regulars get a distinct greeting instead of the generic welcome — always, even during busy mode or quiet hours.",
+      "users": {
+        "title": "VIP usernames"
+      },
+      "template": {
+        "title": "VIP greeting template",
+        "description": "Use {username}, {room_name}."
+      },
+      "announce_to_room": {
+        "title": "Announce to room",
+        "description": "Also post a public chat line when a VIP joins, not just the whisper."
+      },
+      "emote_celebration_enabled": {
+        "title": "Play an emote on VIP join"
+      },
+      "emote_celebration_id": {
+        "title": "Celebration emote",
+        "description": "Emote from the Emotes skill's list."
+      }
+    },
+    "farewell": {
+      "title": "Farewell",
+      "description": "Logs when a regular (visits ≥ the threshold below) leaves. No whisper is possible — they're already gone — but an optional public send-off can post instead.",
+      "log_enabled": {
+        "title": "Log farewells"
+      },
+      "min_visits": {
+        "title": "Minimum visits to count as a regular"
+      },
+      "public_message": {
+        "title": "Post a public send-off",
+        "description": "Off by default — a public message on every qualifying leave gets noisy fast."
+      },
+      "public_template": {
+        "title": "Send-off template"
+      }
+    },
+    "filter": {
+      "title": "Word filter",
+      "description": "Custom terms trigger a private, whisper-only warning to whoever said them — never a public callout — and count toward the warnings below.",
+      "enabled": {
+        "title": "Enabled"
+      },
+      "custom_terms": {
+        "title": "Blocked terms",
+        "description": "Matching ignores capitalization and common tricks like repeated letters, so simple attempts to sneak past it won't work."
+      }
+    },
+    "anti_spam": {
+      "title": "Anti-spam",
+      "description": "Catches message flooding and copy-pasted repeats. A trip counts toward the warnings below, same as a filter hit.",
+      "enabled": {
+        "title": "Enabled"
+      },
+      "message_rate_count": {
+        "title": "Max messages",
+        "description": "More than this many messages from one person within the window below trips the anti-spam rule."
+      },
+      "message_rate_window_s": {
+        "title": "Window (seconds)"
+      },
+      "duplicate_count": {
+        "title": "Duplicate message threshold",
+        "description": "Sending the exact same message this many times in a row trips the rule."
+      }
+    },
+    "ladder": {
+      "title": "Warning escalation",
+      "description": "A filter hit, anti-spam trip, or !warn command adds a warning. Crossing a threshold below takes the matching action — only the highest one reached fires, not every one below it.",
+      "strike_decay_h": {
+        "title": "Warning reset (hours)",
+        "description": "A user's warning count resets after this many hours with no new warnings."
+      },
+      "mute_at_strikes": {
+        "title": "Mute at this many warnings"
+      },
+      "mute_duration_s": {
+        "title": "Mute duration (seconds)"
+      },
+      "kick_at_strikes": {
+        "title": "Kick at this many warnings"
+      },
+      "ban_enabled": {
+        "title": "Enable ban",
+        "description": "Off by default — the most serious action we offer, kept opt-in."
+      },
+      "ban_at_strikes": {
+        "title": "Ban at this many warnings",
+        "description": "Always requires at least 2 warnings, regardless of this setting."
+      },
+      "ban_duration_s": {
+        "title": "Ban duration (seconds)",
+        "description": "0 = permanent."
+      }
+    },
+    "exemptions": {
+      "title": "Exemptions",
+      "description": "Exempt users skip the filter and anti-spam entirely, and can issue moderation commands in chat. The room owner is always exempt.",
+      "designers_exempt": {
+        "title": "Exempt Designers"
+      },
+      "users": {
+        "title": "Exempt usernames"
+      }
+    },
+    "commands": {
+      "title": "Moderation commands",
+      "description": "In-chat commands for exempt users: warn, mute, and kick a named user. Ban is dashboard-only, not available as a chat command.",
+      "enabled": {
+        "title": "Enabled"
+      },
+      "prefix": {
+        "title": "Command prefix"
+      }
+    },
+    "position": {
+      "title": "Anchor spot",
+      "description": "Two ways to set where the bot stands: say \"anchor\" in-game, or enter coordinates directly on this page. Either one updates the same saved spot — the bot walks back there every time it reconnects instead of appearing wherever the room drops it.",
+      "enabled": {
+        "title": "Enabled",
+        "description": "Turns off both ways of setting the spot — the in-game \"anchor\" command and the coordinate fields below."
+      },
+      "permission": {
+        "title": "Who can say \"anchor\" in-game",
+        "description": "Who's allowed to say \"anchor\" in the room and move the bot: just you, you plus anyone with Designer rights in this room, or a specific list of usernames. Only governs the in-game command — setting coordinates below is always you-only, since it's already behind your dashboard login."
+      },
+      "allowlist": {
+        "title": "Allowed usernames",
+        "description": "Only used when the in-game anchor permission above is set to specific usernames."
+      }
+    },
+    "idle_emote": {
+      "title": "Idle emote loop",
+      "description": "The bot performs a low-key emote on a repeat interval whenever it isn't busy responding to something — a little life instead of standing frozen.",
+      "enabled": {
+        "title": "Enabled",
+        "description": "Off by default — a sustained background action, same caution as the Emotes skill's loop feature."
+      },
+      "emote_id": {
+        "title": "Idle emote",
+        "description": "Emote from the Emotes skill's list."
+      },
+      "interval_s": {
+        "title": "Repeat interval (seconds)"
+      }
+    },
+    "reaction_back": {
+      "title": "Reaction back",
+      "description": "Someone reacts at the bot — the bot reacts back the same way.",
+      "enabled": {
+        "title": "Enabled"
+      },
+      "cooldown_s": {
+        "title": "Per-user cooldown (seconds)",
+        "description": "Minimum wait between reacting back at the same person, so repeated reactions can't be used to spam the bot's actions."
+      }
+    },
+    "default_outfit": {
+      "title": "Default outfit",
+      "description": "A fixed outfit the bot wears when it connects. Items must be owned by the bot (or free) — anything it doesn't own is skipped rather than blocking the whole outfit.",
+      "enabled": {
+        "title": "Enabled"
+      },
+      "item_ids": {
+        "title": "Items",
+        "description": "Search and add items the bot owns."
+      }
+    },
+    "outfit_presets": {
+      "title": "Named outfit presets",
+      "description": "\"look <name>\" switches the bot into a saved outfit.",
+      "enabled": {
+        "title": "Enabled"
+      },
+      "permission": {
+        "title": "Who can switch looks"
+      },
+      "allowlist": {
+        "title": "Allowed usernames",
+        "description": "Only used when \"Who can switch looks\" is set to specific usernames."
+      },
+      "presets": {
+        "title": "Presets",
+        "description": "Give each preset a name, then search and add the items it should wear."
+      }
+    },
+    "outfit_clone": {
+      "title": "Copy a look",
+      "description": "\"copy <username>\" makes the bot wear as much of that person's current outfit as it actually owns — items it doesn't own are skipped, never bought.",
+      "enabled": {
+        "title": "Enabled"
+      },
+      "permission": {
+        "title": "Who can trigger it"
+      },
+      "allowlist": {
+        "title": "Allowed usernames",
+        "description": "Only used when \"Who can trigger it\" is set to specific usernames."
+      },
+      "min_match": {
+        "title": "Minimum matching items",
+        "description": "If fewer than this many of the target's items are actually in the bot's own inventory, skip the copy entirely and say why, instead of applying a near-empty outfit."
+      }
+    }
+  },
+  "errorPage": {
+    "eyebrow": "Something broke",
+    "title": "The show hit a snag",
+    "body": "This is on us, not you — it's already been reported and we're on it. Try again, or head back home.",
+    "tryAgain": "Try again",
+    "goHome": "Go home"
+  },
+  "userMenu": {
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "admin": "Admin",
+    "manageBilling": "Manage billing",
+    "signOut": "Sign out",
+    "signOutEverywhere": "Sign out everywhere"
+  },
+  "admin": {
+    "title": "Admin",
+    "comingSoon": "Coming soon."
+  },
+  "instanceStatus": {
+    "status": {
+      "created": "Not started",
+      "provisioning": "Starting…",
+      "running": "Live",
+      "degraded": "Needs attention",
+      "stopped": "Stopped",
+      "suspended": "Suspended"
+    },
+    "errorKind": {
+      "token": "bad access code",
+      "permissions": "missing designer rights",
+      "room": "room not found"
+    },
+    "subscription": {
+      "trialing": "Trial",
+      "active": "Active",
+      "past_due": "Payment failed"
+    }
+  },
+  "emails": {
+    "footer": "Manage your bot anytime from your BotMarket dashboard.",
+    "signIn": {
+      "subject": "Sign in to BotMarket",
+      "preview": "Your BotMarket sign-in link is ready.",
+      "heading": "Sign in to BotMarket",
+      "body": "Tap the button below to sign in. This link works once and expires in 15 minutes.",
+      "button": "Sign in",
+      "linkFallback": "Or paste this link into your browser:"
+    },
+    "degradedAlert": {
+      "subject": "Your bot in \"{roomId}\" needs attention",
+      "preview": "Your bot has been crashing and needs a look.",
+      "greetingNamed": "Hi {name},",
+      "greetingGeneric": "Hi,",
+      "body": "Your bot in room {roomId} has been crashing repeatedly and is currently flagged as degraded.",
+      "button": "Check your dashboard"
+    },
+    "paymentFailed": {
+      "subject": "Payment failed for your bot in \"{roomId}\"",
+      "preview": "A payment for your BotMarket subscription did not go through.",
+      "greetingNamed": "Hi {name},",
+      "greetingGeneric": "Hi,",
+      "body": "We tried to charge {amount} for your bot in room {roomId}, but the payment did not go through. Your bot keeps running for now — update your payment method to avoid an interruption.",
+      "button": "Update payment method"
+    }
+  },
+  "privacy": {
+    "eyebrow": "Legal",
+    "title": "Privacy Policy",
+    "updated": "Last updated July 22, 2026",
+    "onThisPage": "On this page",
+    "intro": [
+      "BotMarket (“we,” “us”) runs a subscription service that hosts configurable Highrise bots on your behalf. This page explains what personal data we collect through the dashboard and your bot instances, why we collect it, and the choices you have.",
+      "We built this product for a Highrise audience that skews young, so we’ve tried to write this in plain language rather than dense legal boilerplate. If anything here is unclear, email us — see “Contact” below."
+    ],
+    "sections": {
+      "whoWeAre": {
+        "heading": "Who we are",
+        "body": [
+          "BotMarket is an independent, unofficial project, operated by CodeSwift (codeswift.com.br). We are not affiliated with, endorsed by, or sponsored by Highrise or Pocket Worlds — “Highrise” is referenced only to describe what our bots connect to.",
+          "We’re a Brazil-based company. We’ll publish our registered legal name, CNPJ, and business address on this page once they’re finalized; until then, you can reach us at the contact address below, or at codeswift.com.br."
+        ]
+      },
+      "whatWeCollect": {
+        "heading": "What we collect",
+        "body": [
+          "Account info: your email address, and if you sign in with Google, the name and profile photo Google shares with us.",
+          "Age attestation: a timestamp confirming you told us you’re 18 or older — we don’t collect your birthdate or an ID.",
+          "Billing details: handled by Stripe. We never see or store your full card number; we keep your Stripe customer ID, subscription status, and invoice history.",
+          "Your bot’s access token: encrypted the instant it reaches our servers. It’s write-only — we display only the last 4 characters, and no one, including us, can read it back out in full.",
+          "Room activity your bot generates: chat and event data needed for the features you turn on (for example, moderation logs or greeting history), linked to Highrise user IDs, not to our own accounts.",
+          "Product usage: which pages and features you use, so we can tell what’s working. Session recording is off, and we never capture what you type into the token field.",
+          "Your language preference, so emails and the dashboard show up in the right locale."
+        ]
+      },
+      "whyWeCollect": {
+        "heading": "Why we collect it",
+        "body": [
+          "To run the service: connect your bot, apply your configuration, and show you its status.",
+          "To bill you and prevent fraud, through Stripe.",
+          "To email you things you actually need to know: sign-in links, a payment problem, or your bot going down.",
+          "To enforce our Terms and keep the platform we run on healthy — including suspending instances used for harassment or spam.",
+          "To meet our own tax, accounting, and legal obligations."
+        ]
+      },
+      "howLongWeKeep": {
+        "heading": "How long we keep it",
+        "body": [
+          "Room event logs are kept for 90 days, then reduced to anonymized daily counts — the detailed rows are deleted, not just archived.",
+          "Account and configuration data is kept for as long as your account is active.",
+          "Delete your account and we cancel your subscriptions, stop your bot instances, and destroy your bot token immediately. The rest of your personal data is deleted within 30 days.",
+          "Stripe keeps payment records for as long as it’s legally required to, independent of what we do on our side."
+        ]
+      },
+      "whoWeShareWith": {
+        "heading": "Who we share it with",
+        "body": [
+          "Stripe — payment processing and billing.",
+          "Google — sign-in, if you choose that method.",
+          "Resend — delivering account emails (sign-in links, alerts, receipts).",
+          "PostHog — product analytics, with session recording turned off.",
+          "Sentry — crash and error reporting, with tokens, passwords, and cookies stripped out before anything is sent.",
+          "Our hosting and infrastructure providers, to the extent needed to run the service.",
+          "We don’t sell personal data to anyone, and we never share your bot token in unencrypted form — not even with these providers."
+        ]
+      },
+      "cookiesAndAnalytics": {
+        "heading": "Cookies & analytics",
+        "body": [
+          "We set one cookie to keep you signed in. It’s HttpOnly (scripts can’t read it), marked Secure, and expires after 30 days of inactivity.",
+          "We use PostHog to understand which features get used, with session recording disabled. We don’t run ad-tracking or cross-site cookies, and we don’t sell usage data to advertisers."
+        ]
+      },
+      "yourRights": {
+        "heading": "Your rights",
+        "body": [
+          "Access or export the personal data we hold about you.",
+          "Correct inaccurate account details.",
+          "Delete your account and data — self-serve from Account settings, or by emailing us.",
+          "Object to non-essential email — though today, we only send you email your account actually needs (sign-in, billing, status alerts).",
+          "If you’re in Brazil, these rights are protected under the LGPD (Lei Geral de Proteção de Dados). We apply the same rights to everyone who asks, regardless of where you live."
+        ]
+      },
+      "ageRequirement": {
+        "heading": "Age requirement",
+        "body": [
+          "BotMarket is for adults: you must be 18 or older, or the age of majority where you live, and you confirm this when you sign up.",
+          "If we learn an account belongs to someone under that age, we refund the current billing period and suspend the account."
+        ]
+      },
+      "security": {
+        "heading": "Security",
+        "body": [
+          "Your bot token is encrypted the moment it reaches us and is never returned by any part of the dashboard or API — only a last-4 reference is ever shown.",
+          "Traffic to and from BotMarket is encrypted in transit (TLS). Access to production systems is limited to what each part of our service actually needs — for example, the servers that run your bot don’t have access to billing data.",
+          "No system is perfectly secure, and we can’t promise otherwise — but token handling is the one thing we’ve deliberately over-engineered, because it’s the one thing that matters most here."
+        ]
+      },
+      "internationalTransfer": {
+        "heading": "International data transfers",
+        "body": [
+          "Our company is Brazil-based, and some of the providers listed above (like Stripe, Google, PostHog, and Sentry) process data outside Brazil, including in the United States. Where that happens, we rely on those providers’ own safeguards for cross-border transfer.",
+          "By using BotMarket, you understand your data may be processed outside the country you live in."
+        ]
+      },
+      "changes": {
+        "heading": "Changes to this policy",
+        "body": [
+          "If we make a material change to how we handle your data, we’ll update the date at the top of this page and, for significant changes, email you before they take effect."
+        ]
+      },
+      "contact": {
+        "heading": "Contact",
+        "body": [
+          "Questions about this policy, or want to exercise one of the rights above? Email privacy@botmarket.app."
+        ]
+      }
+    }
+  },
+  "terms": {
+    "eyebrow": "Legal",
+    "title": "Terms of Service",
+    "updated": "Last updated July 22, 2026",
+    "onThisPage": "On this page",
+    "intro": [
+      "These terms cover your use of BotMarket — the dashboard, hosting, and catalog bots we operate. By creating an account or subscribing, you agree to them.",
+      "We’ve written these in plain language where we could. If something here conflicts with a specific consumer-protection law in your country, that law wins."
+    ],
+    "sections": {
+      "acceptance": {
+        "heading": "Acceptance of these terms",
+        "body": [
+          "By creating a BotMarket account, you agree to these Terms and to our Privacy Policy. You must be 18 or older, or the age of majority where you live, and you confirm this at signup."
+        ]
+      },
+      "whatWeProvide": {
+        "heading": "What we provide",
+        "body": [
+          "BotMarket is a subscription service: you pick a bot from our first-party catalog, connect it to your own Highrise bot account using your own access token (“bring your own token,” or BYOT), configure it from a dashboard, and we host it for you around the clock.",
+          "We provide software and hosting. We do not sell, lease, or grant access to any Highrise account, bot, or in-game item — you already own the bot account before you connect it to us."
+        ]
+      },
+      "independentOperator": {
+        "heading": "Independent operator",
+        "body": [
+          "BotMarket is an independent, unofficial project, operated by CodeSwift (codeswift.com.br). We are not affiliated with, endorsed by, or sponsored by Highrise or Pocket Worlds, and nothing in this product should be read as an official Highrise offering.",
+          "Your Highrise bot account remains subject to Highrise’s own Terms of Service at all times — ours don’t replace or override theirs."
+        ]
+      },
+      "eligibilityAndAccounts": {
+        "heading": "Eligibility & your account",
+        "body": [
+          "You must be 18 or older, or the age of majority where you live, to create an account or subscribe.",
+          "You’re responsible for the accuracy of your account details and for keeping your sign-in secure. One account per person; accounts aren’t transferable.",
+          "If we learn an account belongs to someone under the required age, we refund the current billing period and suspend the account."
+        ]
+      },
+      "yourBotAndToken": {
+        "heading": "Your bot and your token",
+        "body": [
+          "You own and are responsible for your Highrise bot account, including its compliance with Highrise’s Terms of Service and community rules in whatever room you run it in.",
+          "By pasting your bot’s access token into our dashboard, you authorize us to connect to Highrise as that bot and act on your instructions and configuration — nothing more.",
+          "You can revoke our access at any time by deleting your instance (which destroys our copy of the token immediately) or by regenerating the token in your Highrise account settings, which invalidates anything we ever held."
+        ]
+      },
+      "noGold": {
+        "heading": "No Highrise Gold, ever",
+        "body": [
+          "We never accept, hold, request, or transfer Highrise Gold or any other in-game currency or item, for any reason. Every fee you pay us is billed in real currency only.",
+          "Our catalog bots are built the same way: none of them buy, sell, tip, or trade Gold or in-game items on your behalf."
+        ]
+      },
+      "acceptableUse": {
+        "heading": "Acceptable use",
+        "body": [
+          "Don’t use BotMarket for anything illegal, or to harass, spam, or abuse other Highrise users.",
+          "Don’t configure a bot in a way designed to evade Highrise’s own moderation, rate limits, or account eligibility rules.",
+          "Don’t try to reverse-engineer, resell, or run unauthorized code through our service — our catalog bots are first-party only; you configure them, you don’t upload code to them.",
+          "Don’t attempt to disrupt, overload, or gain unauthorized access to our systems or another customer’s instance.",
+          "We may suspend or terminate an instance used for harassment, spam, or platform abuse, with or without notice depending on severity."
+        ]
+      },
+      "subscriptionAndBilling": {
+        "heading": "Subscription & billing",
+        "body": [
+          "Each bot instance is billed as a monthly or annual subscription, in Brazilian reais (BRL) with a USD reference price shown for convenience, through Stripe (cards or Pix).",
+          "If you pay by Pix, you’re authorizing a Pix Automático recurring mandate — your bank debits each renewal automatically until you cancel. You can revoke that mandate anytime in your banking app; doing so has the same effect as cancelling from the dashboard.",
+          "A subscription entitles your instance to run; it doesn’t start the bot by itself. You press Start on the dashboard whenever you want it live, and Stop whenever you don’t.",
+          "Cancel anytime from the dashboard’s billing portal — your instance keeps running through the end of the period you already paid for."
+        ]
+      },
+      "refunds": {
+        "heading": "Refunds",
+        "body": [
+          "First purchase, any plan: full refund within 7 days, no questions asked. This also satisfies Brazil’s consumer-protection right of withdrawal for online purchases (CDC Art. 49).",
+          "After that window, cancelling stops future renewals, but we don’t pro-rate a refund for the time already paid — with one exception: if we discontinue BotMarket or a bot you’re subscribed to, we refund any unused prepaid time."
+        ]
+      },
+      "paymentIssuesAndSuspension": {
+        "heading": "Payment issues",
+        "body": [
+          "If a renewal payment fails, your bot keeps running for a short grace period (currently 3 days) while we email you to update your payment method.",
+          "If payment still hasn’t gone through after that, we suspend the instance — the bot stops, but your configuration is kept. Paying brings it back; you’ll need to press Start again.",
+          "If an instance stays unpaid for an extended period (currently 30 days from cancellation or suspension), we may delete it. We’ll offer to export your configuration before that happens."
+        ]
+      },
+      "terminationForAbuse": {
+        "heading": "Suspension & termination for abuse",
+        "body": [
+          "Separate from payment issues, we can suspend or terminate your access if you violate these terms, misuse the service, or if we’re required to by law — for example, an instance used for harassment or spam.",
+          "Where practical, we’ll tell you why. For serious abuse, we may act first and explain after."
+        ]
+      },
+      "serviceAvailability": {
+        "heading": "Service availability",
+        "body": [
+          "We host your bot to run continuously and work to keep it that way, but we don’t guarantee a specific uptime percentage at this stage — this isn’t a formal SLA.",
+          "We’re not responsible for outages, rate limiting, or account actions on Highrise’s side — those are Highrise’s systems, not ours, and outside our control."
+        ]
+      },
+      "intellectualProperty": {
+        "heading": "Intellectual property",
+        "body": [
+          "Our catalog bots, dashboard, and underlying software are our property (or licensed to us). Your subscription gives you the right to configure and use them — it doesn’t transfer ownership of any of it to you.",
+          "Anything you enter into your configuration (welcome messages, filter words, and similar) stays yours; you’re responsible for making sure it doesn’t violate these terms or Highrise’s rules."
+        ]
+      },
+      "disclaimersLiability": {
+        "heading": "Disclaimers & limitation of liability",
+        "body": [
+          "BotMarket is provided “as is.” We work to keep bots online and well-behaved, but we can’t guarantee they’ll prevent every moderation issue, or that Highrise won’t change its platform, rate limits, or eligibility rules in ways that affect your bot.",
+          "To the extent permitted by law, our liability to you is limited to the amount you paid us in the 12 months before the issue arose, and we’re not liable for indirect or consequential damages.",
+          "Nothing here limits rights that Brazilian consumer law (or another law that applies to you) doesn’t allow us to limit."
+        ]
+      },
+      "governingLaw": {
+        "heading": "Governing law",
+        "body": [
+          "These terms are governed by the laws of Brazil, where CodeSwift, the company behind BotMarket, is based. We’ll publish our registered legal name, CNPJ, and business address here once they’re finalized.",
+          "If you’re a consumer, this doesn’t take away any protection you’re entitled to under the mandatory law of the country you live in."
+        ]
+      },
+      "changes": {
+        "heading": "Changes to these terms",
+        "body": [
+          "We may update these terms as the product changes. For material changes, we’ll update the date at the top of this page and email you before they take effect."
+        ]
+      },
+      "contact": {
+        "heading": "Contact",
+        "body": [
+          "Questions about these terms? Email botmarket@codeswift.com.br."
+        ]
+      }
+    }
+  }
+}

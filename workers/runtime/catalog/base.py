@@ -97,7 +97,11 @@ def _shielded(fn):
 
 
 class CatalogBot(BaseBot):
-    """Base class for catalog bots. Subclasses set SLUG + SCHEMA_VERSION."""
+    """Base class for catalog bots. Subclasses set SLUG + SCHEMA_VERSION, and
+    must call ``self._confirm_connected()`` as the first line of their
+    ``on_start`` override — that's the supervisor's only real signal that a
+    (re)connect attempt actually reached Highrise, as opposed to still being
+    stuck waiting on the SDK (see ``_confirm_connected`` below)."""
 
     SLUG: ClassVar[str]
     SCHEMA_VERSION: ClassVar[int]
@@ -115,10 +119,27 @@ class CatalogBot(BaseBot):
         self.config: dict[str, Any] = {}
         self.apply_config(config or {})
         # Optional, set by the supervisor after construction (specs/04-bot-runtime.md:
-        # "catalog bots may only reach Highrise and our own Postgres/Redis"). None in
+        # "catalog bots may only reach Highrise and our own Postgres"). None in
         # standalone/unit-test construction — modules that use this must handle that.
         self.db_pool: "asyncpg.Pool | None" = None
         self.bot_instance_id: str | None = None
+        # Set by the supervisor fresh before each (re)connect attempt
+        # (workers/runtime/supervisor.py's _run_instance_loop); None outside
+        # that context (standalone/unit-test construction).
+        self._connected_event: asyncio.Event | None = None
+
+    def _confirm_connected(self) -> None:
+        """Signals the supervisor that this connect attempt is real: the SDK
+        actually got a session from Highrise, not just a WebSocket that's
+        still hanging waiting for one. The SDK's own `bot_runner()` offers no
+        "connected" callback and no timeout waiting for that first server
+        reply, so without this signal a room the bot can never actually join
+        (bad room id, missing designer rights — see the highrise skill's
+        "known unknowns") can leave the supervisor's status stuck at
+        "running" forever with nothing in the event log. See docs/decisions.md,
+        2026-07-21."""
+        if self._connected_event is not None:
+            self._connected_event.set()
 
     @classmethod
     def _load_schema(cls) -> dict[str, Any]:

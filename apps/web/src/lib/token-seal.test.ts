@@ -1,6 +1,6 @@
 import sodium from "libsodium-wrappers";
 import { beforeAll, describe, expect, it } from "vitest";
-import { keyRefOf, sealToken, tokenFingerprint } from "./token-seal";
+import { keyRefOf, sealToken } from "./token-seal";
 
 const TOKEN = "hr-token-abcdef1234567890-secret-a9f2";
 let keypair: { publicKey: Uint8Array; privateKey: Uint8Array };
@@ -12,7 +12,6 @@ beforeAll(async () => {
     keypair.publicKey,
     sodium.base64_variants.ORIGINAL,
   );
-  process.env.TOKEN_FINGERPRINT_PEPPER = "test-pepper";
 });
 
 describe("sealToken", () => {
@@ -48,26 +47,5 @@ describe("sealToken", () => {
   it("trims pasted whitespace before sealing", async () => {
     const sealed = await sealToken(`  ${TOKEN}\n`);
     expect(sealed.last4).toBe("a9f2");
-    expect(sealed.fingerprint).toBe(tokenFingerprint(TOKEN));
-  });
-});
-
-describe("tokenFingerprint", () => {
-  it("is deterministic under one pepper", () => {
-    expect(tokenFingerprint(TOKEN)).toBe(tokenFingerprint(TOKEN));
-  });
-
-  it("changes with the pepper", () => {
-    const before = tokenFingerprint(TOKEN);
-    process.env.TOKEN_FINGERPRINT_PEPPER = "other-pepper";
-    expect(tokenFingerprint(TOKEN)).not.toBe(before);
-    process.env.TOKEN_FINGERPRINT_PEPPER = "test-pepper";
-  });
-
-  it("requires the pepper to be configured", () => {
-    const pepper = process.env.TOKEN_FINGERPRINT_PEPPER;
-    delete process.env.TOKEN_FINGERPRINT_PEPPER;
-    expect(() => tokenFingerprint(TOKEN)).toThrow(/TOKEN_FINGERPRINT_PEPPER/);
-    process.env.TOKEN_FINGERPRINT_PEPPER = pepper;
   });
 });

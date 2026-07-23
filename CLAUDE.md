@@ -2,7 +2,7 @@
 
 Hosted, configurable Highrise bots sold as a monthly USD subscription. Customers bring their own Highrise bot token (BYOT), pick a bot from our first-party catalog, configure it in a dashboard, and we run it 24/7.
 
-**Current stage:** spec/brainstorm. No application code yet. Specs live in `specs/`, decisions in `docs/decisions.md`, platform research in `docs/research.md`.
+**Current stage:** pre-launch, core product built. Auth, billing (Stripe Brazil), the schema-driven config dashboard, and the Python runtime are wired end-to-end and tested. There is one first-party bot (**Emcee**) with four shipped feature modules — Emote, Concierge, Warden, Avatar (Music remains an unscoped roadmap name) — composed into one `EmceeBot`/one subscription/one token, not sold separately. Not yet deployed anywhere; no real Highrise credentials, no CNPJ/Stripe-BR-live entity, and no GitHub remote exist in this environment. Specs live in `specs/`, decisions in `docs/decisions.md` (the fullest, most current account of what's actually built — check it before assuming a spec's "open questions" are still open), platform research in `docs/research.md`.
 
 ## Non-negotiable constraints
 
@@ -18,11 +18,12 @@ These come from Highrise's Terms of Service and platform rules — see `docs/res
 
 - **Control plane:** Next.js + TypeScript — storefront, auth, billing, config dashboard, admin.
 - **Data plane:** Python workers on the **official** `highrise-bot-sdk` (Pocket Worlds). Never the community JS SDKs.
-- **Shared state:** Postgres (source of truth), Redis (config pub/sub, worker heartbeats).
+- **Shared state:** Postgres only (source of truth, plus config pub/sub via LISTEN/NOTIFY). No Redis — heartbeats removed 2026-07-22 (R2), then the config/avatar-position pub/sub channels moved off Redis onto Postgres the same day (R6), dropping the dependency entirely; see `docs/cost-plan.md`.
 - **Payments:** single rail — **Stripe Brazil**: cards + Pix, with Pix Automático mandates for recurring. PayPal dropped for v1. BRL settlement, USD reference pricing. See `specs/03-billing.md`.
 - Bot config is defined as **JSON Schema**, shared by both planes: the dashboard renders forms from it, the Python runtime validates against it.
+- **i18n:** next-intl, locale-prefixed routes (`/[locale]/...`), 5 locales (en/es/de/pt/ru) across UI copy and transactional email.
 
-## Planned repo layout (when code starts)
+## Repo layout
 
 ```
 apps/web/        Next.js control plane
@@ -36,4 +37,5 @@ docs/            research, decision log
 
 - Specs are numbered (`01-product.md`, …) and each ends with an **Open questions** section — resolve questions by editing the spec and logging the decision in `docs/decisions.md`, dated.
 - When writing anything that touches the Highrise SDK, platform rules, or bot capabilities, load the `highrise` skill first (`.claude/skills/highrise/`).
-- Python: official SDK idioms (`BaseBot` subclass per catalog bot). TypeScript: app router, server components by default.
+- Python: one `CatalogBot`/`BaseBot` subclass per catalog bot (currently just `EmceeBot`), composing feature modules as plain engine classes (`EmoteEngine`, `GreeterEngine`, `WardenEngine`, `AvatarEngine`) rather than a subclass per module — keeps one bot/instance/token even as modules grow. TypeScript: app router, server components by default.
+- `apps/web/src` layout: `app/` is routing-only (`page.tsx` + `actions.ts` + Next.js specials, no presentation); `modules/<route>/index.tsx` mirrors the route tree and owns the page template; `components/UI` holds dumb presentational primitives, `components/Elements` holds logic-bearing pieces reused across 2+ pages. `page.tsx` fetches data and binds server actions, passing both down as props.

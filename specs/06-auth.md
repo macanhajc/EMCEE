@@ -33,7 +33,7 @@ Browsing stays frictionless; the first wall is at intent-to-buy.
 There is no Highrise OAuth. The real Highrise credential is **possession of a working bot token + designer rights in a room**, proven at instance creation — so signup asks for nothing Highrise-related. Consequences:
 
 - Support asks for the customer's dashboard email, not a Highrise username.
-- Trial-abuse dedupe keys on **room ID + bot token fingerprint** (a room that already ran a trial doesn't get another), not on account identity.
+- ~~Trial-abuse dedupe keys on room ID + bot token fingerprint~~ → **removed 2026-07-23**: no trial exists to abuse anymore (`docs/decisions.md`); `bot_instances.token_fingerprint` and `trial_registry` are gone (migration `0010_remove_trial`).
 - If we ever need verified room ownership (disputes), the bot can whisper a challenge code in-room — deferred, not in v1.
 
 ## Age policy: 18+ self-attestation
@@ -52,7 +52,7 @@ There is no Highrise OAuth. The real Highrise credential is **possession of a wo
 
 - Magic-link endpoint: rate-limited per email + per IP; links single-use, 15-min expiry.
 - Turnstile/hCaptcha on magic-link request if abuse appears (feature-flagged, off by default).
-- New-account velocity per IP monitored (trial-farming signal, pairs with room/token dedupe).
+- New-account velocity per IP monitored (still a useful signal for fake-account/chargeback-fraud patterns even without a trial to farm).
 
 ## Account deletion
 
@@ -64,5 +64,5 @@ There is no Highrise OAuth. The real Highrise credential is **possession of a wo
 - Add Discord OAuth later if support interactions show heavy Discord overlap?
 - Do we need org/team accounts (multiple staff managing one room's bots) — or is shared login acceptable at this scale? Leaning: defer, single-owner accounts in v1.
 - ~~Magic-link deliverability: dedicated transactional email provider~~ → resolved 2026-07-20: Resend (`src/lib/mailer.ts`). `RESEND_API_KEY` unset means dev logs the link to console; unset in production throws rather than silently dropping mail.
-- In-memory rate limiter on magic-link requests (`src/lib/rate-limit.ts`) needs to move to Redis before the control plane runs more than one instance.
+- In-memory rate limiter on magic-link requests (`src/lib/rate-limit.ts`) needs to move to shared state (Postgres — no Redis in this stack as of 2026-07-22, `docs/cost-plan.md` R6) before the control plane runs more than one instance.
 - Admin surface has role gating (`src/proxy.ts`) but not yet the mandatory 2FA `05-security.md` calls for — needed before admin handles anything sensitive.

@@ -1,7 +1,18 @@
 # Three independent jobs, no shared state between them — each brings up
-# whatever it needs (Postgres/Redis are cheap to start fresh per job) rather
-# than trying to share a migrated DB across jobs, which would mean
-# sequencing and slowing everything down for no real benefit at this scale.
+# whatever it needs (Postgres is cheap to start fresh per job) rather than
+# trying to share a migrated DB across jobs, which would mean sequencing and
+# slowing everything down for no real benefit at this scale. No Redis
+# anywhere in this workflow — the app has no Redis dependency at all since
+# 2026-07-22 (docs/cost-plan.md, R6: config pub/sub moved to Postgres
+# LISTEN/NOTIFY).
+#
+# Path-filtered (docs/cost-plan.md, R5): a `changes` job classifies what the
+# push/PR touched and only the affected planes run — a docs-only or
+# runtime-only change doesn't burn minutes building the web app, and vice
+# versa. Inputs genuinely shared across planes (lockfile, workspace config,
+# packages/schemas, this file) trigger everything. `ci-success` still exists
+# so branch protection can require one check name; skipped jobs count as
+# success there, only failure/cancellation fail it.
 #
 # Runs with zero GitHub Secrets: nothing here calls a real external API.
 # Stripe calls in apps/web's tests are pure/mocked (billing-checkout.test.ts
@@ -21,13 +32,65 @@ concurrency:
 
 env:
   # Matches docker-compose.yml exactly, so the same DATABASE_URL works
-  # whether you're running this locally or in CI.
+  # whether you're running this locally or in CI. The runtime job overrides
+  # it: its pytest suite refuses any database not named *_test (conftest.py
+  # claims and mutates bot_instances table-wide).
   DATABASE_URL: postgres://botmarket:botmarket@localhost:5432/botmarket
-  REDIS_URL: redis://localhost:6379
 
 jobs:
+  changes:
+    name: Detect changed paths
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      web: ${{ steps.filter.outputs.web }}
+      runtime: ${{ steps.filter.outputs.runtime }}
+      crossplane: ${{ steps.filter.outputs.crossplane }}
+    steps:
+      # Checkout is required for push events (the action diffs local git);
+      # PR events use the GitHub API instead.
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            web:
+              - '.github/workflows/ci.yml'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - 'package.json'
+              - 'apps/web/**'
+              - 'packages/schemas/**'
+            runtime:
+              - '.github/workflows/ci.yml'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - 'package.json'
+              - 'workers/runtime/**'
+              - 'packages/schemas/**'
+              # Drizzle migrations own the Postgres schema the Python tests
+              # write into directly.
+              - 'apps/web/drizzle/**'
+              - 'apps/web/package.json'
+            crossplane:
+              - '.github/workflows/ci.yml'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - 'package.json'
+              - 'scripts/**'
+              - 'workers/runtime/tokenbox.py'
+              - 'workers/runtime/keygen.py'
+              - 'workers/runtime/pyproject.toml'
+              - 'workers/runtime/uv.lock'
+              - 'apps/web/src/lib/token-seal.ts'
+              - 'apps/web/test/seal-cli.ts'
+              - 'apps/web/package.json'
+
   web:
     name: Web (lint, test, build)
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -39,12 +102,6 @@ jobs:
         ports: ["5432:5432"]
         options: >-
           --health-cmd "pg_isready -U botmarket"
-          --health-interval 5s --health-timeout 5s --health-retries 10
-      redis:
-        image: redis:8-alpine
-        ports: ["6379:6379"]
-        options: >-
-          --health-cmd "redis-cli ping"
           --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - uses: actions/checkout@v4
@@ -69,30 +126,33 @@ jobs:
         env:
           # Non-secret placeholders — see file header. Build never queries a
           # live DB (every DB-touching route is server-rendered on demand,
-          # not statically prerendered), but Postgres/Redis are already up
-          # for the migration/test steps, so there's no reason to guess.
+          # not statically prerendered), but Postgres is already up for the
+          # migration/test steps, so there's no reason to guess.
           AUTH_SECRET: ci-placeholder-not-a-real-secret
           STRIPE_SECRET_KEY: sk_test_ci_placeholder_not_real
 
   runtime:
-    name: Runtime (pytest against real Postgres + Redis)
+    name: Runtime (pytest against real Postgres)
+    needs: changes
+    if: needs.changes.outputs.runtime == 'true'
     runs-on: ubuntu-latest
+    env:
+      # conftest.py refuses to run against any database not named *_test —
+      # the suite claims and mutates bot_instances rows table-wide, so it
+      # must never point at a really-named DB. The service container below
+      # creates the database under this name, and the Drizzle migration step
+      # inherits the same URL.
+      DATABASE_URL: postgres://botmarket:botmarket@localhost:5432/botmarket_test
     services:
       postgres:
         image: postgres:17-alpine
         env:
           POSTGRES_USER: botmarket
           POSTGRES_PASSWORD: botmarket
-          POSTGRES_DB: botmarket
+          POSTGRES_DB: botmarket_test
         ports: ["5432:5432"]
         options: >-
           --health-cmd "pg_isready -U botmarket"
-          --health-interval 5s --health-timeout 5s --health-retries 10
-      redis:
-        image: redis:8-alpine
-        ports: ["6379:6379"]
-        options: >-
-          --health-cmd "redis-cli ping"
           --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - uses: actions/checkout@v4
@@ -114,13 +174,14 @@ jobs:
       - name: Install Python deps
         working-directory: workers/runtime
         run: uv sync --locked
-
       - name: Run tests
         working-directory: workers/runtime
         run: uv run pytest -q
 
   cross-plane:
     name: Cross-plane token seal contract
+    needs: changes
+    if: needs.changes.outputs.crossplane == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -141,18 +202,20 @@ jobs:
 
       # Seals a token in TS with an ephemeral keypair's public half, unseals
       # it in Python with the private half — proves the two-plane token
-      # design (specs/05-security.md) hasn't drifted apart. No DB/Redis
-      # needed, no real secret — the keypair is generated fresh every run.
+      # design (specs/05-security.md) hasn't drifted apart. No DB needed,
+      # no real secret — the keypair is generated fresh every run.
       - run: ./scripts/check-token-seal.sh
 
   ci-success:
     name: CI
     if: always()
-    needs: [web, runtime, cross-plane]
+    needs: [changes, web, runtime, cross-plane]
     runs-on: ubuntu-latest
     steps:
-      - name: Check all jobs succeeded
+      - name: Check no required job failed
         env:
+          # Skipped jobs (path filter said "not affected") are fine;
+          # failure or cancellation of anything is not.
           FAILED: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
         run: |
           if [ "$FAILED" = "true" ]; then

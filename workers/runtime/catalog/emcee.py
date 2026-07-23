@@ -61,6 +61,7 @@ class EmceeBot(CatalogBot):
         self._avatar = AvatarEngine(self)
 
     async def on_start(self, session_metadata: SessionMetadata) -> None:
+        self._confirm_connected()
         self._room_owner_id = session_metadata.room_info.owner_id
         self._room_name = session_metadata.room_info.room_name
         await self._avatar.on_start()
@@ -68,7 +69,7 @@ class EmceeBot(CatalogBot):
     async def apply_avatar_position(self) -> None:
         """Supervisor's entry point for a dashboard-set anchor spot
         (specs/bots/avatar.md) — invoked live off the `avatar_position.
-        updated` Redis message, not just on connect."""
+        updated` Postgres NOTIFY, not just on connect."""
         await self._avatar.restore_position()
 
     async def on_chat(self, user: User, message: str) -> None:

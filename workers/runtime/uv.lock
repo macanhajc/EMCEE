@@ -58,15 +58,6 @@ wheels = [
 ]
 
 [[package]]
-name = "async-timeout"
-version = "5.0.1"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/a5/ae/136395dfbfe00dfc94da3f3e136d0b13f394cba8f4841120e34226265780/async_timeout-5.0.1.tar.gz", hash = "sha256:d9321a7a3d5a6a5e187e824d2fa0793ce379a202935782d555d6e9d2735677d3", size = 9274, upload-time = "2024-11-06T16:41:39.6Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/fe/ba/e2081de779ca30d473f21f5b30e0e737c438205440784c7dfc81efc2b029/async_timeout-5.0.1-py3-none-any.whl", hash = "sha256:39e3809566ff85354557ec2398b55e096c8364bacac9405a7a1fa429e77fe76c", size = 6233, upload-time = "2024-11-06T16:41:37.9Z" },
-]
-
-[[package]]
 name = "asyncpg"
 version = "0.31.0"
 source = { registry = "https://pypi.org/simple" }
@@ -100,7 +91,6 @@ dependencies = [
     { name = "highrise-bot-sdk" },
     { name = "jsonschema" },
     { name = "pynacl" },
-    { name = "redis" },
     { name = "setuptools" },
 ]
 
@@ -117,7 +107,6 @@ requires-dist = [
     { name = "highrise-bot-sdk", specifier = "==25.1.0" },
     { name = "jsonschema", specifier = ">=4.17,<4.18" },
     { name = "pynacl", specifier = ">=1.5" },
-    { name = "redis", specifier = ">=5.2" },
     { name = "setuptools", specifier = "<81" },
 ]
 
@@ -451,18 +440,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/cc/d2/dd69f4cb945560432f35a2917cec747f2830c819d514c9204f55c5d5a3e4/quattro-22.2.0.tar.gz", hash = "sha256:8e0b37b3d3f663d6f7473b7ab51c510784a67432876ffdbe93a07098d4da52ec", size = 10855, upload-time = "2022-12-27T00:30:00.445Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/4e/a2/e24208e3e6897a0739205f1782c22d538be4e4813b5fc8b1740252e4601e/quattro-22.2.0-py3-none-any.whl", hash = "sha256:bdf3ba09d14b928aec3c523b7801073e191e59200dde6ea78dc880a2ca66e82f", size = 9299, upload-time = "2022-12-27T00:29:58.371Z" },
-]
-
-[[package]]
-name = "redis"
-version = "8.0.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "async-timeout", marker = "python_full_version < '3.11.3'" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/cc/c3/928b290c2c0ca99ab96eea5b4ff8f30be8112b075301a7d3ba214a3c8c12/redis-8.0.1.tar.gz", hash = "sha256:afc5a7a2f5a084f5b1880dec548dd45be17db7e43c82a30d84f952aefb05cfb0", size = 5114170, upload-time = "2026-06-23T14:52:37.728Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/fd/0a/c2345ebf1ebe70840ce3f6c6ee612f8fa749cfbd1b03069c53bf0c62aaad/redis-8.0.1-py3-none-any.whl", hash = "sha256:47daa35a058c23468d6437f17a8c76882cb316b838ef763036af99b96cedd743", size = 502406, upload-time = "2026-06-23T14:52:36.137Z" },
 ]
 
 [[package]]

@@ -19,7 +19,7 @@ copies of the same tier logic.
   set directly from the dashboard (raw x/y/z/facing, for an owner who
   already knows the coordinates rather than standing in-room) — that write
   goes straight to `avatar_positions`, then a dedicated `avatar_position.
-  updated` Redis message (separate from `config.updated`, since this isn't
+  updated` Postgres NOTIFY (separate from `config.updated`, since this isn't
   part of the JSON config) tells the supervisor to call `restore_position`
   again on the running bot, live, no reconnect needed.
 - **Idle emote loop** — solo `send_emote(emote_id)` (no target) on a repeat

@@ -6,10 +6,13 @@ proof through the real SDK against the fake Highrise server.
 from __future__ import annotations
 
 import asyncio
+import contextlib
 
 import pytest
 
 from conftest import fetch_events
+from fake_highrise_client import FakeHighrise
+from highrise import ResponseError
 from supervisor import Supervisor
 
 
@@ -18,10 +21,10 @@ async def hold_forever(bot, room_id, token):
 
 
 @pytest.fixture
-def supervisor(pool, redis_client, token_box):
+def supervisor(pool, listen_conn, token_box):
     return Supervisor(
         pool,
-        redis_client,
+        listen_conn,
         token_box,
         supervisor_id="sup-unit-test",
         capacity=10,
@@ -29,7 +32,58 @@ def supervisor(pool, redis_client, token_box):
     )
 
 
-async def test_unknown_catalog_slug_releases_lease_without_spawning(pool, make_instance, supervisor, redis_client):
+@pytest.fixture
+def timeout_supervisor(pool, listen_conn, token_box):
+    """Tiny connect-confirm timeout + backoff so the regression test below
+    doesn't have to wait out real-world durations."""
+    return Supervisor(
+        pool,
+        listen_conn,
+        token_box,
+        supervisor_id="sup-unit-test-timeout",
+        capacity=10,
+        bot_runner=hold_forever,  # never calls on_start, so never confirms — the hang case
+        initial_backoff_s=0.01,
+        max_backoff_s=0.05,
+        fast_failure_threshold_s=0.2,
+        max_consecutive_failures=2,
+        connect_confirm_timeout_s=0.05,
+    )
+
+
+async def test_stuck_connect_attempt_times_out_instead_of_hanging_forever(
+    pool, make_instance, timeout_supervisor
+):
+    """Regression test for the bug where a bot_runner that never confirms a
+    connection (the SDK hanging on Highrise's first reply — no room join, no
+    error either) left `status` stuck at "running" forever with nothing in
+    the event log, because the old escalation logic only ran after
+    bot_runner() returned. Now a stuck attempt must time out, get logged, and
+    escalate to `degraded` like any other repeated failure."""
+    instance_id = await make_instance(desired_state="running")
+
+    await timeout_supervisor.reconcile()
+    assert instance_id in timeout_supervisor.running
+
+    async def is_degraded():
+        row = await pool.fetchrow("SELECT status FROM bot_instances WHERE id = $1", instance_id)
+        return row is not None and row["status"] == "degraded"
+
+    async def _poll():
+        while not await is_degraded():
+            await asyncio.sleep(0.02)
+
+    await asyncio.wait_for(_poll(), timeout=5.0)
+
+    events = await fetch_events(pool, instance_id)
+    kinds = [e["kind"] for e in events]
+    assert "connect_timed_out" in kinds
+    assert "degraded" in kinds
+
+    await timeout_supervisor.shutdown()
+
+
+async def test_unknown_catalog_slug_releases_lease_without_spawning(pool, make_instance, supervisor):
     instance_id = await make_instance(desired_state="running")
     # Bypass the FK to simulate a genuinely unknown/retired slug reaching
     # the supervisor — direct SQL since bot_instances.catalog_bot_slug has
@@ -69,7 +123,7 @@ async def test_reconcile_keeps_healthy_instance_running_across_ticks(pool, make_
     await supervisor.shutdown()
 
 
-async def test_shutdown_stops_all_running_instances(pool, redis_client, make_instance, supervisor):
+async def test_shutdown_stops_all_running_instances(pool, make_instance, supervisor):
     ids = [await make_instance(desired_state="running") for _ in range(3)]
     await supervisor.reconcile()
     assert len(supervisor.running) == 3
@@ -81,10 +135,9 @@ async def test_shutdown_stops_all_running_instances(pool, redis_client, make_ins
         row = await pool.fetchrow("SELECT status, supervisor_id FROM bot_instances WHERE id = $1", instance_id)
         assert row["status"] == "stopped"
         assert row["supervisor_id"] is None
-        assert await redis_client.exists(f"heartbeat:{instance_id}") == 0
 
 
-async def test_config_update_for_unrelated_instance_is_ignored(pool, redis_client, make_instance, supervisor):
+async def test_config_update_for_unrelated_instance_is_ignored(pool, make_instance, supervisor):
     """A supervisor should ignore config.updated for instances it isn't
     running — e.g. another supervisor's instance in a multi-supervisor
     fleet — rather than erroring."""
@@ -124,4 +177,122 @@ async def test_avatar_position_update_reaches_running_instance(pool, make_instan
     events = await fetch_events(pool, instance_id)
     assert any(e["kind"] == "avatar_position_applied" for e in events)
 
+    await supervisor.shutdown()
+
+
+# --- dashboard-initiated ban/unban (specs/bots/moderation.md's "proposed" section) --------
+
+
+async def _insert_moderation_request(pool, instance_id: str, action: str = "ban") -> None:
+    await pool.execute(
+        """
+        INSERT INTO moderation_requests (bot_instance_id, target_user_id, target_username, action, requested_by)
+        VALUES ($1, 'u1', 'troublemaker', $2, (SELECT user_id FROM bot_instances WHERE id = $1))
+        """,
+        instance_id,
+        action,
+    )
+
+
+async def test_moderation_requested_for_unrelated_instance_is_ignored(supervisor):
+    other_instance_id = "00000000-0000-0000-0000-000000000000"
+    await supervisor._handle_moderation_requested(f'{{"instanceId": "{other_instance_id}"}}')  # must not raise
+
+
+async def test_malformed_moderation_requested_payload_is_ignored(supervisor):
+    await supervisor._handle_moderation_requested("not json")  # must not raise
+    await supervisor._handle_moderation_requested("{}")  # missing instanceId — must not raise
+
+
+async def test_moderation_request_for_stopped_instance_stays_pending(pool, make_instance, supervisor):
+    """The instance is never claimed/running here — same "bot not connected"
+    case specs/bots/moderation.md calls out: a request made (or still queued)
+    while the instance is stopped must not be lost, just left pending until
+    it's running again."""
+    instance_id = await make_instance(desired_state="stopped")
+    await _insert_moderation_request(pool, instance_id)
+
+    await supervisor._handle_moderation_requested(f'{{"instanceId": "{instance_id}"}}')
+
+    row = await pool.fetchrow("SELECT status FROM moderation_requests WHERE bot_instance_id = $1", instance_id)
+    assert row["status"] == "pending"
+
+
+async def test_reconcile_sweep_applies_pending_moderation_request_without_notify(
+    pool, make_instance, supervisor
+):
+    """Proves the "poll for correctness" half independently of pub/sub —
+    reconcile() must pick up a pending row for an already-running instance
+    even with no moderation.requested NOTIFY at all (a dropped notification
+    must not mean a dropped ban)."""
+    instance_id = await make_instance(desired_state="running")
+    await supervisor.reconcile()
+    assert instance_id in supervisor.running
+    supervisor.running[instance_id].bot.highrise = FakeHighrise()
+
+    await _insert_moderation_request(pool, instance_id, action="ban")
+
+    await supervisor.reconcile()  # no NOTIFY fired — only the sweep runs
+
+    row = await pool.fetchrow("SELECT status FROM moderation_requests WHERE bot_instance_id = $1", instance_id)
+    assert row["status"] == "applied"
+    assert supervisor.running[instance_id].bot.highrise.moderate_room_calls == [("u1", "ban", None)]
+
+    events = await fetch_events(pool, instance_id)
+    assert any(e["kind"] == "moderation" and e["data"].get("type") == "dashboard_moderation_applied" for e in events)
+
+    await supervisor.shutdown()
+
+
+async def test_moderation_requested_denied_marks_request_denied(pool, make_instance, supervisor):
+    instance_id = await make_instance(desired_state="running")
+    await supervisor.reconcile()
+    fake = FakeHighrise()
+    fake.moderate_room_error = ResponseError("insufficient privilege")
+    supervisor.running[instance_id].bot.highrise = fake
+
+    await _insert_moderation_request(pool, instance_id, action="ban")
+    await supervisor._apply_pending_moderation_requests([instance_id])
+
+    row = await pool.fetchrow(
+        "SELECT status, error FROM moderation_requests WHERE bot_instance_id = $1", instance_id
+    )
+    assert row["status"] == "denied"
+    assert row["error"] == "insufficient privilege"
+
+    await supervisor.shutdown()
+
+
+async def test_moderation_requested_via_postgres_notify(pool, make_instance, supervisor):
+    """Real Postgres LISTEN/NOTIFY, same proof shape as
+    test_supervisor_live.py's test_avatar_position_update_via_postgres_notify
+    — confirms Supervisor._listen_config_updates' channel-name dispatch
+    actually reaches _handle_moderation_requested, not just that the handler
+    works in isolation."""
+    instance_id = await make_instance(desired_state="running")
+    await supervisor.reconcile()
+    assert instance_id in supervisor.running
+    supervisor.running[instance_id].bot.highrise = FakeHighrise()
+
+    await _insert_moderation_request(pool, instance_id, action="ban")
+
+    listener_task = asyncio.create_task(supervisor._listen_config_updates())
+    await asyncio.sleep(0.1)  # let add_listener's LISTEN register before notifying
+    await pool.execute("SELECT pg_notify('moderation.requested', $1)", f'{{"instanceId": "{instance_id}"}}')
+
+    async def is_applied():
+        row = await pool.fetchrow("SELECT status FROM moderation_requests WHERE bot_instance_id = $1", instance_id)
+        return row is not None and row["status"] == "applied"
+
+    async def _poll():
+        while not await is_applied():
+            await asyncio.sleep(0.02)
+
+    await asyncio.wait_for(_poll(), timeout=5.0)
+
+    assert supervisor.running[instance_id].bot.highrise.moderate_room_calls == [("u1", "ban", None)]
+
+    listener_task.cancel()
+    with contextlib.suppress(asyncio.CancelledError):
+        await listener_task
     await supervisor.shutdown()

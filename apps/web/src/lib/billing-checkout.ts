@@ -21,7 +21,6 @@ export interface BuildCheckoutSessionInput {
   userEmail: string;
   existingStripeCustomerId: string | null;
   priceId: string;
-  trialEligible: boolean;
   origin: string;
 }
 
@@ -38,7 +37,6 @@ export function buildCheckoutSessionParams(
       ? { customer: input.existingStripeCustomerId }
       : { customer_email: input.userEmail }),
     subscription_data: {
-      ...(input.trialEligible ? { trial_period_days: 7 } : {}),
       // Carried onto the Subscription object itself, so
       // customer.subscription.* events can be correlated too — those
       // don't carry client_reference_id.

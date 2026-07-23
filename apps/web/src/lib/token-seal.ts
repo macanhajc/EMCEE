@@ -12,7 +12,7 @@
  * stored, logged, or included in error messages.
  */
 import "server-only";
-import { createHash, createHmac } from "node:crypto";
+import { createHash } from "node:crypto";
 import sodium from "libsodium-wrappers";
 
 /**
@@ -30,8 +30,6 @@ export interface SealedToken {
   keyRef: string;
   /** display only: "token ending …a9f2" → bot_instances.token_last4 */
   last4: string;
-  /** peppered HMAC for trial dedupe, irreversible → bot_instances.token_fingerprint */
-  fingerprint: string;
 }
 
 function requireEnv(name: string): string {
@@ -43,18 +41,6 @@ function requireEnv(name: string): string {
 /** First 12 hex chars of SHA-256 of the raw public key. Must match tokenbox.py. */
 export function keyRefOf(publicKey: Uint8Array): string {
   return createHash("sha256").update(publicKey).digest("hex").slice(0, 12);
-}
-
-/**
- * Peppered HMAC-SHA256 of the token. Used for trial-abuse dedupe
- * (trial_registry) — irreversible, and useless without the pepper, which
- * lives only on the control plane. Changing the pepper invalidates all
- * stored fingerprints.
- */
-export function tokenFingerprint(rawToken: string): string {
-  return createHmac("sha256", requireEnv("TOKEN_FINGERPRINT_PEPPER"))
-    .update(rawToken.trim())
-    .digest("hex");
 }
 
 export async function sealToken(rawToken: string): Promise<SealedToken> {
@@ -73,6 +59,5 @@ export async function sealToken(rawToken: string): Promise<SealedToken> {
     ciphertext: sodium.to_base64(ciphertext, sodium.base64_variants.ORIGINAL),
     keyRef: keyRefOf(publicKey),
     last4: token.slice(-4),
-    fingerprint: tokenFingerprint(token),
   };
 }

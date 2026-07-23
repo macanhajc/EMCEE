@@ -35,14 +35,14 @@ Anchors: DIY floor is ~$7/mo (Replit); in-game rentals run ~5k Gold/mo (tens of 
 
 - **Monthly:** R$39/mo (~$7 USD reference) per instance.
 - **Annual:** R$390/yr per instance (10× monthly — ~2 months free).
-- **Trial:** 7 days, payment method required (card or Pix mandate — cuts abuse, keeps funnel honest).
+- **No free trial** (removed 2026-07-23, `docs/decisions.md`) — every subscription is charged at checkout; the 7-day money-back guarantee (`03-billing.md`) is the funnel's honesty mechanism instead.
 - **No bundle SKU at launch** (decided 2026-07-19); a multi-*instance* discount (same bot, several rooms — see the 2026-07-20 reframing note above) is a post-launch experiment once basket data exists.
 
 Keep pricing per-instance simple in v1; usage tiers only if the runtime cost data demands it. Rails & mechanics: `03-billing.md`.
 
 ## Onboarding flow (the 2 minutes)
 
-1. Sign up (Google or magic link, 18+ attestation — `06-auth.md`) → 2. pick bot → 3. checkout (trial) → 4. paste bot token + room ID, guided: where to find both, reminder to grant the bot designer rights in the room → 5. bot connects, dashboard shows **live** → 6. tweak config, changes apply within seconds.
+1. Sign up (Google or magic link, 18+ attestation — `06-auth.md`) → 2. pick bot → 3. checkout (charged immediately, card or Pix) → 4. paste bot token + room ID, guided: where to find both, reminder to grant the bot designer rights in the room → 5. bot connects, dashboard shows **live** → 6. tweak config, changes apply within seconds.
 
 Failure UX matters most at step 5: bad token, missing designer rights, room not found — each needs a specific, human error message.
 
@@ -54,7 +54,7 @@ Failure UX matters most at step 5: bad token, missing designer rights, room not 
 ## Success signals
 
 - Time-to-live-bot < 5 min for a new customer.
-- Trial → paid conversion (target: >25% once funnel is honest).
+- Checkout → active-past-day-7 retention (no trial funnel to measure since 2026-07-23; the 7-day money-back window is the honesty check instead — target: <10% of first purchases refunded).
 - Churn reason tracking from day one — especially "bot got banned/platform change" vs. "didn't see value."
 
 ## Open questions
@@ -62,5 +62,5 @@ Failure UX matters most at step 5: bad token, missing designer rights, room not 
 - Real conversion of the eligibility-gated market: how many room owners actually hold bot API access? (No public numbers — probe Discord/forum community sizes.)
 - Naming/brand ("BotMarket" is a working title; avoid implying official Highrise affiliation — ToS/trademark). "Emcee" as the *bot's* name (not just its Emotes module) reads fine unverified — master-of-ceremonies fits a bot that also greets, hosts, and keeps order — but isn't a confirmed decision, just the working assumption used across `bots/`.
 - **Music module:** only a single reference link so far (docsbot.ai Highrise music bot spec, via `HOW_SHOULD_WORK.md`) — no capability check done. The official SDK's action list (`highrise` skill) has no obvious audio/playback primitive; needs a real look at the SDK before this becomes more than a name on the roadmap.
-- ~~Trial mechanics~~ → resolved 2026-07-19: 7-day trial, payment method required (`03-billing.md`).
+- ~~Trial mechanics~~ → resolved 2026-07-19: 7-day trial, payment method required; **reversed 2026-07-23: trial removed entirely**, charged immediately at checkout (`03-billing.md`, `docs/decisions.md`).
 - ~~Bundle vs. à-la-carte~~ → resolved 2026-07-19: à-la-carte only at launch; bundle deferred. *(Note: with the 2026-07-20 single-bot reframing, "bundle" no longer applies the same way — there's one bot, and feature modules simply turn on within an instance's config; à-la-carte/bundle language was written for the old multi-bot-catalog model.)*

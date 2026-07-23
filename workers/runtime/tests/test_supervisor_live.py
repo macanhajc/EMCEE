@@ -1,7 +1,8 @@
 """Supervisor orchestration exercised through the real SDK's bot_runner()
 against the fake Highrise server (tests/fake_highrise_server.py) — real
-Postgres, real Redis, real asyncio.Task lifecycle. Only the WebSocket
-endpoint is fake, via HR_BOTAPI_URL.
+Postgres (including LISTEN/NOTIFY for config/avatar-position pub/sub, since
+2026-07-22 — docs/cost-plan.md R6), real asyncio.Task lifecycle. Only the
+WebSocket endpoint is fake, via HR_BOTAPI_URL.
 """
 
 from __future__ import annotations
@@ -33,12 +34,12 @@ async def fake_server():
 
 
 @pytest.fixture
-def supervisor(pool, redis_client, token_box, fake_server):
+def supervisor(pool, listen_conn, token_box, fake_server):
     from highrise.__main__ import bot_runner as real_bot_runner
 
     return Supervisor(
         pool,
-        redis_client,
+        listen_conn,
         token_box,
         supervisor_id="sup-test",
         capacity=10,
@@ -58,7 +59,7 @@ async def _wait_until(predicate, timeout=5.0, interval=0.02):
     await asyncio.wait_for(_poll(), timeout=timeout)
 
 
-async def test_reconcile_claims_and_connects(pool, redis_client, make_instance, fake_server, supervisor):
+async def test_reconcile_claims_and_connects(pool, make_instance, fake_server, supervisor):
     token = "hr-ok-token"
     instance_id = await make_instance(desired_state="running", token=token)
     fake_server.set_behavior(token, "ok_hold")
@@ -72,16 +73,13 @@ async def test_reconcile_claims_and_connects(pool, redis_client, make_instance, 
 
     await _wait_until(connected)
 
-    hb = await redis_client.hgetall(f"heartbeat:{instance_id}")
-    assert hb["state"] == "connected"
-
     assert len(fake_server.connections_seen) == 1
     assert fake_server.connections_seen[0]["api_token"] == token
 
     await supervisor.shutdown()
 
 
-async def test_stop_on_desired_state_flip(pool, redis_client, make_instance, fake_server, supervisor):
+async def test_stop_on_desired_state_flip(pool, make_instance, fake_server, supervisor):
     token = "hr-ok-token-2"
     instance_id = await make_instance(desired_state="running", token=token)
     fake_server.set_behavior(token, "ok_hold")
@@ -90,14 +88,13 @@ async def test_stop_on_desired_state_flip(pool, redis_client, make_instance, fak
     await _wait_until(lambda: _status_is(pool, instance_id, "running"))
 
     await pool.execute("UPDATE bot_instances SET desired_state = 'stopped' WHERE id = $1", instance_id)
-    await supervisor.reconcile()  # renew_lease sees the flip -> stops it
+    await supervisor.reconcile()  # renew_leases sees the flip -> stops it
 
     assert instance_id not in supervisor.running
     row = await pool.fetchrow("SELECT status, supervisor_id, lease_expires_at FROM bot_instances WHERE id = $1", instance_id)
     assert row["status"] == "stopped"
     assert row["supervisor_id"] is None
     assert row["lease_expires_at"] is None
-    assert await redis_client.exists(f"heartbeat:{instance_id}") == 0
 
     events = await fetch_events(pool, instance_id)
     assert any(e["kind"] == "stopped" for e in events)
@@ -122,7 +119,7 @@ async def test_fatal_error_escalates_to_degraded(pool, make_instance, fake_serve
     await supervisor.shutdown()
 
 
-async def test_config_hot_apply_via_redis_pubsub(pool, redis_client, make_instance, fake_server, supervisor):
+async def test_config_hot_apply_via_postgres_notify(pool, make_instance, fake_server, supervisor):
     token = "hr-ok-token-3"
     instance_id = await make_instance(
         desired_state="running", token=token, config={"emote_on_say": {"cooldown_s": 3}}
@@ -138,8 +135,8 @@ async def test_config_hot_apply_via_redis_pubsub(pool, redis_client, make_instan
         {"emote_on_say": {"cooldown_s": 9}},
     )
     listener_started = asyncio.create_task(supervisor._listen_config_updates())
-    await asyncio.sleep(0.1)  # let the subscribe() complete before publishing
-    await redis_client.publish("config.updated", f'{{"instanceId": "{instance_id}"}}')
+    await asyncio.sleep(0.1)  # let add_listener's LISTEN register before notifying
+    await pool.execute("SELECT pg_notify('config.updated', $1)", f'{{"instanceId": "{instance_id}"}}')
 
     async def applied():
         return supervisor.running[instance_id].bot.config["emote_on_say"]["cooldown_s"] == 9
@@ -155,7 +152,7 @@ async def test_config_hot_apply_via_redis_pubsub(pool, redis_client, make_instan
     await supervisor.shutdown()
 
 
-async def test_config_rejection_keeps_last_good(pool, redis_client, make_instance, fake_server, supervisor):
+async def test_config_rejection_keeps_last_good(pool, make_instance, fake_server, supervisor):
     token = "hr-ok-token-4"
     instance_id = await make_instance(
         desired_state="running", token=token, config={"emote_on_say": {"cooldown_s": 3}}
@@ -172,7 +169,7 @@ async def test_config_rejection_keeps_last_good(pool, redis_client, make_instanc
     )
     listener_started = asyncio.create_task(supervisor._listen_config_updates())
     await asyncio.sleep(0.1)
-    await redis_client.publish("config.updated", f'{{"instanceId": "{instance_id}"}}')
+    await pool.execute("SELECT pg_notify('config.updated', $1)", f'{{"instanceId": "{instance_id}"}}')
 
     async def rejected():
         events = await fetch_events(pool, instance_id)
@@ -182,6 +179,37 @@ async def test_config_rejection_keeps_last_good(pool, redis_client, make_instanc
 
     # last-good config preserved on the live bot object
     assert supervisor.running[instance_id].bot.config["emote_on_say"]["cooldown_s"] == 3
+
+    listener_started.cancel()
+    with contextlib.suppress(asyncio.CancelledError):
+        await listener_started
+    await supervisor.shutdown()
+
+
+async def test_avatar_position_update_via_postgres_notify(pool, make_instance, fake_server, supervisor):
+    """Same real-NOTIFY proof as test_config_hot_apply_via_postgres_notify,
+    but for the avatar_position.updated channel — this is what actually
+    proves the listener's channel-name dispatch in
+    Supervisor._listen_config_updates works against real Postgres, not just
+    each handler in isolation (test_avatar_position_update_reaches_running_instance
+    in test_supervisor_unit.py calls the handler directly, bypassing LISTEN
+    entirely)."""
+    token = "hr-ok-token-5"
+    instance_id = await make_instance(desired_state="running", token=token)
+    fake_server.set_behavior(token, "ok_hold")
+
+    await supervisor.reconcile()
+    await _wait_until(lambda: _status_is(pool, instance_id, "running"))
+
+    listener_started = asyncio.create_task(supervisor._listen_config_updates())
+    await asyncio.sleep(0.1)
+    await pool.execute("SELECT pg_notify('avatar_position.updated', $1)", f'{{"instanceId": "{instance_id}"}}')
+
+    async def applied():
+        events = await fetch_events(pool, instance_id)
+        return any(e["kind"] == "avatar_position_applied" for e in events)
+
+    await _wait_until(applied)
 
     listener_started.cancel()
     with contextlib.suppress(asyncio.CancelledError):

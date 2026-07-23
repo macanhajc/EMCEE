@@ -96,6 +96,53 @@ export async function searchOutfitItems(query: string, limit = 24): Promise<Outf
   }
 }
 
+export interface PublicUserInfo {
+  userId: string;
+  username: string;
+}
+
+/**
+ * `GET /users/{id_or_username}` — resolves a plain username to a Highrise
+ * user id without needing the bot to share a room with them (specs/bots/
+ * moderation.md's dashboard ban/unban design: this is what makes "ban
+ * someone who's never visited" possible — no bot connection involved at
+ * all, just the public catalog).
+ *
+ * Deliberately NOT the SDK's own `webapi.get_users(username=...)`
+ * (`GET /users?username=...`, a collection/filter endpoint) — live-checked
+ * against the real webapi (2026-07-23, specs/bots/moderation.md) and it
+ * 404s unconditionally, every query shape tried, so that method appears
+ * dead against the current API despite being modeled in the SDK. The
+ * *singular* resource endpoint the SDK calls `get_user(user_id)` turns out
+ * to accept a plain username in the same path slot and resolves it
+ * case-insensitively (confirmed live: `/users/abc123`, `/users/ABC123`,
+ * and `/users/Abc123` all return the same account) — that's the one used
+ * here, just with a username instead of an id in the path.
+ */
+export async function getUserByUsername(username: string): Promise<PublicUserInfo | null> {
+  const trimmed = username.trim();
+  if (!trimmed) return null;
+
+  try {
+    const res = await fetch(`${WEBAPI_URL}/users/${encodeURIComponent(trimmed)}`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return null; // covers the real 404 "User not found." case
+
+    const body = await res.json();
+    const user = body?.user;
+    if (!user || typeof user !== "object") return null;
+    const userId = (user as Record<string, unknown>).user_id;
+    const resolvedUsername = (user as Record<string, unknown>).username;
+    if (typeof userId !== "string" || typeof resolvedUsername !== "string") return null;
+
+    return { userId, username: resolvedUsername };
+  } catch (err) {
+    console.error("[highrise webapi] get_users (by username) failed", err);
+    return null;
+  }
+}
+
 /**
  * Resolves already-saved default-outfit item ids to display info (name +
  * icon) so the dashboard doesn't just show raw ids. One `GET /items/{id}`
