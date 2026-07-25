@@ -10,8 +10,12 @@ copies of the same tier logic.
 - **Anchor spot** — saying "anchor" teleports the bot to the speaker's
   current position and persists it (`avatar_positions`, one row per
   instance); restored on every `on_start` so the bot doesn't spawn wherever
-  the room happens to drop it. Deliberately *not* driven by dragging the
-  bot's own avatar around: there's no confirmed SDK event for "this bot was
+  the room happens to drop it — after a short delay (`ANCHOR_RESTORE_DELAY_S`
+  below), not immediately: teleporting the instant the WS session opens
+  loses a race against Highrise's own room-join placement of the bot's
+  avatar (confirmed live, docs/decisions.md 2026-07-25). Deliberately *not*
+  driven by dragging the bot's own avatar around: there's no confirmed SDK
+  event for "this bot was
   moved by someone else," only for reading *other* users' positions
   (`on_user_join`/`on_user_move`, both already confirmed handlers). Tracking
   the speaker's own last-known `Position` and teleporting the bot there on
@@ -121,6 +125,16 @@ ANCHOR_WORD = "anchor"
 LOOK_PREFIX = "look "
 COPY_PREFIX = "copy "
 
+# Empirical, not a confirmed platform timing (same status as this module's
+# other unverified constants) — teleporting the instant `on_start` fires
+# loses a race against Highrise's own room-join placement of the bot's
+# avatar. Confirmed live on a real canary bot (docs/decisions.md,
+# 2026-07-25): `avatar_positions` held the right row, `restore_position()`
+# ran with no error, and the bot still ended up at the room's default spot
+# because the platform's own placement won the race. Tune against the live
+# canary if this still isn't enough headroom.
+ANCHOR_RESTORE_DELAY_S = 2.0
+
 
 def _parse_presets(lines: list[str]) -> dict[str, list[str]]:
     """Parses "name: id1, id2, ..." lines into {normalized name: [item ids]}.
@@ -143,15 +157,23 @@ class AvatarEngine:
         self.bot = bot
         self._last_position: dict[str, Position] = {}  # user_id -> last known floor Position
         self._idle_task: asyncio.Task | None = None
+        self._restore_position_task: asyncio.Task | None = None
         self._last_reaction_at: dict[str, float] = {}  # user_id -> last time we reacted back at them
         self._outfit_lock = asyncio.Lock()  # serializes read-then-set_outfit across concurrent commands
 
     # --- lifecycle -------------------------------------------------------
 
     async def on_start(self) -> None:
-        await self.restore_position()
+        # Backgrounded with a delay, not a direct `await restore_position()`
+        # — see ANCHOR_RESTORE_DELAY_S above for why. Outfit/idle-loop setup
+        # below don't need to wait on it.
+        self._restore_position_task = asyncio.create_task(self._restore_position_after_connect())
         await self._apply_default_outfit()
         self._maybe_start_idle_loop()
+
+    async def _restore_position_after_connect(self) -> None:
+        await asyncio.sleep(ANCHOR_RESTORE_DELAY_S)
+        await self.restore_position()
 
     async def on_user_join(self, user: User, position: Position | AnchorPosition) -> None:
         if isinstance(position, Position):

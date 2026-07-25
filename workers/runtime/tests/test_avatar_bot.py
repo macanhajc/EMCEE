@@ -8,6 +8,7 @@ from highrise import SessionMetadata, User
 from highrise.models import AnchorPosition, Item, Position, RoomInfo
 
 import db
+from catalog import avatar as avatar_module
 from catalog.emcee import EmceeBot
 from fake_highrise_client import FakeHighrise, FakeWebAPI
 
@@ -110,7 +111,8 @@ async def test_leaving_drops_cached_position():
     assert bot.highrise.teleport_calls == []
 
 
-async def test_restore_on_start_teleports_to_saved_position(pool, make_instance):
+async def test_restore_on_start_teleports_to_saved_position(pool, make_instance, monkeypatch):
+    monkeypatch.setattr(avatar_module, "ANCHOR_RESTORE_DELAY_S", 0)
     instance_id = await make_instance()
     async with pool.acquire() as conn:
         await conn.execute(
@@ -124,26 +126,61 @@ async def test_restore_on_start_teleports_to_saved_position(pool, make_instance)
     bot = make_bot()
     bot.db_pool, bot.bot_instance_id = pool, instance_id
     await start(bot)
+    # Backgrounded with a delay (ANCHOR_RESTORE_DELAY_S) — await the task
+    # directly rather than sleeping past it, same convention as _idle_task.
+    await bot._avatar._restore_position_task
     assert bot.highrise.teleport_calls == [("bot-1", pos(x=1.0, y=2.0, z=3.0))]
 
 
-async def test_restore_on_start_is_a_noop_with_no_saved_position(pool, make_instance):
+async def test_restore_on_start_does_not_teleport_immediately(pool, make_instance, monkeypatch):
+    """The actual fix (docs/decisions.md, 2026-07-25): teleporting the
+    instant `on_start` fires loses a race against Highrise's own room-join
+    placement, confirmed live. Anchor restore must be scheduled, not
+    awaited inline — right after `on_start` returns, nothing has happened
+    yet; it only lands once `_restore_position_task` itself completes.
+    A small nonzero delay (not 0, unlike every other test here) is the
+    whole point of this one — it's what actually exercises the "not yet"
+    assertion below rather than trivially passing regardless of the fix."""
+    monkeypatch.setattr(avatar_module, "ANCHOR_RESTORE_DELAY_S", 0.05)
+    instance_id = await make_instance()
+    async with pool.acquire() as conn:
+        await conn.execute(
+            "INSERT INTO avatar_positions (bot_instance_id, x, y, z, facing) VALUES ($1, $2, $3, $4, $5)",
+            instance_id,
+            1.0,
+            2.0,
+            3.0,
+            "FrontRight",
+        )
+    bot = make_bot()
+    bot.db_pool, bot.bot_instance_id = pool, instance_id
+    await start(bot)
+    assert bot.highrise.teleport_calls == []  # not yet — still waiting out ANCHOR_RESTORE_DELAY_S
+    await bot._avatar._restore_position_task
+    assert bot.highrise.teleport_calls == [("bot-1", pos(x=1.0, y=2.0, z=3.0))]
+
+
+async def test_restore_on_start_is_a_noop_with_no_saved_position(pool, make_instance, monkeypatch):
+    monkeypatch.setattr(avatar_module, "ANCHOR_RESTORE_DELAY_S", 0)
     instance_id = await make_instance()
     bot = make_bot()
     bot.db_pool, bot.bot_instance_id = pool, instance_id
     await start(bot)
+    await bot._avatar._restore_position_task
     assert bot.highrise.teleport_calls == []
 
 
-async def test_apply_avatar_position_teleports_to_freshly_saved_spot(pool, make_instance):
+async def test_apply_avatar_position_teleports_to_freshly_saved_spot(pool, make_instance, monkeypatch):
     """The dashboard's "set from the webapp" path (specs/bots/avatar.md):
     writes straight to `avatar_positions`, then the supervisor calls
     `EmceeBot.apply_avatar_position` live, no reconnect — this exercises
     that same re-entry point directly."""
+    monkeypatch.setattr(avatar_module, "ANCHOR_RESTORE_DELAY_S", 0)
     instance_id = await make_instance()
     bot = make_bot()
     bot.db_pool, bot.bot_instance_id = pool, instance_id
     await start(bot)
+    await bot._avatar._restore_position_task
     assert bot.highrise.teleport_calls == []  # nothing saved yet at on_start
 
     async with pool.acquire() as conn:
@@ -196,7 +233,8 @@ async def test_apply_avatar_position_noop_when_position_disabled(pool, make_inst
     assert bot.highrise.teleport_calls == []
 
 
-async def test_anchor_persists_across_a_fresh_bot_instance(pool, make_instance):
+async def test_anchor_persists_across_a_fresh_bot_instance(pool, make_instance, monkeypatch):
+    monkeypatch.setattr(avatar_module, "ANCHOR_RESTORE_DELAY_S", 0)
     instance_id = await make_instance()
 
     bot1 = make_bot()
@@ -210,6 +248,7 @@ async def test_anchor_persists_across_a_fresh_bot_instance(pool, make_instance):
     bot2 = make_bot()
     bot2.db_pool, bot2.bot_instance_id = pool, instance_id
     await start(bot2)
+    await bot2._avatar._restore_position_task
     assert bot2.highrise.teleport_calls == [("bot-1", pos(x=4, y=5, z=6))]
 
 

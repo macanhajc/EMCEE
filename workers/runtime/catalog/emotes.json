@@ -1,580 +1,859 @@
 {
-  "version": 3,
+  "version": 4,
   "emotes": [
     {
-      "id": "dance-aerobics",
-      "name": "Push Ups",
+      "id": "emote-shy2",
+      "name": "Advanced Shy",
       "aliases": [
-        "push ups",
-        "pushups"
+        "advanced shy",
+        "advancedshy"
       ],
       "targetable": false
     },
     {
-      "id": "dance-anime",
-      "name": "Anime Dance",
+      "id": "sit-idle-cute",
+      "name": "Rest",
       "aliases": [
-        "anime dance",
-        "animedance"
+        "rest"
       ],
       "targetable": false
     },
     {
-      "id": "dance-blackpink",
-      "name": "K-Pop Dance",
+      "id": "sit-open",
+      "name": "Laid Back",
       "aliases": [
-        "k-pop dance",
-        "kpopdance"
+        "laid back",
+        "laidback"
       ],
       "targetable": false
     },
     {
-      "id": "dance-breakdance",
-      "name": "Breakdance",
+      "id": "sit-idle-laidBack",
+      "name": "Kicking Back",
       "aliases": [
-        "breakdance"
+        "kicking back",
+        "kickingback"
       ],
       "targetable": false
     },
     {
-      "id": "dance-creepypuppet",
-      "name": "Creepy Puppet",
+      "id": "idle_layingdown2",
+      "name": "Relaxed (Lying Down)",
       "aliases": [
-        "creepy puppet",
-        "creepypuppet"
+        "relaxedlyingdown"
       ],
       "targetable": false
     },
     {
-      "id": "dance-duckwalk",
-      "name": "Duck Walk",
+      "id": "idle_layingdown",
+      "name": "Attentive",
       "aliases": [
-        "duck walk",
-        "duckwalk"
+        "attentive"
       ],
       "targetable": false
     },
     {
-      "id": "dance-employee",
-      "name": "Push It",
+      "id": "idle-sleep",
+      "name": "Sleepy",
       "aliases": [
-        "push it",
-        "pushit"
+        "sleepy"
       ],
       "targetable": false
     },
     {
-      "id": "dance-floss",
-      "name": "Floss",
+      "id": "idle-sad",
+      "name": "Pouty Face",
       "aliases": [
-        "floss"
+        "pouty face",
+        "poutyface"
       ],
       "targetable": false
     },
     {
-      "id": "dance-freshprince",
-      "name": "The Fresh Step",
+      "id": "idle-posh",
+      "name": "Posh",
       "aliases": [
-        "the fresh step",
-        "thefreshstep"
+        "posh"
       ],
       "targetable": false
     },
     {
-      "id": "dance-griddy",
-      "name": "Gwiddy",
+      "id": "idle-loop-tired",
+      "name": "Sleepy (Loop)",
       "aliases": [
-        "gwiddy"
+        "sleepyloop"
       ],
       "targetable": false
     },
     {
-      "id": "dance-handsup",
-      "name": "Hands in the Air",
+      "id": "idle-loop-tapdance",
+      "name": "Tap Loop",
       "aliases": [
-        "hands in the air",
-        "handsintheair"
+        "tap loop",
+        "taploop"
       ],
       "targetable": false
     },
     {
-      "id": "dance-icecream",
-      "name": "Ice Cream Dance",
+      "id": "idle-loop-sitfloor",
+      "name": "Sit",
       "aliases": [
-        "ice cream dance",
-        "icecreamdance"
+        "sit"
       ],
       "targetable": false
     },
     {
-      "id": "dance-jinglebell",
-      "name": "Jinglebell",
+      "id": "idle-loop-shy",
+      "name": "Shy (Loop)",
       "aliases": [
-        "jinglebell"
+        "shyloop"
       ],
       "targetable": false
     },
     {
-      "id": "dance-kawai",
-      "name": "Kawaii",
+      "id": "idle_zombie",
+      "name": "Zombie",
       "aliases": [
-        "kawaii"
+        "zombie"
       ],
       "targetable": false
     },
     {
-      "id": "dance-macarena",
-      "name": "Macarena",
+      "id": "idle-loop-sad",
+      "name": "Bummed",
       "aliases": [
-        "macarena"
-      ],
-      "targetable": true
-    },
-    {
-      "id": "dance-martial-artist",
-      "name": "Karate",
-      "aliases": [
-        "karate"
+        "bummed"
       ],
       "targetable": false
     },
     {
-      "id": "dance-metal",
-      "name": "Rock Out",
+      "id": "idle-loop-happy",
+      "name": "Chillin'",
       "aliases": [
-        "rock out",
-        "rockout"
+        "chillin'",
+        "chillin"
       ],
       "targetable": false
     },
     {
-      "id": "dance-mine",
-      "name": "Mine Dance",
+      "id": "idle-loop-annoyed",
+      "name": "Annoyed",
       "aliases": [
-        "mine dance",
-        "minedance"
+        "annoyed"
       ],
       "targetable": false
     },
     {
-      "id": "dance-orangejustice",
-      "name": "Orange Juice Dance",
+      "id": "idle-loop-aerobics",
+      "name": "Aerobics",
       "aliases": [
-        "orange juice dance",
-        "orangejuicedance"
+        "aerobics"
       ],
       "targetable": false
     },
     {
-      "id": "dance-pennywise",
-      "name": "Penny's Dance",
+      "id": "idle-lookup",
+      "name": "Ponder",
       "aliases": [
-        "penny's dance",
-        "pennysdance"
+        "ponder"
       ],
       "targetable": false
     },
     {
-      "id": "dance-pinguin",
-      "name": "Penguin Dance",
+      "id": "idle-hero",
+      "name": "Hero Pose",
       "aliases": [
-        "penguin dance",
-        "penguindance"
+        "hero pose",
+        "heropose"
       ],
       "targetable": false
     },
     {
-      "id": "dance-popularvibe",
-      "name": "Popular Vibe",
+      "id": "idle-floorsleeping2",
+      "name": "Relaxing",
       "aliases": [
-        "popular vibe",
-        "popularvibe"
+        "relaxing"
       ],
       "targetable": false
     },
     {
-      "id": "dance-robotic",
-      "name": "Robotic",
+      "id": "idle-floorsleeping",
+      "name": "Cozy Nap",
       "aliases": [
-        "robotic"
+        "cozy nap",
+        "cozynap"
       ],
       "targetable": false
     },
     {
-      "id": "dance-russian",
-      "name": "Russian Dance",
+      "id": "idle-enthusiastic",
+      "name": "Enthused",
       "aliases": [
-        "russian dance",
-        "russiandance"
+        "enthused"
       ],
       "targetable": false
     },
     {
-      "id": "dance-sexy",
-      "name": "Sexy Dance",
+      "id": "idle-dance-swinging",
+      "name": "Boogie Swing",
       "aliases": [
-        "sexy dance",
-        "sexydance"
+        "boogie swing",
+        "boogieswing"
       ],
       "targetable": false
     },
     {
-      "id": "dance-shoppingcart",
-      "name": "Let's Go Shopping",
+      "id": "idle-dance-headbobbing",
+      "name": "Feel The Beat",
       "aliases": [
-        "let's go shopping",
-        "letsgoshopping"
+        "feel the beat",
+        "feelthebeat"
       ],
       "targetable": false
     },
     {
-      "id": "dance-singleladies",
-      "name": "Ring on It",
+      "id": "idle-angry",
+      "name": "Irritated",
       "aliases": [
-        "ring on it",
-        "ringonit"
+        "irritated"
       ],
       "targetable": false
     },
     {
-      "id": "dance-smoothwalk",
-      "name": "Smoothwalk",
+      "id": "emote-yes",
+      "name": "Yes",
       "aliases": [
-        "smoothwalk"
+        "yes"
       ],
       "targetable": false
     },
     {
-      "id": "dance-spiritual",
-      "name": "Yoga Flow",
+      "id": "emote-wings",
+      "name": "I Believe I Can Fly",
       "aliases": [
-        "yoga flow",
-        "yogaflow"
+        "i believe i can fly",
+        "ibelieveicanfly"
       ],
       "targetable": false
     },
     {
-      "id": "dance-swagbounce",
-      "name": "Swag Bounce",
+      "id": "emote-wave",
+      "name": "The Wave",
       "aliases": [
-        "swag bounce",
-        "swagbounce"
+        "the wave",
+        "thewave"
       ],
       "targetable": false
     },
     {
-      "id": "dance-tiktok10",
-      "name": "TikTok Dance 10",
+      "id": "emote-tired",
+      "name": "Tired",
       "aliases": [
-        "tiktok dance 10",
-        "tiktokdance10"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "dance-tiktok2",
-      "name": "Don't Start Now",
-      "aliases": [
-        "don't start now",
-        "dontstartnow"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "dance-tiktok8",
-      "name": "Savage Dance",
-      "aliases": [
-        "savage dance",
-        "savagedance"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "dance-tiktok9",
-      "name": "TikTok Dance 9",
-      "aliases": [
-        "tiktok dance 9",
-        "tiktokdance9"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "dance-touch",
-      "name": "Touch",
-      "aliases": [
-        "touch"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "dance-true-heart",
-      "name": "Pure Heart",
-      "aliases": [
-        "pure heart",
-        "pureheart"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "dance-twerk",
-      "name": "Twerk It Out",
-      "aliases": [
-        "twerk it out",
-        "twerkitout"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "dance-voguehands",
-      "name": "Vogue Hands",
-      "aliases": [
-        "vogue hands",
-        "voguehands"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "dance-weird",
-      "name": "Weird Dance",
-      "aliases": [
-        "weird dance",
-        "weirddance"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "dance-woah",
-      "name": "The Woah",
-      "aliases": [
-        "the woah",
-        "thewoah"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "dance-wrong",
-      "name": "Wrong Dance",
-      "aliases": [
-        "wrong dance",
-        "wrongdance"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "dance-zombie",
-      "name": "Dance Zombie",
-      "aliases": [
-        "dance zombie",
-        "dancezombie"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emoji-angry",
-      "name": "Angry",
-      "aliases": [
-        "angry",
-        "mad",
-        "bravo",
-        "irritado"
+        "tired",
+        "cansado",
+        "sono"
       ],
       "targetable": true
     },
     {
-      "id": "emoji-arrogance",
-      "name": "Arrogance",
+      "id": "emote-think",
+      "name": "Think",
       "aliases": [
-        "arrogance"
+        "think"
       ],
       "targetable": false
     },
     {
-      "id": "emoji-celebrate",
-      "name": "Raise The Roof",
+      "id": "emote-theatrical",
+      "name": "Theatrical",
       "aliases": [
-        "raise the roof",
-        "raisetheroof"
+        "theatrical"
       ],
       "targetable": false
     },
     {
-      "id": "emoji-clapping",
-      "name": "Clap",
+      "id": "emote-tapdance",
+      "name": "Tap Dance",
       "aliases": [
-        "clap"
+        "tap dance",
+        "tapdance"
       ],
       "targetable": false
     },
     {
-      "id": "emoji-crying",
-      "name": "Sob",
+      "id": "emote-superrun",
+      "name": "Super Run",
       "aliases": [
-        "sob"
+        "super run",
+        "superrun"
       ],
       "targetable": false
     },
     {
-      "id": "emoji-cursing",
-      "name": "Cursing Emote",
+      "id": "emote-superpunch",
+      "name": "Super Punch",
       "aliases": [
-        "cursing emote",
-        "cursingemote"
+        "super punch",
+        "superpunch"
       ],
       "targetable": false
     },
     {
-      "id": "emoji-dizzy",
-      "name": "Stunned",
+      "id": "emote-sumo",
+      "name": "Sumo Fight",
       "aliases": [
-        "stunned"
+        "sumo fight",
+        "sumofight"
       ],
       "targetable": false
     },
     {
-      "id": "emoji-eyeroll",
-      "name": "Eyeroll",
+      "id": "emote-suckthumb",
+      "name": "Thumb Suck",
       "aliases": [
-        "eyeroll"
+        "thumb suck",
+        "thumbsuck"
       ],
       "targetable": false
     },
     {
-      "id": "emoji-flex",
-      "name": "Flex",
+      "id": "emote-splitsdrop",
+      "name": "Splits Drop",
       "aliases": [
-        "flex"
+        "splits drop",
+        "splitsdrop"
       ],
       "targetable": false
     },
     {
-      "id": "emoji-gagging",
-      "name": "Tummy Ache",
+      "id": "emote-snowball",
+      "name": "Snowball Fight!",
       "aliases": [
-        "tummy ache",
-        "tummyache"
+        "snowball fight",
+        "snowballfight"
       ],
       "targetable": false
     },
     {
-      "id": "emoji-ghost",
-      "name": "Ghost",
+      "id": "emote-snowangel",
+      "name": "Snow Angel",
       "aliases": [
-        "ghost"
+        "snow angel",
+        "snowangel"
       ],
       "targetable": false
     },
     {
-      "id": "emoji-give-up",
-      "name": "Give Up",
+      "id": "emote-shy",
+      "name": "Shy",
       "aliases": [
-        "give up",
-        "giveup"
+        "shy"
       ],
       "targetable": false
     },
     {
-      "id": "emoji-hadoken",
-      "name": "Fireball Lunge",
+      "id": "emote-secrethandshake",
+      "name": "Secret Handshake",
       "aliases": [
-        "fireball lunge",
-        "fireballlunge"
+        "secret handshake",
+        "secrethandshake"
       ],
       "targetable": false
     },
     {
-      "id": "emoji-halo",
-      "name": "Levitate",
+      "id": "emote-sad",
+      "name": "Sad",
       "aliases": [
-        "levitate"
+        "sad"
       ],
       "targetable": false
     },
     {
-      "id": "emoji-lying",
-      "name": "Lying",
+      "id": "emote-ropepull",
+      "name": "Rope Pull",
       "aliases": [
-        "lying"
+        "rope pull",
+        "ropepull"
       ],
       "targetable": false
     },
     {
-      "id": "emoji-mind-blown",
-      "name": "Mind Blown",
+      "id": "emote-roll",
+      "name": "Roll",
       "aliases": [
-        "mind blown",
-        "mindblown"
+        "roll"
       ],
       "targetable": false
     },
     {
-      "id": "emoji-naughty",
-      "name": "Naughty",
+      "id": "emote-rofl",
+      "name": "ROFL!",
       "aliases": [
-        "naughty"
+        "rofl"
       ],
       "targetable": false
     },
     {
-      "id": "emoji-poop",
-      "name": "Stinky",
+      "id": "emote-robot",
+      "name": "Robot",
       "aliases": [
-        "stinky"
+        "robot"
       ],
       "targetable": false
     },
     {
-      "id": "emoji-pray",
-      "name": "Pray",
+      "id": "emote-rainbow",
+      "name": "Rainbow",
       "aliases": [
-        "pray"
+        "rainbow"
       ],
       "targetable": false
     },
     {
-      "id": "emoji-punch",
-      "name": "Punch",
+      "id": "emote-proposing",
+      "name": "Proposing",
       "aliases": [
-        "punch"
+        "proposing"
       ],
       "targetable": false
     },
     {
-      "id": "emoji-scared",
-      "name": "Gasp",
+      "id": "emote-peekaboo",
+      "name": "Peekaboo!",
       "aliases": [
-        "gasp"
+        "peekaboo"
       ],
       "targetable": false
     },
     {
-      "id": "emoji-sick",
-      "name": "Sick",
+      "id": "emote-peace",
+      "name": "Peace",
       "aliases": [
-        "sick"
+        "peace"
       ],
       "targetable": false
     },
     {
-      "id": "emoji-smirking",
-      "name": "Smirk",
+      "id": "emote-panic",
+      "name": "Panic",
       "aliases": [
-        "smirk"
+        "panic"
       ],
       "targetable": false
     },
     {
-      "id": "emoji-sneeze",
-      "name": "Sneeze",
+      "id": "emote-no",
+      "name": "No",
       "aliases": [
-        "sneeze"
+        "no"
       ],
       "targetable": false
     },
     {
-      "id": "emoji-there",
-      "name": "Point",
+      "id": "emote-ninjarun",
+      "name": "Ninja Run",
       "aliases": [
-        "point"
+        "ninja run",
+        "ninjarun"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-nightfever",
+      "name": "Night Fever",
+      "aliases": [
+        "night fever",
+        "nightfever"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-monster_fail",
+      "name": "Monster Fail",
+      "aliases": [
+        "monster fail",
+        "monsterfail"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-model",
+      "name": "Model",
+      "aliases": [
+        "model"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-lust",
+      "name": "Flirty Wave",
+      "aliases": [
+        "flirty wave",
+        "flirtywave"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-levelup",
+      "name": "Level Up!",
+      "aliases": [
+        "level up",
+        "levelup"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-laughing2",
+      "name": "Amused",
+      "aliases": [
+        "amused"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-laughing",
+      "name": "Laugh",
+      "aliases": [
+        "laugh"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-kiss",
+      "name": "Kiss",
+      "aliases": [
+        "kiss"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-kicking",
+      "name": "Super Kick",
+      "aliases": [
+        "super kick",
+        "superkick"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-jumpb",
+      "name": "Jump",
+      "aliases": [
+        "jump"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-judochop",
+      "name": "Judo Chop",
+      "aliases": [
+        "judo chop",
+        "judochop"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-jetpack",
+      "name": "Imaginary Jetpack",
+      "aliases": [
+        "imaginary jetpack",
+        "imaginaryjetpack"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-hugyourself",
+      "name": "Hug Yourself",
+      "aliases": [
+        "hug yourself",
+        "hugyourself"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-hot",
+      "name": "Sweating",
+      "aliases": [
+        "sweating"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-hero",
+      "name": "Hero Entrance",
+      "aliases": [
+        "hero entrance",
+        "heroentrance"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-hello",
+      "name": "Hello",
+      "aliases": [
+        "hello",
+        "hi",
+        "oi",
+        "olá"
+      ],
+      "targetable": true
+    },
+    {
+      "id": "emote-headball",
+      "name": "Headball",
+      "aliases": [
+        "headball"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-harlemshake",
+      "name": "Harlem Shake",
+      "aliases": [
+        "harlem shake",
+        "harlemshake"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-happy",
+      "name": "Happy",
+      "aliases": [
+        "happy"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-handstand",
+      "name": "Handstand",
+      "aliases": [
+        "handstand"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-greedy",
+      "name": "Greedy Emote",
+      "aliases": [
+        "greedy emote",
+        "greedyemote"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-graceful",
+      "name": "Graceful",
+      "aliases": [
+        "graceful"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-gordonshuffle",
+      "name": "Moonwalk",
+      "aliases": [
+        "moonwalk"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-ghost-idle",
+      "name": "Ghost Float",
+      "aliases": [
+        "ghost float",
+        "ghostfloat"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-gangnam",
+      "name": "Gangnam Style",
+      "aliases": [
+        "gangnam style",
+        "gangnamstyle"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-frollicking",
+      "name": "Frolic",
+      "aliases": [
+        "frolic"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-fainting",
+      "name": "Faint",
+      "aliases": [
+        "faint"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-fail2",
+      "name": "Clumsy",
+      "aliases": [
+        "clumsy"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-fail1",
+      "name": "Fall",
+      "aliases": [
+        "fall"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-exasperatedb",
+      "name": "Face Palm",
+      "aliases": [
+        "face palm",
+        "facepalm"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-exasperated",
+      "name": "Exasperated",
+      "aliases": [
+        "exasperated"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-elbowbump",
+      "name": "Elbow Bump",
+      "aliases": [
+        "elbow bump",
+        "elbowbump"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-disco",
+      "name": "Disco",
+      "aliases": [
+        "disco"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-disappear",
+      "name": "Blast Off",
+      "aliases": [
+        "blast off",
+        "blastoff"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-deathdrop",
+      "name": "Faint Drop",
+      "aliases": [
+        "faint drop",
+        "faintdrop"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-death2",
+      "name": "Collapse",
+      "aliases": [
+        "collapse"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-death",
+      "name": "Revival",
+      "aliases": [
+        "revival"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-dab",
+      "name": "Dab",
+      "aliases": [
+        "dab"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-curtsy",
+      "name": "Curtsy",
+      "aliases": [
+        "curtsy"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-confused",
+      "name": "Confusion",
+      "aliases": [
+        "confusion"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-cold",
+      "name": "Cold",
+      "aliases": [
+        "cold"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-charging",
+      "name": "Charging",
+      "aliases": [
+        "charging"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-bunnyhop",
+      "name": "Bunny Hop",
+      "aliases": [
+        "bunny hop",
+        "bunnyhop"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-bow",
+      "name": "Bow",
+      "aliases": [
+        "bow"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-boo",
+      "name": "Boo",
+      "aliases": [
+        "boo"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-baseball",
+      "name": "Home Run!",
+      "aliases": [
+        "home run",
+        "homerun"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-apart",
+      "name": "Falling Apart",
+      "aliases": [
+        "falling apart",
+        "fallingapart"
       ],
       "targetable": false
     },
@@ -590,27 +869,401 @@
       "targetable": true
     },
     {
-      "id": "emote-afk-idle",
-      "name": "AFK",
+      "id": "emoji-there",
+      "name": "Point",
       "aliases": [
-        "afk"
+        "point"
       ],
       "targetable": false
     },
     {
-      "id": "emote-apart",
-      "name": "Falling Apart",
+      "id": "emoji-sneeze",
+      "name": "Sneeze",
       "aliases": [
-        "falling apart",
-        "fallingapart"
+        "sneeze"
       ],
       "targetable": false
     },
     {
-      "id": "emote-astronaut",
-      "name": "Astronaut",
+      "id": "emoji-smirking",
+      "name": "Smirk",
       "aliases": [
-        "astronaut"
+        "smirk"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emoji-sick",
+      "name": "Sick",
+      "aliases": [
+        "sick"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emoji-scared",
+      "name": "Gasp",
+      "aliases": [
+        "gasp"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emoji-punch",
+      "name": "Punch",
+      "aliases": [
+        "punch"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emoji-pray",
+      "name": "Pray",
+      "aliases": [
+        "pray"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emoji-poop",
+      "name": "Stinky",
+      "aliases": [
+        "stinky"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emoji-naughty",
+      "name": "Naughty",
+      "aliases": [
+        "naughty"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emoji-mind-blown",
+      "name": "Mind Blown",
+      "aliases": [
+        "mind blown",
+        "mindblown"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emoji-lying",
+      "name": "Lying",
+      "aliases": [
+        "lying"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emoji-halo",
+      "name": "Levitate",
+      "aliases": [
+        "levitate"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emoji-hadoken",
+      "name": "Fireball Lunge",
+      "aliases": [
+        "fireball lunge",
+        "fireballlunge"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emoji-give-up",
+      "name": "Give Up",
+      "aliases": [
+        "give up",
+        "giveup"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emoji-gagging",
+      "name": "Tummy Ache",
+      "aliases": [
+        "tummy ache",
+        "tummyache"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emoji-flex",
+      "name": "Flex",
+      "aliases": [
+        "flex"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emoji-dizzy",
+      "name": "Stunned",
+      "aliases": [
+        "stunned"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emoji-cursing",
+      "name": "Cursing Emote",
+      "aliases": [
+        "cursing emote",
+        "cursingemote"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emoji-crying",
+      "name": "Sob",
+      "aliases": [
+        "sob"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emoji-clapping",
+      "name": "Clap",
+      "aliases": [
+        "clap"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emoji-celebrate",
+      "name": "Raise The Roof",
+      "aliases": [
+        "raise the roof",
+        "raisetheroof"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emoji-arrogance",
+      "name": "Arrogance",
+      "aliases": [
+        "arrogance"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emoji-angry",
+      "name": "Angry",
+      "aliases": [
+        "angry",
+        "mad",
+        "bravo",
+        "irritado"
+      ],
+      "targetable": true
+    },
+    {
+      "id": "dance-voguehands",
+      "name": "Vogue Hands",
+      "aliases": [
+        "vogue hands",
+        "voguehands"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "dance-tiktok8",
+      "name": "Savage Dance",
+      "aliases": [
+        "savage dance",
+        "savagedance"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "dance-tiktok2",
+      "name": "Don't Start Now",
+      "aliases": [
+        "don't start now",
+        "dontstartnow"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "dance-spiritual",
+      "name": "Yoga Flow",
+      "aliases": [
+        "yoga flow",
+        "yogaflow"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "dance-smoothwalk",
+      "name": "Smoothwalk",
+      "aliases": [
+        "smoothwalk"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "dance-singleladies",
+      "name": "Ring on It",
+      "aliases": [
+        "ring on it",
+        "ringonit"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "dance-shoppingcart",
+      "name": "Let's Go Shopping",
+      "aliases": [
+        "let's go shopping",
+        "letsgoshopping"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "dance-russian",
+      "name": "Russian Dance",
+      "aliases": [
+        "russian dance",
+        "russiandance"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "dance-robotic",
+      "name": "Robotic",
+      "aliases": [
+        "robotic"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "dance-pennywise",
+      "name": "Penny's Dance",
+      "aliases": [
+        "penny's dance",
+        "pennysdance"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "dance-orangejustice",
+      "name": "Orange Juice Dance",
+      "aliases": [
+        "orange juice dance",
+        "orangejuicedance"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "dance-metal",
+      "name": "Rock Out",
+      "aliases": [
+        "rock out",
+        "rockout"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "dance-martial-artist",
+      "name": "Karate",
+      "aliases": [
+        "karate"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "dance-macarena",
+      "name": "Macarena",
+      "aliases": [
+        "macarena"
+      ],
+      "targetable": true
+    },
+    {
+      "id": "dance-handsup",
+      "name": "Hands in the Air",
+      "aliases": [
+        "hands in the air",
+        "handsintheair"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "dance-floss",
+      "name": "Floss",
+      "aliases": [
+        "floss"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "dance-duckwalk",
+      "name": "Duck Walk",
+      "aliases": [
+        "duck walk",
+        "duckwalk"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "dance-breakdance",
+      "name": "Breakdance",
+      "aliases": [
+        "breakdance"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "dance-blackpink",
+      "name": "K-Pop Dance",
+      "aliases": [
+        "k-pop dance",
+        "kpopdance"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "dance-aerobics",
+      "name": "Push Ups",
+      "aliases": [
+        "push ups",
+        "pushups"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-hyped",
+      "name": "Hyped",
+      "aliases": [
+        "hyped"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "dance-jinglebell",
+      "name": "Jinglebell",
+      "aliases": [
+        "jinglebell"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "idle-nervous",
+      "name": "Nervous",
+      "aliases": [
+        "nervous"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "idle-toilet",
+      "name": "Toilet",
+      "aliases": [
+        "toilet"
       ],
       "targetable": false
     },
@@ -623,377 +1276,27 @@
       "targetable": false
     },
     {
-      "id": "emote-baseball",
-      "name": "Home Run!",
+      "id": "emote-astronaut",
+      "name": "Astronaut",
       "aliases": [
-        "home run",
-        "homerun"
+        "astronaut"
       ],
       "targetable": false
     },
     {
-      "id": "emote-boo",
-      "name": "Boo",
+      "id": "dance-zombie",
+      "name": "Dance Zombie",
       "aliases": [
-        "boo"
+        "dance zombie",
+        "dancezombie"
       ],
       "targetable": false
     },
     {
-      "id": "emote-bow",
-      "name": "Bow",
+      "id": "emoji-ghost",
+      "name": "Ghost",
       "aliases": [
-        "bow"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-boxer",
-      "name": "Boxer",
-      "aliases": [
-        "boxer"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-bunnyhop",
-      "name": "Bunny Hop",
-      "aliases": [
-        "bunny hop",
-        "bunnyhop"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-celebrationstep",
-      "name": "Celebration Step",
-      "aliases": [
-        "celebration step",
-        "celebrationstep"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-charging",
-      "name": "Charging",
-      "aliases": [
-        "charging"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-cold",
-      "name": "Cold",
-      "aliases": [
-        "cold"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-collab-photo-right",
-      "name": "Highrise Star",
-      "aliases": [
-        "highrise star",
-        "highrisestar"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-confused",
-      "name": "Confusion",
-      "aliases": [
-        "confusion"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-creepycute",
-      "name": "Creepycute",
-      "aliases": [
-        "creepycute"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-curtsy",
-      "name": "Curtsy",
-      "aliases": [
-        "curtsy"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-cute",
-      "name": "Cute",
-      "aliases": [
-        "cute"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-cutey",
-      "name": "Cutey",
-      "aliases": [
-        "cutey"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-dab",
-      "name": "Dab",
-      "aliases": [
-        "dab"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-death",
-      "name": "Revival",
-      "aliases": [
-        "revival"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-death2",
-      "name": "Collapse",
-      "aliases": [
-        "collapse"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-deathdrop",
-      "name": "Faint Drop",
-      "aliases": [
-        "faint drop",
-        "faintdrop"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-disappear",
-      "name": "Blast Off",
-      "aliases": [
-        "blast off",
-        "blastoff"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-disco",
-      "name": "Disco",
-      "aliases": [
-        "disco"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-elbowbump",
-      "name": "Elbow Bump",
-      "aliases": [
-        "elbow bump",
-        "elbowbump"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-embarrassed",
-      "name": "Embarrassed",
-      "aliases": [
-        "embarrassed"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-energyball",
-      "name": "Energy Ball",
-      "aliases": [
-        "energy ball",
-        "energyball"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-exasperated",
-      "name": "Exasperated",
-      "aliases": [
-        "exasperated"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-exasperatedb",
-      "name": "Face Palm",
-      "aliases": [
-        "face palm",
-        "facepalm"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-fail1",
-      "name": "Fall",
-      "aliases": [
-        "fall"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-fail2",
-      "name": "Clumsy",
-      "aliases": [
-        "clumsy"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-fainting",
-      "name": "Faint",
-      "aliases": [
-        "faint"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-fashionista",
-      "name": "Fashionista",
-      "aliases": [
-        "fashionista"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-float",
-      "name": "Float",
-      "aliases": [
-        "float"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-frog",
-      "name": "Frog",
-      "aliases": [
-        "frog"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-frollicking",
-      "name": "Frolic",
-      "aliases": [
-        "frolic"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-frustrated",
-      "name": "Frustrated",
-      "aliases": [
-        "frustrated"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-gangnam",
-      "name": "Gangnam Style",
-      "aliases": [
-        "gangnam style",
-        "gangnamstyle"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-ghost-idle",
-      "name": "Ghost Float",
-      "aliases": [
-        "ghost float",
-        "ghostfloat"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-gift",
-      "name": "This Is For You",
-      "aliases": [
-        "this is for you",
-        "thisisforyou"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-gordonshuffle",
-      "name": "Moonwalk",
-      "aliases": [
-        "moonwalk"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-graceful",
-      "name": "Graceful",
-      "aliases": [
-        "graceful"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-gravity",
-      "name": "Gravity",
-      "aliases": [
-        "gravity"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-greedy",
-      "name": "Greedy Emote",
-      "aliases": [
-        "greedy emote",
-        "greedyemote"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-handstand",
-      "name": "Handstand",
-      "aliases": [
-        "handstand"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-happy",
-      "name": "Happy",
-      "aliases": [
-        "happy"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-harlemshake",
-      "name": "Harlem Shake",
-      "aliases": [
-        "harlem shake",
-        "harlemshake"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-headball",
-      "name": "Headball",
-      "aliases": [
-        "headball"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-headblowup",
-      "name": "Head Blowup",
-      "aliases": [
-        "head blowup",
-        "headblowup"
+        "ghost"
       ],
       "targetable": false
     },
@@ -1003,6 +1306,30 @@
       "aliases": [
         "heart eyes",
         "hearteyes"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-swordfight",
+      "name": "Swordfight",
+      "aliases": [
+        "swordfight"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-timejump",
+      "name": "TimeJump",
+      "aliases": [
+        "timejump"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-snake",
+      "name": "Snake",
+      "aliases": [
+        "snake"
       ],
       "targetable": false
     },
@@ -1025,115 +1352,10 @@
       "targetable": false
     },
     {
-      "id": "emote-hello",
-      "name": "Hello",
-      "aliases": [
-        "hello",
-        "hi",
-        "oi",
-        "olá"
-      ],
-      "targetable": true
-    },
-    {
-      "id": "emote-hero",
-      "name": "Hero Entrance",
-      "aliases": [
-        "hero entrance",
-        "heroentrance"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-hot",
-      "name": "Sweating",
-      "aliases": [
-        "sweating"
-      ],
-      "targetable": false
-    },
-    {
       "id": "emote-hug",
       "name": "Hug",
       "aliases": [
         "hug"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-hugyourself",
-      "name": "Hug Yourself",
-      "aliases": [
-        "hug yourself",
-        "hugyourself"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-hyped",
-      "name": "Hyped",
-      "aliases": [
-        "hyped"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-iceskating",
-      "name": "Ice Skating",
-      "aliases": [
-        "ice skating",
-        "iceskating"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-jetpack",
-      "name": "Imaginary Jetpack",
-      "aliases": [
-        "imaginary jetpack",
-        "imaginaryjetpack"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-judochop",
-      "name": "Judo Chop",
-      "aliases": [
-        "judo chop",
-        "judochop"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-jumpb",
-      "name": "Jump",
-      "aliases": [
-        "jump"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-kawaiigogo",
-      "name": "KawaiiGoGo",
-      "aliases": [
-        "kawaiigogo"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-kicking",
-      "name": "Super Kick",
-      "aliases": [
-        "super kick",
-        "superkick"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-kiss",
-      "name": "Kiss",
-      "aliases": [
-        "kiss"
       ],
       "targetable": false
     },
@@ -1146,36 +1368,86 @@
       "targetable": false
     },
     {
-      "id": "emote-laughing",
-      "name": "Laugh",
+      "id": "emoji-eyeroll",
+      "name": "Eyeroll",
       "aliases": [
-        "laugh"
+        "eyeroll"
       ],
       "targetable": false
     },
     {
-      "id": "emote-laughing2",
-      "name": "Amused",
+      "id": "emote-embarrassed",
+      "name": "Embarrassed",
       "aliases": [
-        "amused"
+        "embarrassed"
       ],
       "targetable": false
     },
     {
-      "id": "emote-levelup",
-      "name": "Level Up!",
+      "id": "emote-float",
+      "name": "Float",
       "aliases": [
-        "level up",
-        "levelup"
+        "float"
       ],
       "targetable": false
     },
     {
-      "id": "emote-lust",
-      "name": "Flirty Wave",
+      "id": "emote-telekinesis",
+      "name": "Telekinesis",
       "aliases": [
-        "flirty wave",
-        "flirtywave"
+        "telekinesis"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "dance-sexy",
+      "name": "Sexy Dance",
+      "aliases": [
+        "sexy dance",
+        "sexydance"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-puppet",
+      "name": "Puppet",
+      "aliases": [
+        "puppet"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "idle-fighter",
+      "name": "Fighter Idle",
+      "aliases": [
+        "fighter idle",
+        "fighteridle"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "dance-pinguin",
+      "name": "Penguin Dance",
+      "aliases": [
+        "penguin dance",
+        "penguindance"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "dance-creepypuppet",
+      "name": "Creepy Puppet",
+      "aliases": [
+        "creepy puppet",
+        "creepypuppet"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-sleigh",
+      "name": "Sleigh",
+      "aliases": [
+        "sleigh"
       ],
       "targetable": false
     },
@@ -1188,122 +1460,70 @@
       "targetable": false
     },
     {
-      "id": "emote-meditate-idle",
-      "name": "Zen Mode",
+      "id": "emote-energyball",
+      "name": "Energy Ball",
       "aliases": [
-        "zen mode",
-        "zenmode"
+        "energy ball",
+        "energyball"
       ],
       "targetable": false
     },
     {
-      "id": "emote-model",
-      "name": "Model",
+      "id": "idle_singing",
+      "name": "Singing",
       "aliases": [
-        "model"
+        "singing"
       ],
       "targetable": false
     },
     {
-      "id": "emote-monster_fail",
-      "name": "Monster Fail",
+      "id": "emote-frog",
+      "name": "Frog",
       "aliases": [
-        "monster fail",
-        "monsterfail"
+        "frog"
       ],
       "targetable": false
     },
     {
-      "id": "emote-nightfever",
-      "name": "Night Fever",
+      "id": "emote-superpose",
+      "name": "Superpose",
       "aliases": [
-        "night fever",
-        "nightfever"
+        "superpose"
       ],
       "targetable": false
     },
     {
-      "id": "emote-ninjarun",
-      "name": "Ninja Run",
+      "id": "emote-cute",
+      "name": "Cute",
       "aliases": [
-        "ninja run",
-        "ninjarun"
+        "cute"
       ],
       "targetable": false
     },
     {
-      "id": "emote-no",
-      "name": "No",
+      "id": "dance-tiktok9",
+      "name": "TikTok Dance 9",
       "aliases": [
-        "no"
+        "tiktok dance 9",
+        "tiktokdance9"
       ],
       "targetable": false
     },
     {
-      "id": "emote-panic",
-      "name": "Panic",
+      "id": "dance-weird",
+      "name": "Weird Dance",
       "aliases": [
-        "panic"
+        "weird dance",
+        "weirddance"
       ],
       "targetable": false
     },
     {
-      "id": "emote-peace",
-      "name": "Peace",
+      "id": "dance-tiktok10",
+      "name": "TikTok Dance 10",
       "aliases": [
-        "peace"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-peekaboo",
-      "name": "Peekaboo!",
-      "aliases": [
-        "peekaboo"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-pose1",
-      "name": "Pose 1",
-      "aliases": [
-        "pose 1",
-        "pose1"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-pose10",
-      "name": "Pose 10",
-      "aliases": [
-        "pose 10",
-        "pose10"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-pose3",
-      "name": "Pose 3",
-      "aliases": [
-        "pose 3",
-        "pose3"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-pose5",
-      "name": "Pose 5",
-      "aliases": [
-        "pose 5",
-        "pose5"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-pose6",
-      "name": "SurpriseBig",
-      "aliases": [
-        "surprisebig"
+        "tiktok dance 10",
+        "tiktokdance10"
       ],
       "targetable": false
     },
@@ -1326,19 +1546,46 @@
       "targetable": false
     },
     {
-      "id": "emote-pose9",
-      "name": "Ditzy Pose",
+      "id": "idle-dance-casual",
+      "name": "Casual Dance",
       "aliases": [
-        "ditzy pose",
-        "ditzypose"
+        "casual dance",
+        "casualdance"
       ],
       "targetable": false
     },
     {
-      "id": "emote-proposing",
-      "name": "Proposing",
+      "id": "emote-pose1",
+      "name": "Pose 1",
       "aliases": [
-        "proposing"
+        "pose 1",
+        "pose1"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-pose3",
+      "name": "Pose 3",
+      "aliases": [
+        "pose 3",
+        "pose3"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-pose5",
+      "name": "Pose 5",
+      "aliases": [
+        "pose 5",
+        "pose5"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-cutey",
+      "name": "Cutey",
+      "aliases": [
+        "cutey"
       ],
       "targetable": false
     },
@@ -1352,311 +1599,6 @@
       "targetable": false
     },
     {
-      "id": "emote-puppet",
-      "name": "Puppet",
-      "aliases": [
-        "puppet"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-rainbow",
-      "name": "Rainbow",
-      "aliases": [
-        "rainbow"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-repose",
-      "name": "Repose",
-      "aliases": [
-        "repose"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-robot",
-      "name": "Robot",
-      "aliases": [
-        "robot"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-rofl",
-      "name": "ROFL!",
-      "aliases": [
-        "rofl"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-roll",
-      "name": "Roll",
-      "aliases": [
-        "roll"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-ropepull",
-      "name": "Rope Pull",
-      "aliases": [
-        "rope pull",
-        "ropepull"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-sad",
-      "name": "Sad",
-      "aliases": [
-        "sad"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-secrethandshake",
-      "name": "Secret Handshake",
-      "aliases": [
-        "secret handshake",
-        "secrethandshake"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-shrink",
-      "name": "Shrink",
-      "aliases": [
-        "shrink"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-shy",
-      "name": "Shy",
-      "aliases": [
-        "shy"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-shy2",
-      "name": "Advanced Shy",
-      "aliases": [
-        "advanced shy",
-        "advancedshy"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-slap",
-      "name": "Slap",
-      "aliases": [
-        "slap"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-sleigh",
-      "name": "Sleigh",
-      "aliases": [
-        "sleigh"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-snake",
-      "name": "Snake",
-      "aliases": [
-        "snake"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-snowangel",
-      "name": "Snow Angel",
-      "aliases": [
-        "snow angel",
-        "snowangel"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-snowball",
-      "name": "Snowball Fight!",
-      "aliases": [
-        "snowball fight",
-        "snowballfight"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-spiderman",
-      "name": "Hanging Around",
-      "aliases": [
-        "hanging around",
-        "hangingaround"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-splitsdrop",
-      "name": "Splits Drop",
-      "aliases": [
-        "splits drop",
-        "splitsdrop"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-stargaze",
-      "name": "Star Gazing",
-      "aliases": [
-        "star gazing",
-        "stargazing"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-suckthumb",
-      "name": "Thumb Suck",
-      "aliases": [
-        "thumb suck",
-        "thumbsuck"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-sumo",
-      "name": "Sumo Fight",
-      "aliases": [
-        "sumo fight",
-        "sumofight"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-superpose",
-      "name": "Superpose",
-      "aliases": [
-        "superpose"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-superpunch",
-      "name": "Super Punch",
-      "aliases": [
-        "super punch",
-        "superpunch"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-superrun",
-      "name": "Super Run",
-      "aliases": [
-        "super run",
-        "superrun"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-swordfight",
-      "name": "Swordfight",
-      "aliases": [
-        "swordfight"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-tapdance",
-      "name": "Tap Dance",
-      "aliases": [
-        "tap dance",
-        "tapdance"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-telekinesis",
-      "name": "Telekinesis",
-      "aliases": [
-        "telekinesis"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-teleporting",
-      "name": "Teleporting",
-      "aliases": [
-        "teleporting"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-theatrical",
-      "name": "Theatrical",
-      "aliases": [
-        "theatrical"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-think",
-      "name": "Think",
-      "aliases": [
-        "think"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-timejump",
-      "name": "TimeJump",
-      "aliases": [
-        "timejump"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-tired",
-      "name": "Tired",
-      "aliases": [
-        "tired",
-        "cansado",
-        "sono"
-      ],
-      "targetable": true
-    },
-    {
-      "id": "emote-wave",
-      "name": "The Wave",
-      "aliases": [
-        "the wave",
-        "thewave"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-wings",
-      "name": "I Believe I Can Fly",
-      "aliases": [
-        "i believe i can fly",
-        "ibelieveicanfly"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "emote-yes",
-      "name": "Yes",
-      "aliases": [
-        "yes"
-      ],
-      "targetable": false
-    },
-    {
       "id": "emote-zombierun",
       "name": "Zombie Run",
       "aliases": [
@@ -1666,37 +1608,44 @@
       "targetable": false
     },
     {
-      "id": "idle-angry",
-      "name": "Irritated",
+      "id": "emote-fashionista",
+      "name": "Fashionista",
       "aliases": [
-        "irritated"
+        "fashionista"
       ],
       "targetable": false
     },
     {
-      "id": "idle-dance-casual",
-      "name": "Casual Dance",
+      "id": "emote-gravity",
+      "name": "Gravity",
       "aliases": [
-        "casual dance",
-        "casualdance"
+        "gravity"
       ],
       "targetable": false
     },
     {
-      "id": "idle-dance-headbobbing",
-      "name": "Feel The Beat",
+      "id": "dance-icecream",
+      "name": "Ice Cream Dance",
       "aliases": [
-        "feel the beat",
-        "feelthebeat"
+        "ice cream dance",
+        "icecreamdance"
       ],
       "targetable": false
     },
     {
-      "id": "idle-dance-swinging",
-      "name": "Boogie Swing",
+      "id": "dance-wrong",
+      "name": "Wrong Dance",
       "aliases": [
-        "boogie swing",
-        "boogieswing"
+        "wrong dance",
+        "wrongdance"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "idle-uwu",
+      "name": "UwU",
+      "aliases": [
+        "uwu"
       ],
       "targetable": false
     },
@@ -1710,6 +1659,140 @@
       "targetable": false
     },
     {
+      "id": "dance-anime",
+      "name": "Anime Dance",
+      "aliases": [
+        "anime dance",
+        "animedance"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "dance-kawai",
+      "name": "Kawaii",
+      "aliases": [
+        "kawaii"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "idle-wild",
+      "name": "Scritchy",
+      "aliases": [
+        "scritchy"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-iceskating",
+      "name": "Ice Skating",
+      "aliases": [
+        "ice skating",
+        "iceskating"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-pose6",
+      "name": "SurpriseBig",
+      "aliases": [
+        "surprisebig"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-celebrationstep",
+      "name": "Celebration Step",
+      "aliases": [
+        "celebration step",
+        "celebrationstep"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-creepycute",
+      "name": "Creepycute",
+      "aliases": [
+        "creepycute"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-frustrated",
+      "name": "Frustrated",
+      "aliases": [
+        "frustrated"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-pose10",
+      "name": "Pose 10",
+      "aliases": [
+        "pose 10",
+        "pose10"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "sit-relaxed",
+      "name": "Relaxed (Sitting)",
+      "aliases": [
+        "relaxedsitting"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-stargaze",
+      "name": "Star Gazing",
+      "aliases": [
+        "star gazing",
+        "stargazing"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-slap",
+      "name": "Slap",
+      "aliases": [
+        "slap"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-boxer",
+      "name": "Boxer",
+      "aliases": [
+        "boxer"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-headblowup",
+      "name": "Head Blowup",
+      "aliases": [
+        "head blowup",
+        "headblowup"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-kawaiigogo",
+      "name": "KawaiiGoGo",
+      "aliases": [
+        "kawaiigogo"
+      ],
+      "targetable": false
+    },
+    {
+      "id": "emote-repose",
+      "name": "Repose",
+      "aliases": [
+        "repose"
+      ],
+      "targetable": false
+    },
+    {
       "id": "idle-dance-tiktok7",
       "name": "Tiktok 7",
       "aliases": [
@@ -1719,36 +1802,35 @@
       "targetable": false
     },
     {
-      "id": "idle-enthusiastic",
-      "name": "Enthused",
+      "id": "emote-shrink",
+      "name": "Shrink",
       "aliases": [
-        "enthused"
+        "shrink"
       ],
       "targetable": false
     },
     {
-      "id": "idle-fighter",
-      "name": "Fighter Idle",
+      "id": "emote-pose9",
+      "name": "Ditzy Pose",
       "aliases": [
-        "fighter idle",
-        "fighteridle"
+        "ditzy pose",
+        "ditzypose"
       ],
       "targetable": false
     },
     {
-      "id": "idle-floorsleeping",
-      "name": "Cozy Nap",
+      "id": "emote-teleporting",
+      "name": "Teleporting",
       "aliases": [
-        "cozy nap",
-        "cozynap"
+        "teleporting"
       ],
       "targetable": false
     },
     {
-      "id": "idle-floorsleeping2",
-      "name": "Relaxing",
+      "id": "dance-touch",
+      "name": "Touch",
       "aliases": [
-        "relaxing"
+        "touch"
       ],
       "targetable": false
     },
@@ -1762,118 +1844,38 @@
       "targetable": false
     },
     {
-      "id": "idle-hero",
-      "name": "Hero Pose",
+      "id": "emote-gift",
+      "name": "This Is For You",
       "aliases": [
-        "hero pose",
-        "heropose"
+        "this is for you",
+        "thisisforyou"
       ],
       "targetable": false
     },
     {
-      "id": "idle-lookup",
-      "name": "Ponder",
+      "id": "dance-employee",
+      "name": "Push It",
       "aliases": [
-        "ponder"
+        "push it",
+        "pushit"
       ],
       "targetable": false
     },
     {
-      "id": "idle-loop-aerobics",
-      "name": "Aerobics",
+      "id": "emote-meditate-idle",
+      "name": "Zen Mode",
       "aliases": [
-        "aerobics"
+        "zen mode",
+        "zenmode"
       ],
       "targetable": false
     },
     {
-      "id": "idle-loop-annoyed",
-      "name": "Annoyed",
+      "id": "dance-twerk",
+      "name": "Twerk It Out",
       "aliases": [
-        "annoyed"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "idle-loop-happy",
-      "name": "Chillin'",
-      "aliases": [
-        "chillin'",
-        "chillin"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "idle-loop-sad",
-      "name": "Bummed",
-      "aliases": [
-        "bummed"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "idle-loop-shy",
-      "name": "Shy (Loop)",
-      "aliases": [
-        "shyloop"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "idle-loop-sitfloor",
-      "name": "Sit",
-      "aliases": [
-        "sit"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "idle-loop-tapdance",
-      "name": "Tap Loop",
-      "aliases": [
-        "tap loop",
-        "taploop"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "idle-loop-tired",
-      "name": "Sleepy (Loop)",
-      "aliases": [
-        "sleepyloop"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "idle-nervous",
-      "name": "Nervous",
-      "aliases": [
-        "nervous"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "idle-posh",
-      "name": "Posh",
-      "aliases": [
-        "posh"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "idle-sad",
-      "name": "Pouty Face",
-      "aliases": [
-        "pouty face",
-        "poutyface"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "idle-sleep",
-      "name": "Sleepy",
-      "aliases": [
-        "sleepy"
+        "twerk it out",
+        "twerkitout"
       ],
       "targetable": false
     },
@@ -1887,92 +1889,90 @@
       "targetable": false
     },
     {
-      "id": "idle-toilet",
-      "name": "Toilet",
+      "id": "dance-woah",
+      "name": "The Woah",
       "aliases": [
-        "toilet"
+        "the woah",
+        "thewoah"
       ],
       "targetable": false
     },
     {
-      "id": "idle-uwu",
-      "name": "UwU",
+      "id": "dance-freshprince",
+      "name": "The Fresh Step",
       "aliases": [
-        "uwu"
+        "the fresh step",
+        "thefreshstep"
       ],
       "targetable": false
     },
     {
-      "id": "idle-wild",
-      "name": "Scritchy",
+      "id": "dance-griddy",
+      "name": "Gwiddy",
       "aliases": [
-        "scritchy"
+        "gwiddy"
       ],
       "targetable": false
     },
     {
-      "id": "idle_layingdown",
-      "name": "Attentive",
+      "id": "dance-true-heart",
+      "name": "Pure Heart",
       "aliases": [
-        "attentive"
+        "pure heart",
+        "pureheart"
       ],
       "targetable": false
     },
     {
-      "id": "idle_layingdown2",
-      "name": "Relaxed (Lying Down)",
+      "id": "dance-swagbounce",
+      "name": "Swag Bounce",
       "aliases": [
-        "relaxedlyingdown"
+        "swag bounce",
+        "swagbounce"
       ],
       "targetable": false
     },
     {
-      "id": "idle_singing",
-      "name": "Singing",
+      "id": "dance-popularvibe",
+      "name": "Popular Vibe",
       "aliases": [
-        "singing"
+        "popular vibe",
+        "popularvibe"
       ],
       "targetable": false
     },
     {
-      "id": "idle_zombie",
-      "name": "Zombie",
+      "id": "emote-afk-idle",
+      "name": "AFK",
       "aliases": [
-        "zombie"
+        "afk"
       ],
       "targetable": false
     },
     {
-      "id": "sit-idle-cute",
-      "name": "Rest",
+      "id": "emote-collab-photo-right",
+      "name": "Highrise Star",
       "aliases": [
-        "rest"
+        "highrise star",
+        "highrisestar"
       ],
       "targetable": false
     },
     {
-      "id": "sit-idle-laidBack",
-      "name": "Kicking Back",
+      "id": "emote-spiderman",
+      "name": "Hanging Around",
       "aliases": [
-        "kicking back",
-        "kickingback"
+        "hanging around",
+        "hangingaround"
       ],
       "targetable": false
     },
     {
-      "id": "sit-open",
-      "name": "Laid Back",
+      "id": "dance-mine",
+      "name": "Mine Dance",
       "aliases": [
-        "laid back",
-        "laidback"
-      ],
-      "targetable": false
-    },
-    {
-      "id": "sit-relaxed",
-      "name": "Relaxed (Sitting)",
-      "aliases": [
-        "relaxedsitting"
+        "mine dance",
+        "minedance"
       ],
       "targetable": false
     }
