@@ -57,8 +57,13 @@ services:
       AUTH_GOOGLE_ID: ${AUTH_GOOGLE_ID}
       AUTH_GOOGLE_SECRET: ${AUTH_GOOGLE_SECRET}
       # Required behind any reverse proxy (Caddy here) — see Auth.js's
-      # UntrustedHost error otherwise.
+      # UntrustedHost error otherwise. AUTH_URL pins the canonical origin
+      # explicitly rather than relying solely on header-based inference —
+      # trustHost alone left Auth.js's built-in error-page redirect falling
+      # back to the container's own bind address (0.0.0.0:3000) instead of
+      # the real domain.
       AUTH_TRUST_HOST: "true"
+      AUTH_URL: https://${DOMAIN}
       RESEND_API_KEY: ${RESEND_API_KEY}
       EMAIL_FROM: ${EMAIL_FROM}
       TOKEN_SEAL_PUBLIC_KEY: ${TOKEN_SEAL_PUBLIC_KEY}
