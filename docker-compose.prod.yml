@@ -14,6 +14,11 @@
 # `up`, and again after any deploy that changes apps/web/drizzle:
 #   docker compose -p botmarket-prod -f docker-compose.prod.yml --env-file .env.prod --profile tools run --rm migrate
 #
+# Catalog seed: same `migrate` image, command overridden — run once after
+# the first migrate, and again any time STRIPE_EMCEE_*_PRICE_ID changes
+# (apps/web/src/db/seed.ts is an upsert, safe to re-run):
+#   docker compose -p botmarket-prod -f docker-compose.prod.yml --env-file .env.prod --profile tools run --rm migrate pnpm --filter web exec tsx src/db/seed.ts
+#
 # Backups + cron routes: deploy/backup.sh and deploy/crontab — host
 # crontab entries, not services here (they need to run on a schedule
 # independent of whether this stack is mid-restart).
@@ -86,7 +91,11 @@ services:
   # comment). Targets apps/web/Dockerfile's builder stage — same image
   # web's own build already produces on the way to the standalone runner,
   # just stopped one stage earlier where devDependencies (drizzle-kit) and
-  # the full source tree are still present.
+  # the full source tree are still present. Also doubles as the runner for
+  # the catalog seed (overrides the default command — see header comment):
+  #   ... run --rm migrate pnpm --filter web exec tsx src/db/seed.ts
+  # so it carries the Stripe price IDs the seed script reads too, not just
+  # DATABASE_URL.
   migrate:
     build:
       context: .
@@ -95,6 +104,8 @@ services:
     profiles: ["tools"]
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      STRIPE_EMCEE_MONTHLY_PRICE_ID: ${STRIPE_EMCEE_MONTHLY_PRICE_ID}
+      STRIPE_EMCEE_ANNUAL_PRICE_ID: ${STRIPE_EMCEE_ANNUAL_PRICE_ID}
     depends_on:
       postgres:
         condition: service_healthy
