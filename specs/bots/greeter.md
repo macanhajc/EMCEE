@@ -6,6 +6,11 @@
 
 ## Capabilities (v1)
 
+### Activation message
+- On `on_start` (every connect, including reconnects — not just the first ever): an optional templated line posted to the room's **public chat**, not a whisper — there's no specific user to whisper to at connect time, so this is the one Concierge message that's public by shape rather than an opt-in extra layered on a whisper (contrast VIP's `announce_to_room`, Farewell's `public_message`).
+- Off by default. A flat re-announce cooldown (minutes, default 10) guards against the supervisor's reconnect-with-backoff loop spamming the room during a flapping connection — the same bot object (and `GreeterEngine`) survives every reconnect attempt within one process lifetime, so cooldown state is a simple in-memory timestamp, no Postgres involved.
+- Template variable: `{room_name}` only — no `{username}`, there's no user to attach one to.
+
 ### Welcome messages
 - On `user_joined`: templated greeting with variables — `{username}`, `{room_name}`.
 - Channel: **whisper only in v1** (avoids chat noise in busy rooms; also sidesteps DM's unverified consent rules — see SDK mapping). Public chat and DM are explicitly deferred, not a v1 toggle.
@@ -29,6 +34,10 @@
 Flat two-level shape throughout (section → primitive leaf or array-of-primitive) — deliberately, not a simplification of convenience: the dashboard's config-form generator (`apps/web/src/lib/schema-form.ts`) only walks that exact shape today (`docs/decisions.md`, 2026-07-20 instance-creation entry). A per-VIP tier would need an array of objects (`{username, tier}`), which that generator can't render yet; rather than extend it for one field, VIP tiers were dropped outright (2026-07-21) — one flat tier stays the permanent shape, not a placeholder pending generator work. `busy_mode` and `quiet_hours` are flattened to prefixed leaves for the same reason.
 
 ```yaml
+activation_message:
+  enabled: bool (default false)
+  template: string (≤ 200 chars)
+  cooldown_m: int 0..1440 (default 10)
 welcome:
   enabled: bool (default true)
   templates: string[] (1..10, each ≤ 200 chars)
@@ -55,11 +64,12 @@ All fields hot-apply. (`channel` dropped from `welcome` — whisper is the only 
 
 ## SDK mapping
 
-- Events: `on_start` (captures `room_info.owner_id` / `room_info.room_name`), `on_user_join`, `on_user_leave` — all confirmed against the actual SDK source (`highrise/__init__.py`, `highrise/models.py`), not just the skill's summary.
-- Actions: `send_whisper` (greetings, VIP messages), `chat` (VIP room announce, farewell send-off — the first module to need it; added to the shared `FakeHighrise` test double), `send_emote` (VIP celebration, one-shot). All through the shared `CatalogBot` throttle at `Priority.NORMAL` — Concierge yields to Warden when both modules are enabled on the same instance (queue-ordering priority, not cross-account coordination, since both run in-process behind one throttle per instance).
+- Events: `on_start` (captures `room_info.owner_id` / `room_info.room_name`, then — added 2026-07-24 — drives the activation-message chat post below that same capture), `on_user_join`, `on_user_leave` — all confirmed against the actual SDK source (`highrise/__init__.py`, `highrise/models.py`), not just the skill's summary.
+- Actions: `send_whisper` (greetings, VIP messages), `chat` (activation message, VIP room announce, farewell send-off — `chat` was first needed for VIP/farewell; added to the shared `FakeHighrise` test double back then), `send_emote` (VIP celebration, one-shot). All through the shared `CatalogBot` throttle at `Priority.NORMAL` — Concierge yields to Warden when both modules are enabled on the same instance (queue-ordering priority, not cross-account coordination, since both run in-process behind one throttle per instance).
 - `on_reaction`, `teleport`/`walk_to` — not used here; those back the presence/flair capabilities that moved to `avatar.md`.
 - Emote picker in dashboard (for `emote_celebration`) needs the valid emote list — already solved by Emote's catalog (`workers/runtime/catalog/emotes.json`), reuse it rather than a second source of truth.
 - Template rendering (`{username}`/`{room_name}`) uses literal-token substitution, deliberately **not** `str.format(**kwargs)` — an owner-authored template run through `.format()` can dereference attributes on whatever objects it's given (a real format-string gadget class), so the substitution only ever replaces the whitelisted tokens verbatim. `{visit_count}` was dropped from that whitelist (2026-07-21, see Known gaps and Open questions) — left literal like any other unrecognized token, never rendered as a number.
+- VIP's `announce_to_room` line is the one hardcoded (non-owner-authored) string in this module — as of 2026-07-24 it renders through `catalog/strings.py`'s `t(bot.bot_language, ...)` (`general.bot_language` — `specs/04-bot-runtime.md`) instead of a fixed English literal, same mechanism as the built-in strings in `emote.py`/`warden.py`/`avatar.py`. Every owner-authored template (Welcome/VIP whisper/Farewell/Activation message) is untouched by `bot_language` — those stay exactly as the owner wrote them, regardless of this setting.
 
 ## Known gaps (surfaced during the build, not silently worked around)
 

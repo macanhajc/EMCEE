@@ -26,21 +26,65 @@ def position() -> Position:
     return Position(x=0, y=0, z=0)
 
 
+def metadata(room_name: str = "Test Room", owner_id: str = "owner-1") -> SessionMetadata:
+    return SessionMetadata(
+        user_id="bot-1",
+        room_info=RoomInfo(owner_id=owner_id, room_name=room_name),
+        rate_limits={},
+        connection_id="conn-1",
+    )
+
+
 # --- on_start wiring ---------------------------------------------------
 
 
 async def test_on_start_captures_owner_and_room_name():
     bot = EmceeBot()
     bot.highrise = FakeHighrise()
-    metadata = SessionMetadata(
-        user_id="bot-1",
-        room_info=RoomInfo(owner_id="owner-42", room_name="Alice's Room"),
-        rate_limits={},
-        connection_id="conn-1",
-    )
-    await bot.on_start(metadata)
+    await bot.on_start(metadata(room_name="Alice's Room", owner_id="owner-42"))
     assert bot._room_owner_id == "owner-42"
     assert bot._room_name == "Alice's Room"
+
+
+# --- activation message ----------------------------------------------------
+
+
+async def test_activation_message_off_by_default():
+    bot = EmceeBot()
+    bot.highrise = FakeHighrise()
+    await bot.on_start(metadata())
+    assert bot.highrise.chats == []
+
+
+async def test_activation_message_posts_public_chat_not_whisper():
+    bot = EmceeBot({"activation_message": {"enabled": True}})
+    bot.highrise = FakeHighrise()
+    await bot.on_start(metadata(room_name="Alice's Room"))
+    assert bot.highrise.chats == ["I'm online and ready to help in Alice's Room!"]
+    assert bot.highrise.whispers == []
+
+
+async def test_activation_message_custom_template():
+    bot = EmceeBot({"activation_message": {"enabled": True, "template": "Hey {room_name}, I'm back!"}})
+    bot.highrise = FakeHighrise()
+    await bot.on_start(metadata(room_name="Bob's Room"))
+    assert bot.highrise.chats == ["Hey Bob's Room, I'm back!"]
+
+
+async def test_activation_message_cooldown_blocks_repeat_within_window():
+    bot = EmceeBot({"activation_message": {"enabled": True, "cooldown_m": 10}})
+    bot.highrise = FakeHighrise()
+    await bot.on_start(metadata())
+    await bot.on_start(metadata())  # simulated reconnect within the cooldown window
+    assert len(bot.highrise.chats) == 1
+
+
+async def test_activation_message_cooldown_zero_allows_every_reconnect():
+    bot = EmceeBot({"activation_message": {"enabled": True, "cooldown_m": 0}})
+    bot.highrise = FakeHighrise()
+    await bot.on_start(metadata())
+    await bot.on_start(metadata())
+    assert len(bot.highrise.chats) == 2
 
 
 # --- welcome messages ----------------------------------------------------
@@ -201,6 +245,12 @@ async def test_vip_announce_to_room_off_by_default():
     bot = make_bot({"vip": {"users": ["bob"]}})
     await bot.on_user_join(user("u1", "bob"), position())
     assert bot.highrise.chats == []
+
+
+async def test_vip_announce_to_room_respects_bot_language():
+    bot = make_bot({"vip": {"users": ["bob"], "announce_to_room": True}, "general": {"bot_language": "pt"}})
+    await bot.on_user_join(user("u1", "bob"), position())
+    assert bot.highrise.chats == ["bob acabou de chegar!"]
 
 
 async def test_vip_emote_celebration_targets_the_vip():

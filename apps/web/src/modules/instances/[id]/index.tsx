@@ -1,7 +1,10 @@
+"use client";
+
+import { useEffect } from "react";
 import { ArrowLeft, Play, Square } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { Link } from "@/i18n/navigation";
-import type { ConfigActionState } from "@/app/[locale]/instances/[id]/actions";
 import { DashboardShell } from "@/components/Elements/dashboard-shell";
 import {
   InstanceStatusBadge,
@@ -10,19 +13,24 @@ import {
 import { QueryToast } from "@/components/Elements/query-toast";
 import { Button } from "@/components/UI/button";
 import type { botInstances, catalogBots, subscriptions } from "@/db/schema";
-import type { RoomInfo, OutfitItemInfo } from "@/lib/highrise-webapi";
-import type { SectionSpec } from "@/lib/schema-form";
-import { ActivityLog } from "./components/activity-log";
-import { InstanceConfig, type AvatarPositionValue } from "./components/instance-config";
+import type { RoomInfo } from "@/lib/highrise-webapi";
+import { useInstanceHeader } from "./hooks/use-instance-header";
+import { InstanceConfig } from "./components/instance-config";
 import { NotificationsCard } from "./components/notifications-card";
-import { RegularsTable } from "./components/regulars-table";
 import { RoomInfoCard } from "./components/room-info-card";
-import type { StatusLog } from "./components/status-log";
+import { InstanceStoreProvider, useInstanceStoreImperative } from "./store";
 
 type Instance = typeof botInstances.$inferSelect;
 type CatalogBot = typeof catalogBots.$inferSelect;
 type Subscription = typeof subscriptions.$inferSelect;
 
+/**
+ * Wraps the page body in `InstanceStoreProvider`, seeded from `page.tsx`'s
+ * existing server-side fetch (docs/decisions.md, 2026-07-24, "instance
+ * store") — `InstanceDetailBody` (below) is a separate component so it can
+ * consume that same store via context; a component can't both provide a
+ * context and read it itself.
+ */
 export function InstanceDetailTemplate({
   email,
   role,
@@ -33,27 +41,9 @@ export function InstanceDetailTemplate({
   successMessage,
   errorMessage,
   roomInfo,
-  regulars,
-  moderationEvents,
-  operationalEvents,
-  sections,
-  config,
-  avatarPosition,
-  outfitItems,
   emailAlertsEnabled,
   browserAlertsEnabled,
-  setBotRunning,
   openBillingPortal,
-  updateConfig,
-  updateAvatarPosition,
-  searchOutfitItems,
-  replaceToken,
-  replaceRoomId,
-  deleteInstance,
-  requestModeration,
-  updateEmailAlerts,
-  setBrowserAlertsEnabled,
-  getInstanceStatus,
 }: {
   email: string;
   role: "customer" | "admin";
@@ -64,29 +54,72 @@ export function InstanceDetailTemplate({
   successMessage?: string;
   errorMessage?: string;
   roomInfo: RoomInfo | null;
-  regulars: React.ComponentProps<typeof RegularsTable>["regulars"];
-  moderationEvents: React.ComponentProps<typeof ActivityLog>["events"];
-  operationalEvents: React.ComponentProps<typeof StatusLog>["events"];
-  sections: SectionSpec[];
-  config: Record<string, Record<string, unknown>>;
-  avatarPosition: AvatarPositionValue | null;
-  outfitItems: Record<string, OutfitItemInfo>;
   emailAlertsEnabled: boolean;
   browserAlertsEnabled: boolean;
-  setBotRunning: () => Promise<void>;
   openBillingPortal: () => Promise<void>;
-  updateConfig: (prevState: ConfigActionState | null, formData: FormData) => Promise<ConfigActionState>;
-  updateAvatarPosition: (prevState: ConfigActionState | null, formData: FormData) => Promise<ConfigActionState>;
-  searchOutfitItems: (query: string) => Promise<OutfitItemInfo[]>;
-  replaceToken: (formData: FormData) => Promise<void>;
-  replaceRoomId: (formData: FormData) => Promise<void>;
-  deleteInstance: (formData: FormData) => Promise<void>;
-  requestModeration: (formData: FormData) => Promise<void>;
-  updateEmailAlerts: (formData: FormData) => Promise<void>;
-  setBrowserAlertsEnabled: (enabled: boolean) => Promise<void>;
-  getInstanceStatus: () => Promise<{ status: Instance["status"]; errorKind: Instance["errorKind"] } | null>;
+}) {
+  return (
+    <InstanceStoreProvider
+      seed={{
+        instanceId: instance.id,
+        header: { instance, bot, subscription },
+        notifications: { emailAlertsEnabled, browserAlertsEnabled },
+        roomInfo,
+      }}
+    >
+      <InstanceDetailBody
+        email={email}
+        role={role}
+        hasBilling={hasBilling}
+        instanceId={instance.id}
+        successMessage={successMessage}
+        errorMessage={errorMessage}
+        openBillingPortal={openBillingPortal}
+      />
+    </InstanceStoreProvider>
+  );
+}
+
+function InstanceDetailBody({
+  email,
+  role,
+  hasBilling,
+  instanceId,
+  successMessage,
+  errorMessage,
+  openBillingPortal,
+}: {
+  email: string;
+  role: "customer" | "admin";
+  hasBilling: boolean;
+  instanceId: string;
+  successMessage?: string;
+  errorMessage?: string;
+  openBillingPortal: () => Promise<void>;
 }) {
   const t = useTranslations("instanceDetail");
+  const storeApi = useInstanceStoreImperative();
+
+  // The one eager load of every tab card's data (docs/decisions.md,
+  // 2026-07-24, "instance store") — client-only, the tab-card data was never
+  // server-rendered either before or after this change. Header/notifications/
+  // room info don't need loading here — they're already in the store's
+  // initial state, seeded by InstanceStoreProvider above.
+  useEffect(() => {
+    storeApi.getState().loadAll(instanceId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [instanceId]);
+
+  const { header, state: botRunningState, formAction: setBotRunningAction } = useInstanceHeader(instanceId);
+  const { instance, bot, subscription } = header;
+
+  useEffect(() => {
+    if (!botRunningState) return;
+    if (!botRunningState.ok) {
+      toast.error(t.has(`errors.${botRunningState.error}`) ? t(`errors.${botRunningState.error}`) : botRunningState.error);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [botRunningState]);
 
   return (
     <DashboardShell email={email} role={role} hasBilling={hasBilling}>
@@ -134,7 +167,7 @@ export function InstanceDetailTemplate({
             <div>
               <p className="font-ui-mono text-xs tracking-[0.15em] text-dust uppercase">{t("bot")}</p>
               <div className="mt-1.5">
-                <form action={setBotRunning}>
+                <form action={setBotRunningAction}>
                   <Button
                     type="submit"
                     size="sm"
@@ -180,42 +213,11 @@ export function InstanceDetailTemplate({
         )}
       </div>
 
-      <RoomInfoCard room={roomInfo} roomId={instance.roomId} />
+      <RoomInfoCard />
 
-      <NotificationsCard
-        botName={bot?.name ?? instance.catalogBotSlug}
-        initialStatus={instance.status}
-        emailAlertsEnabled={emailAlertsEnabled}
-        browserAlertsEnabled={browserAlertsEnabled}
-        updateEmailAlerts={updateEmailAlerts}
-        setBrowserAlertsEnabled={setBrowserAlertsEnabled}
-        getInstanceStatus={getInstanceStatus}
-      />
+      <NotificationsCard instanceId={instanceId} />
 
-      <InstanceConfig
-        sections={sections}
-        config={config}
-        action={updateConfig}
-        avatarPosition={avatarPosition}
-        onSavePosition={updateAvatarPosition}
-        outfitItems={outfitItems}
-        onSearchOutfitItems={searchOutfitItems}
-        operationalEvents={operationalEvents}
-        instanceId={instance.id}
-        status={instance.status}
-        errorKind={instance.errorKind}
-        tokenLast4={instance.tokenLast4 ?? ""}
-        replaceToken={replaceToken}
-        roomId={instance.roomId}
-        replaceRoomId={replaceRoomId}
-        isSubscribed={!!subscription}
-        openBillingPortal={openBillingPortal}
-        deleteInstance={deleteInstance}
-        botName={bot?.name ?? instance.catalogBotSlug}
-        regulars={regulars}
-        moderationEvents={moderationEvents}
-        requestModeration={requestModeration}
-      />
+      <InstanceConfig instanceId={instanceId} />
     </DashboardShell>
   );
 }

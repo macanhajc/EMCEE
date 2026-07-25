@@ -2,10 +2,26 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://botmarket.app/schemas/emcee/v1.json",
   "title": "Emcee",
-  "description": "Configuration for Emcee, the one bot — one instance, one token, feature modules toggle within it. Sections are tagged x-module (\"emote\" or \"concierge\") so the dashboard can group them into tabs; the module boundary is a UI grouping only, not a schema-level one — every field still lives in one flat, shared config object.",
+  "description": "Configuration for Emcee, the one bot — one instance, one token, feature modules toggle within it. Sections are tagged x-module (\"emote\", \"concierge\", \"warden\", \"avatar\", or \"general\" for bot-wide settings that don't belong to any one module) so the dashboard can group them into tabs; the module boundary is a UI grouping only, not a schema-level one — every field still lives in one flat, shared config object.",
   "type": "object",
   "additionalProperties": false,
   "properties": {
+    "general": {
+      "title": "General",
+      "description": "Bot-wide settings that apply across every module, not just one.",
+      "x-module": "general",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "bot_language": {
+          "title": "Bot language",
+          "description": "Language the bot uses for its own built-in responses — emote confirmations, loop messages, moderation warnings, mod-command replies. Doesn't change your own custom templates (Welcome, VIP, Farewell, Activation message) — those stay exactly as you wrote them, in whatever language you wrote them.",
+          "type": "string",
+          "enum": ["en", "es", "de", "pt", "ru"],
+          "default": "en"
+        }
+      }
+    },
     "emote_on_say": {
       "title": "Emote on say",
       "description": "Someone types an emote's name in chat — no command needed — and their avatar performs it, even if they don't own it. Loops on repeat by default (see Loop below) rather than firing once.",
@@ -124,6 +140,36 @@
           "type": "integer",
           "minimum": 0,
           "maximum": 120,
+          "default": 10
+        }
+      }
+    },
+    "activation_message": {
+      "title": "Activation message",
+      "description": "Posted publicly in room chat the moment the bot connects — not a whisper. Off by default.",
+      "x-module": "concierge",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "title": "Enabled",
+          "description": "Off by default — an unprompted public message on every reconnect can get noisy.",
+          "type": "boolean",
+          "default": false
+        },
+        "template": {
+          "title": "Message",
+          "description": "Use {room_name}. Posted to the room's public chat, not whispered.",
+          "type": "string",
+          "maxLength": 200,
+          "default": "I'm online and ready to help in {room_name}!"
+        },
+        "cooldown_m": {
+          "title": "Re-announce cooldown (minutes)",
+          "description": "Skip the announcement if the bot already posted one within this many minutes — guards against a reconnect storm spamming the room.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1440,
           "default": 10
         }
       }

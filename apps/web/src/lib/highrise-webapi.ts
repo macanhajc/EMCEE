@@ -75,8 +75,20 @@ export async function getRoomInfo(roomId: string): Promise<RoomInfo | null> {
  * Backs the default-outfit picker's search column. Best-effort: an empty
  * query, a Highrise outage, or a bad response all resolve to `[]` rather
  * than throwing, same posture as `getRoomInfo`.
+ *
+ * The list endpoint itself never populates `icon_url`/`image_url` (confirmed
+ * live against the real webapi, 2026-07-24 — every result comes back with
+ * both fields `null`) — only the single-item detail endpoint below
+ * (`getOutfitItemsByIds`, `GET /items/{id}`) actually has icon data. Without
+ * this, search results showed the picker's placeholder icon the whole time
+ * an item was unsaved, and only got a real icon after being added, saved,
+ * and the page reloaded (which resolves ids via `getOutfitItemsByIds`
+ * instead). Enriching each result with its own detail lookup here closes
+ * that gap; a lookup failure just falls back to the icon-less result rather
+ * than dropping the item. `limit` is kept modest (12, down from the previous
+ * 24) to bound how many of these extra parallel requests one search fires.
  */
-export async function searchOutfitItems(query: string, limit = 24): Promise<OutfitItemInfo[]> {
+export async function searchOutfitItems(query: string, limit = 12): Promise<OutfitItemInfo[]> {
   const trimmed = query.trim();
   if (!trimmed) return [];
 
@@ -88,8 +100,12 @@ export async function searchOutfitItems(query: string, limit = 24): Promise<Outf
     if (!res.ok) return [];
 
     const body = await res.json();
-    const items = Array.isArray(body?.items) ? body.items : [];
-    return items.map(toOutfitItemInfo).filter((i: OutfitItemInfo | null): i is OutfitItemInfo => i !== null);
+    const items: unknown[] = Array.isArray(body?.items) ? body.items : [];
+    const basics = items.map(toOutfitItemInfo).filter((i: OutfitItemInfo | null): i is OutfitItemInfo => i !== null);
+    if (basics.length === 0) return [];
+
+    const enriched = await getOutfitItemsByIds(basics.map((item) => item.id));
+    return basics.map((item) => enriched[item.id] ?? item);
   } catch (err) {
     console.error("[highrise webapi] search items failed", err);
     return [];

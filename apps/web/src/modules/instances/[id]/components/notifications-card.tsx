@@ -4,7 +4,6 @@ import {
   useEffect,
   useReducer,
   useRef,
-  useState,
   useSyncExternalStore,
 } from "react";
 import { Bell, Mail } from "lucide-react";
@@ -12,10 +11,15 @@ import { useTranslations } from "next-intl";
 import { Checkbox } from "@/components/UI/checkbox";
 import { Label } from "@/components/UI/label";
 import { Button } from "@/components/UI/button";
+import {
+  getInstanceStatus,
+  setBrowserAlertsEnabled,
+} from "@/app/[locale]/instances/[id]/actions";
 import type { botInstances } from "@/db/schema";
+import { useInstanceStore } from "../store";
+import { useNotifications } from "../hooks/use-notifications";
 
 type InstanceStatus = (typeof botInstances.$inferSelect)["status"];
-type ErrorKind = (typeof botInstances.$inferSelect)["errorKind"];
 
 const POLL_INTERVAL_MS = 30_000;
 // Worth interrupting the customer for while their tab happens to be open —
@@ -51,35 +55,27 @@ function getServerPermissionSnapshot(): NotificationPermission | "unsupported" {
  * Browser alerts are deliberately in-page only: no service worker/Web
  * Push, just the Notification API firing while this tab is open, on a
  * light poll of the instance's own status.
+ *
+ * Self-contained ({ instanceId } only) — reads header/notifications from
+ * the shared instance store instead of props from the page's own
+ * server-rendered data (docs/decisions.md, 2026-07-24, "instance store").
+ * `emailAlertsEnabled`/`browserAlertsEnabled` are read straight from the
+ * store rather than mirrored into local state — both toggles write back
+ * into the store optimistically, at the click itself, so the store already
+ * *is* the "local, editable copy" every other card's own `useState` used to
+ * be, just one that survives this card unmounting when its tab isn't
+ * active.
  */
-export function NotificationsCard({
-  botName,
-  initialStatus,
-  emailAlertsEnabled,
-  browserAlertsEnabled,
-  updateEmailAlerts,
-  setBrowserAlertsEnabled,
-  getInstanceStatus,
-}: {
-  botName: string;
-  initialStatus: InstanceStatus;
-  emailAlertsEnabled: boolean;
-  browserAlertsEnabled: boolean;
-  updateEmailAlerts: (formData: FormData) => Promise<void>;
-  setBrowserAlertsEnabled: (enabled: boolean) => Promise<void>;
-  getInstanceStatus: () => Promise<{
-    status: InstanceStatus;
-    errorKind: ErrorKind | null;
-  } | null>;
-}) {
+export function NotificationsCard({ instanceId }: { instanceId: string }) {
   const t = useTranslations("instanceDetail.notifications");
   const tStatus = useTranslations("instanceStatus");
 
+  const header = useInstanceStore((s) => s.header);
+  const { notifications, setNotifications, formAction } = useNotifications(instanceId);
+  const botName = header.bot?.name ?? header.instance.catalogBotSlug;
+  const initialStatus = header.instance.status;
+
   const emailFormRef = useRef<HTMLFormElement>(null);
-  // Optimistic only: set from the click, never resynced from the
-  // (server-refreshed) prop — the two already agree by construction once
-  // updateEmailAlerts's redirect lands, so there's nothing to reconcile.
-  const [emailChecked, setEmailChecked] = useState(emailAlertsEnabled);
 
   const permission = useSyncExternalStore(
     subscribeNever,
@@ -87,14 +83,13 @@ export function NotificationsCard({
     getServerPermissionSnapshot,
   );
   const [, forceRefresh] = useReducer((n: number) => n + 1, 0);
-  const [browserChecked, setBrowserChecked] = useState(browserAlertsEnabled);
   const lastStatus = useRef(initialStatus);
 
   useEffect(() => {
-    if (permission !== "granted" || !browserChecked) return;
+    if (permission !== "granted" || !notifications.browserAlertsEnabled) return;
 
     const interval = setInterval(async () => {
-      const next = await getInstanceStatus();
+      const next = await getInstanceStatus(instanceId);
       if (!next || next.status === lastStatus.current) return;
       lastStatus.current = next.status;
       if (!ALERT_STATUSES.has(next.status)) return;
@@ -107,20 +102,20 @@ export function NotificationsCard({
     }, POLL_INTERVAL_MS);
 
     return () => clearInterval(interval);
-  }, [permission, browserChecked, getInstanceStatus, t, tStatus, botName]);
+  }, [permission, notifications.browserAlertsEnabled, instanceId, t, tStatus, botName]);
 
   async function handleEnableBrowser() {
     if (typeof Notification === "undefined") return;
     const result = await Notification.requestPermission();
     const enabled = result === "granted";
-    setBrowserChecked(enabled);
-    forceRefresh(); // re-reads Notification.permission even if `enabled` didn't change browserChecked's value (e.g. denied while already false)
-    await setBrowserAlertsEnabled(enabled);
+    setNotifications({ ...notifications, browserAlertsEnabled: enabled });
+    forceRefresh(); // re-reads Notification.permission even if `enabled` didn't change browserAlertsEnabled's value (e.g. denied while already false)
+    await setBrowserAlertsEnabled(instanceId, enabled);
   }
 
   async function handleToggleBrowser(checked: boolean) {
-    setBrowserChecked(checked);
-    await setBrowserAlertsEnabled(checked);
+    setNotifications({ ...notifications, browserAlertsEnabled: checked });
+    await setBrowserAlertsEnabled(instanceId, checked);
   }
 
   return (
@@ -131,20 +126,20 @@ export function NotificationsCard({
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <form
           ref={emailFormRef}
-          action={updateEmailAlerts}
+          action={formAction}
           className="flex items-start gap-3"
         >
           <input
             type="hidden"
             name="enabled"
-            value={emailChecked ? "on" : "off"}
+            value={notifications.emailAlertsEnabled ? "on" : "off"}
           />
           <Checkbox
             id="notifications-email"
-            checked={emailChecked}
+            checked={notifications.emailAlertsEnabled}
             onCheckedChange={(checked) => {
               const next = checked === true;
-              setEmailChecked(next);
+              setNotifications({ ...notifications, emailAlertsEnabled: next });
               // React hasn't flushed the hidden input's new value yet at
               // this point, so submit next tick rather than reading stale
               // FormData off the just-clicked event.
@@ -169,7 +164,7 @@ export function NotificationsCard({
             <>
               <Checkbox
                 id="notifications-browser"
-                checked={browserChecked}
+                checked={notifications.browserAlertsEnabled}
                 onCheckedChange={(checked) =>
                   handleToggleBrowser(checked === true)
                 }

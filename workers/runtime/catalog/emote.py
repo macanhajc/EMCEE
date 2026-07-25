@@ -48,6 +48,7 @@ from highrise import Error, User
 from .base import Priority
 from .emotes import EmoteCatalog, EmoteDef, normalize
 from .permissions import check_cooldown, check_tiered_permission
+from .strings import t
 
 if TYPE_CHECKING:
     from .emcee import EmceeBot
@@ -153,7 +154,7 @@ class EmoteEngine:
             return
 
         await self.bot.throttle.acquire(Priority.NORMAL)
-        await self.bot.highrise.send_whisper(user.id, f'Doing "{emote.name}"!')
+        await self.bot.highrise.send_whisper(user.id, t(self.bot.bot_language, "emote.doing", emote_name=emote.name))
         await self.bot.throttle.acquire(Priority.NORMAL)
         await self.bot.highrise.send_emote(emote.id, user.id)
 
@@ -229,8 +230,13 @@ class EmoteEngine:
         await self.bot.throttle.acquire(Priority.NORMAL)
         await self.bot.highrise.send_whisper(
             user.id,
-            f'Looping {emote.name} every {interval_s}s — say "stop" anytime, '
-            f"or it'll auto-stop after {round(max_duration_s / 60)} min.",
+            t(
+                self.bot.bot_language,
+                "emote.loop_started",
+                emote_name=emote.name,
+                interval_s=interval_s,
+                max_duration_m=round(max_duration_s / 60),
+            ),
         )
 
     async def _run_loop(self, user_id: str, emote_id: str, interval_s: float, max_duration_s: float) -> None:
@@ -244,9 +250,7 @@ class EmoteEngine:
             # Safety cap hit, not an explicit "stop" — say why, since the
             # user's avatar just stopped for no reason they said.
             await self.bot.throttle.acquire(Priority.NORMAL)
-            await self.bot.highrise.send_whisper(
-                user_id, "Your loop timed out after a while — say an emote's name again to restart it."
-            )
+            await self.bot.highrise.send_whisper(user_id, t(self.bot.bot_language, "emote.loop_timed_out"))
         finally:
             # Compare-and-delete: if `_trigger_loop` already replaced this
             # entry with a new task (switching emotes), don't let this
@@ -272,7 +276,8 @@ class EmoteEngine:
         # (EmoteCatalog.resolve, added 2026-07-23) — the position shown here
         # is exactly the position that lookup uses.
         names = [f"{i}. {e.name}" for i, e in enumerate(self._catalog.all(), start=1)]
-        text = "Emotes: " + ", ".join(names)
+        header = t(self.bot.bot_language, "emote.list_header")
+        text = f"{header} " + ", ".join(names)
         for chunk in _chunk_text(text, MAX_WHISPER_CHARS):
             await self.bot.throttle.acquire(Priority.NORMAL)
             await self.bot.highrise.send_whisper(user.id, chunk)

@@ -29,6 +29,9 @@ export function SiteFooter() {
             <Link href="/login" className="transition-colors hover:text-paper">
               {t("common.loginLink")}
             </Link>
+            <Link href="/support" className="transition-colors hover:text-paper">
+              {t("footer.support")}
+            </Link>
             <Link href="/privacy" className="transition-colors hover:text-paper">
               {t("footer.privacy")}
             </Link>

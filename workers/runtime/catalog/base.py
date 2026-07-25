@@ -128,6 +128,17 @@ class CatalogBot(BaseBot):
         # that context (standalone/unit-test construction).
         self._connected_event: asyncio.Event | None = None
 
+    @property
+    def bot_language(self) -> str:
+        """`general.bot_language` (added 2026-07-24) — the locale the bot's
+        own built-in responses render in (`catalog/strings.py`'s `t()`).
+        Distinct from the dashboard viewer's own locale: a per-instance
+        config field, so a bot running in a non-English room can reply in
+        that room's language regardless of what language its owner's
+        dashboard happens to be in. Falls back to English for a config row
+        saved before this field existed."""
+        return self.config.get("general", {}).get("bot_language", "en")
+
     def _confirm_connected(self) -> None:
         """Signals the supervisor that this connect attempt is real: the SDK
         actually got a session from Highrise, not just a WebSocket that's

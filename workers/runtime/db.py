@@ -190,7 +190,7 @@ WITH claimed AS (
     )
     RETURNING *
 )
-SELECT * FROM claimed;
+SELECT * FROM claimed ORDER BY id;
 """
 
 
@@ -202,6 +202,19 @@ async def claim_pending_moderation_requests(pool: asyncpg.Pool, instance_ids: li
     instance. FOR UPDATE SKIP LOCKED so the moderation.requested NOTIFY
     handler and the reconcile-loop sweep can't double-claim the same row if
     both fire close together.
+
+    The outer `ORDER BY id` matters beyond cosmetics: `UPDATE ... RETURNING`
+    doesn't preserve the driving subquery's row order (that inner `ORDER BY
+    id` only fixes lock-acquisition order to avoid deadlocks across
+    concurrent claimers), so without this, supervisor.py's caller — which
+    applies each claimed row to Highrise in a plain sequential `for` loop —
+    could apply a batch of same-target requests out of creation order. E.g.
+    ban-then-unban queued while the instance was stopped could get applied
+    unban-then-ban once it restarts, leaving the target actually banned
+    despite the owner's last click being "unban". Confirmed live: a
+    ban + 3 unbans queued for one user while stopped came back from Postgres
+    with the ban resolved *last*, re-banning the user after all three
+    unbans had already applied.
     """
     if not instance_ids:
         return []

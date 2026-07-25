@@ -48,6 +48,25 @@ silence).
 47th visit'?" open question by not exposing the number at all, rather than
 making it opt-in. The counting itself stays: it still drives `min_visits`
 and the regulars table, just never gets whispered back to the guest.
+
+Activation message (added 2026-07-24): on `on_start`, an optional public
+`chat()` line announcing the bot just connected — the one message in this
+module that's public by default-shape (no whisper is possible; there's no
+specific user to whisper to at connect time) rather than public-as-an-
+opt-in-extra like VIP's `announce_to_room` or farewell's `public_message`.
+Off by default and cooldown-gated regardless, same anti-noise instinct as
+the rest of the module: the supervisor's reconnect-with-backoff loop
+(workers/runtime/supervisor.py) reuses the same bot object (and therefore
+the same `GreeterEngine`) across every reconnect attempt, so a flapping
+connection would otherwise spam the room once per retry.
+
+VIP's `announce_to_room` line (added 2026-07-20) is the one hardcoded,
+non-owner-authored string left in this module — everything else public-
+or-whisper here is either an owner template (`_render`) or Activation
+message's own template. As of 2026-07-24 it renders through
+`catalog/strings.py`'s `t(self.bot.bot_language, ...)` instead of a fixed
+English literal, same as the equivalent hardcoded strings in
+emote.py/warden.py/avatar.py.
 """
 
 from __future__ import annotations
@@ -66,6 +85,7 @@ from highrise import User
 from highrise.models import AnchorPosition, Position
 
 from .base import Priority
+from .strings import t
 
 if TYPE_CHECKING:
     from .emcee import EmceeBot
@@ -76,6 +96,7 @@ MAX_MESSAGE_CHARS = 300  # matches emote.py's conservative, unverified whisper-l
 DEFAULT_WELCOME_TEMPLATE = "Welcome to {room_name}, {username}!"
 DEFAULT_VIP_TEMPLATE = "Welcome back, {username} — always great to see you!"
 DEFAULT_FAREWELL_TEMPLATE = "Thanks for stopping by, {username}!"
+DEFAULT_ACTIVATION_TEMPLATE = "I'm online and ready to help in {room_name}!"
 _TEMPLATE_VARS = ("username", "room_name")
 
 
@@ -106,6 +127,39 @@ class GreeterEngine:
         self._last_greeted_at: dict[str, float] = {}
         self._recent_joins: deque[float] = deque()
         self._template_cursor: int = 0
+        self._last_activation_at: float | None = None
+
+    async def on_start(self) -> None:
+        """Called from `EmceeBot.on_start` on every (re)connect, once the
+        room name is captured — not just the first connect ever. Posts a
+        public chat line (`self.bot.highrise.chat`, never a whisper: there's
+        no specific user to whisper to at connect time) announcing the bot
+        is live. Off by default and cooldown-gated, same anti-noise instinct
+        as every other public message in this module (VIP's
+        `announce_to_room`, farewell's `public_message`) — the supervisor
+        retries a dropped connection with backoff (workers/runtime/
+        supervisor.py), and this same `GreeterEngine` instance survives every
+        reconnect attempt on that same bot object, so without a cooldown a
+        reconnect storm would spam the room with "I'm online!" on every
+        retry.
+        """
+        cfg = self.bot.config.get("activation_message", {})
+        if not cfg.get("enabled", False):
+            return
+        if not self._cooldown_ok_activation(cfg.get("cooldown_m", 10) * 60):
+            return
+
+        template = cfg.get("template") or DEFAULT_ACTIVATION_TEMPLATE
+        text = _render(template, room_name=self.bot._room_name)
+        await self.bot.throttle.acquire(Priority.NORMAL)
+        await self.bot.highrise.chat(text)
+
+    def _cooldown_ok_activation(self, cooldown_s: float) -> bool:
+        now = time.monotonic()
+        if self._last_activation_at is not None and now - self._last_activation_at < cooldown_s:
+            return False
+        self._last_activation_at = now
+        return True
 
     async def on_user_join(self, user: User, position: Position | AnchorPosition) -> None:
         self._recent_joins.append(time.monotonic())
@@ -201,7 +255,7 @@ class GreeterEngine:
 
         if cfg.get("announce_to_room", False):
             await self.bot.throttle.acquire(Priority.NORMAL)
-            await self.bot.highrise.chat(f"{user.username} just walked in!")
+            await self.bot.highrise.chat(t(self.bot.bot_language, "greeter.vip_announce", username=user.username))
 
         emote_id = cfg.get("emote_celebration_id")
         if cfg.get("emote_celebration_enabled", False) and emote_id:

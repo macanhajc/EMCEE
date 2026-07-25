@@ -1,27 +1,47 @@
 "use client";
 
+import { useEffect } from "react";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { Button } from "@/components/UI/button";
 import { Input } from "@/components/UI/input";
 import { Label } from "@/components/UI/label";
+import { useBanByUsername } from "../hooks/use-ban-by-username";
 
 const fieldControlClass =
   "border-paper/15 bg-ink/50 text-paper placeholder:text-dust/50 focus-visible:border-spotlight/50 focus-visible:ring-spotlight/30";
 
 /**
- * Manual ban/unban entry (specs/bots/moderation.md's "proposed" section) —
- * the counterpart to Regulars' per-row buttons for someone who's never
- * visited the room at all. Only a username is submitted; `requestModeration`
- * resolves it to a Highrise user id server-side via the public webapi, no
- * bot connection involved. Ban gets the same confirm() the Regulars ban
- * button uses; unban doesn't need one.
+ * Activity → Ban by username card — the whole card, chrome included. Fully
+ * self-contained: owns its own `requestModeration` save action via
+ * useBanByUsername rather than being handed a bound action down from the
+ * page's own server-rendered props. Rendered directly in
+ * instance-config.tsx's Activity tab, same self-contained shape every other
+ * tab's cards already use (docs/decisions.md, 2026-07-24). The counterpart
+ * to Regulars' per-row buttons for someone who's never visited the room at
+ * all — only a username is submitted; `requestModeration` resolves it to a
+ * Highrise user id server-side via the public webapi, no bot connection
+ * involved. Ban gets the same confirm() the Regulars ban button uses;
+ * unban doesn't need one.
  */
-export function BanByUsername({
-  requestModeration,
-}: {
-  requestModeration: (formData: FormData) => Promise<void>;
-}) {
+export function BanByUsername({ instanceId }: { instanceId: string }) {
   const t = useTranslations("instanceDetail.banByUsername");
+  const tInstance = useTranslations("instanceDetail");
+  const { state, formAction } = useBanByUsername(instanceId);
+
+  useEffect(() => {
+    if (!state) return;
+    if (state.ok) {
+      // Not `savedMessage` — a ban/unban row landing in `moderation_requests`
+      // isn't the same as it reaching Highrise (the bot may be stopped, or
+      // the request may simply not have been claimed yet), so this must not
+      // read as "done" the way every other card's save does.
+      toast.success(tInstance("moderationQueuedMessage"));
+    } else {
+      toast.error(tInstance.has(`errors.${state.error}`) ? tInstance(`errors.${state.error}`) : state.error);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
 
   return (
     <div className="rounded-2xl border border-paper/10 bg-panel p-6">
@@ -29,7 +49,7 @@ export function BanByUsername({
       <p className="mt-1 text-sm text-dust">{t("subtitle")}</p>
 
       <form
-        action={requestModeration}
+        action={formAction}
         onSubmit={(e) => {
           // FormData built from the form element alone never includes which
           // submit button was clicked (that's only captured by a genuine

@@ -78,27 +78,48 @@ describe("searchOutfitItems", () => {
     vi.unstubAllGlobals();
   });
 
-  it("maps matched items, preferring icon_url over image_url", async () => {
-    vi.mocked(fetch).mockResolvedValue(
-      new Response(
-        JSON.stringify({
-          items: [
-            {
+  it("enriches list results with icons from the per-item detail endpoint", async () => {
+    // Mirrors the real webapi: the list endpoint's items come back with
+    // icon_url/image_url both null; only GET /items/{id} has the icon.
+    vi.mocked(fetch).mockImplementation(async (input) => {
+      const url = String(input);
+      if (url.includes("/items?")) {
+        return new Response(
+          JSON.stringify({
+            items: [
+              {
+                item_id: "shirt-basic-tee",
+                item_name: "Basic Tee",
+                category: "shirt",
+                rarity: "common",
+                icon_url: null,
+                image_url: null,
+              },
+            ],
+            total: 1,
+            first_id: "shirt-basic-tee",
+            last_id: "shirt-basic-tee",
+          }),
+          { status: 200 },
+        );
+      }
+      if (url.endsWith("/items/shirt-basic-tee")) {
+        return new Response(
+          JSON.stringify({
+            item: {
               item_id: "shirt-basic-tee",
               item_name: "Basic Tee",
               category: "shirt",
               rarity: "common",
-              icon_url: "https://cdn.example/icon.png",
+              icon_url: null,
               image_url: "https://cdn.example/full.png",
             },
-          ],
-          total: 1,
-          first_id: "shirt-basic-tee",
-          last_id: "shirt-basic-tee",
-        }),
-        { status: 200 },
-      ),
-    );
+          }),
+          { status: 200 },
+        );
+      }
+      return new Response("not found", { status: 404 });
+    });
 
     await expect(searchOutfitItems("tee")).resolves.toEqual([
       {
@@ -106,7 +127,41 @@ describe("searchOutfitItems", () => {
         name: "Basic Tee",
         category: "shirt",
         rarity: "common",
-        iconUrl: "https://cdn.example/icon.png",
+        iconUrl: "https://cdn.example/full.png",
+      },
+    ]);
+  });
+
+  it("falls back to the icon-less list result when a detail lookup fails", async () => {
+    vi.mocked(fetch).mockImplementation(async (input) => {
+      const url = String(input);
+      if (url.includes("/items?")) {
+        return new Response(
+          JSON.stringify({
+            items: [
+              {
+                item_id: "shirt-basic-tee",
+                item_name: "Basic Tee",
+                category: "shirt",
+                rarity: "common",
+                icon_url: null,
+                image_url: null,
+              },
+            ],
+          }),
+          { status: 200 },
+        );
+      }
+      return new Response("not found", { status: 404 });
+    });
+
+    await expect(searchOutfitItems("tee")).resolves.toEqual([
+      {
+        id: "shirt-basic-tee",
+        name: "Basic Tee",
+        category: "shirt",
+        rarity: "common",
+        iconUrl: null,
       },
     ]);
   });

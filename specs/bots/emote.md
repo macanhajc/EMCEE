@@ -68,6 +68,7 @@ All fields hot-apply.
 - Events: `on_chat` (trigger parsing), `on_user_leave` (cancel the leaver's own loop; not currently used for emote-all's roster, which snapshots fresh via `get_room_users()` at trigger time instead of maintaining one).
 - Actions: `send_emote(emote_id, target_user_id)` — confirmed to support directing emotes at players (EmoteRequest endpoint); `send_whisper` (list, error nudges, loop-cap/timeout notices); `get_room_users` (fan-out snapshot); `get_room_privilege` (found by reading the SDK source — confirmed it's exactly what `owner_designers` permission needs, no separate designer-list API required).
 - All sends through the `CatalogBot` throttle. Priority classes: single emote-on-say = normal; emote-all fan-out and loop repeats = background (yield to everything else under pressure — once the throttle actually differentiates priorities, which it doesn't yet, see `specs/04-bot-runtime.md`).
+- Every whisper here (one-shot confirmation, loop-start, loop-timeout, the `emotes` list header) renders through `catalog/strings.py`'s `t(bot.bot_language, ...)` (added 2026-07-24, `general.bot_language` — `specs/04-bot-runtime.md`), not a fixed English literal. Emote *names* themselves stay untranslated (catalog data, not sentences).
 
 ## Rate-limit profile (drives `04-bot-runtime.md` assumptions)
 

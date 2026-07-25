@@ -110,6 +110,7 @@ from highrise.models import AnchorPosition, Item, Position, Reaction
 from .base import Priority
 from .emotes import normalize
 from .permissions import check_cooldown, check_tiered_permission
+from .strings import t
 
 if TYPE_CHECKING:
     from .emcee import EmceeBot
@@ -216,7 +217,7 @@ class AvatarEngine:
             # can't target) rather than standing.
             await self.bot.throttle.acquire(Priority.NORMAL)
             await self.bot.highrise.send_whisper(
-                user.id, "Stand on the floor (not seated) where you want me, then say \"anchor\" again."
+                user.id, t(self.bot.bot_language, "avatar.anchor_not_standing")
             )
             return
 
@@ -357,7 +358,8 @@ class AvatarEngine:
         if len(matched) < cfg.get("min_match", 2):
             await self.bot.throttle.acquire(Priority.NORMAL)
             await self.bot.highrise.send_whisper(
-                user.id, f"Couldn't find enough of {target.username}'s look in my own closet to copy it."
+                user.id,
+                t(self.bot.bot_language, "avatar.clone_insufficient_match", username=target.username),
             )
             return
 

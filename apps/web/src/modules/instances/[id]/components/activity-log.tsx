@@ -1,10 +1,7 @@
-import { useFormatter, useTranslations } from "next-intl";
+"use client";
 
-interface ModerationEvent {
-  id: number;
-  data: unknown;
-  createdAt: Date;
-}
+import { useFormatter, useTranslations } from "next-intl";
+import { useActivityLog } from "../hooks/use-activity-log";
 
 type Translate = (key: string, values?: Record<string, string | number>) => string;
 
@@ -65,20 +62,41 @@ function describe(data: unknown, t: Translate): string {
   }
 }
 
-export function ActivityLog({ events }: { events: ModerationEvent[] }) {
+/**
+ * Activity → activity log card — the whole card, chrome included. Fully
+ * self-contained: reads its recent moderation events from the shared
+ * instance store (docs/decisions.md, 2026-07-24, "instance store") rather
+ * than being handed `events` down from the page's own server-rendered
+ * props. Rendered directly in instance-config.tsx's Activity tab, same
+ * self-contained shape every other tab's cards already use. No `instanceId`
+ * prop needed — the store is already populated centrally. Read-only — no
+ * mutation, no dedicated save action.
+ */
+export function ActivityLog() {
   const t = useTranslations("instanceDetail.activityLog");
+  const tInstance = useTranslations("instanceDetail");
   const format = useFormatter();
+  const { data } = useActivityLog();
+
+  if (!data) {
+    return (
+      <div className="rounded-2xl border border-paper/10 bg-panel p-6">
+        <h2 className="font-display text-base text-paper">{t("title")}</h2>
+        <p className="mt-4 text-sm text-dust">{tInstance("loading")}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-2xl border border-paper/10 bg-panel p-6">
       <h2 className="font-display text-base text-paper">{t("title")}</h2>
       <p className="mt-1 text-sm text-dust">{t("subtitle")}</p>
 
-      {events.length === 0 ? (
+      {data.length === 0 ? (
         <p className="mt-4 text-sm text-dust">{t("empty")}</p>
       ) : (
         <ul className="mt-4 grid gap-2">
-          {events.map((event) => (
+          {data.map((event) => (
             <li
               key={event.id}
               className="flex items-baseline justify-between gap-4 border-b border-paper/5 pb-2 text-sm last:border-0"

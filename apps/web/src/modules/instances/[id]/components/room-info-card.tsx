@@ -1,12 +1,22 @@
+"use client";
+
 import { useTranslations } from "next-intl";
-import type { RoomInfo } from "@/lib/highrise-webapi";
+import { useInstanceStore } from "../store";
 
 function humanize(value: string): string {
   return value.replace(/_/g, " ");
 }
 
-export function RoomInfoCard({ room, roomId }: { room: RoomInfo | null; roomId: string }) {
+/**
+ * Self-contained — reads roomInfo/roomId from the shared instance store
+ * (baked into the store's initial state from page.tsx's server fetch,
+ * docs/decisions.md 2026-07-24 "instance store") instead of receiving them
+ * as props. No mutation — this card is read-only.
+ */
+export function RoomInfoCard() {
   const t = useTranslations("instanceDetail.roomInfo");
+  const room = useInstanceStore((s) => s.roomInfo);
+  const roomId = useInstanceStore((s) => s.header.instance.roomId);
 
   return (
     <div className="mt-6 rounded-2xl border border-paper/10 bg-panel p-6">

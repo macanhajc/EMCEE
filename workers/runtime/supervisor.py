@@ -36,11 +36,12 @@ import json
 import logging
 import os
 import signal
+import sys
 import time
 import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Awaitable, Callable
+from typing import Awaitable, Callable, TextIO
 
 import asyncpg
 from dotenv import load_dotenv
@@ -69,6 +70,76 @@ MAX_CONSECUTIVE_FAILURES = 5  # spec: "after N consecutive failures -> degraded,
 # bounds how long we'll call an attempt "still connecting" before treating it
 # as a failure (docs/decisions.md, 2026-07-21).
 CONNECT_CONFIRM_TIMEOUT_S = 20.0
+
+
+class _TaskLocalStdout:
+    """Wraps stdout so a (re)connect attempt's print output can be captured
+    per-instance without leaking between concurrently running instances.
+
+    highrise-bot-sdk's `bot_runner()` (see the highrise skill's "known
+    unknowns") has no exception or return value for "Highrise rejected this
+    connect attempt" (bad token, missing designer rights, bad room) — it only
+    ever does `print(f"ERROR: {session_metadata}")` and returns. The
+    supervisor runs many instances' `bot_runner()` calls concurrently (one
+    asyncio task each), so wrapping the attempt in
+    `contextlib.redirect_stdout` would also swallow every *other* instance's
+    concurrent output into this one's buffer. Routing by
+    `asyncio.current_task()` at write-time is safe instead: each `write()`
+    call executes synchronously within whichever task is actually running
+    it, so there's no cross-task interleaving to worry about *within* a
+    single call.
+    """
+
+    def __init__(self, real: TextIO) -> None:
+        self._real = real
+        self._buffers: dict[asyncio.Task, list[str]] = {}
+
+    def capture(self, task: asyncio.Task) -> None:
+        self._buffers[task] = []
+
+    def pop(self, task: asyncio.Task) -> str:
+        return "".join(self._buffers.pop(task, []))
+
+    def write(self, s: str) -> int:
+        buf = self._buffers.get(asyncio.current_task())
+        if buf is not None:
+            buf.append(s)
+        return self._real.write(s)
+
+    def flush(self) -> None:
+        self._real.flush()
+
+    def isatty(self) -> bool:
+        return False
+
+
+# Installed once at import time; idempotent so re-importing this module (e.g.
+# under pytest) doesn't wrap an already-wrapped stream.
+_STDOUT = sys.stdout if isinstance(sys.stdout, _TaskLocalStdout) else _TaskLocalStdout(sys.stdout)
+sys.stdout = _STDOUT
+
+
+def _classify_connect_error(captured: str) -> str | None:
+    """Best-effort mapping from the SDK's free-text rejection message to an
+    `error_kind` — a heuristic, not a verified one: specs/04-bot-runtime.md:68
+    flags that the exact wording Highrise sends for "missing designer rights"
+    vs. "bad room" vs. anything else has never been confirmed live. Keeps
+    `None` (today's behavior — unset, generic "kept crashing" message) for
+    anything that doesn't match; refine the keywords below once more real
+    rejection text has been observed (the raw text is now also kept verbatim
+    on the event's `detail` field regardless of whether this classifies it).
+    """
+    lowered = captured.lower()
+    if "error:" not in lowered:
+        return None
+    if "designer" in lowered or "permission" in lowered:
+        return "permissions"
+    if "room" in lowered and (
+        "not found" in lowered or "invalid" in lowered or "doesn't exist" in lowered or "does not exist" in lowered
+    ):
+        return "room"
+    return None
+
 
 # The programmatic multi-bot entrypoint highrise.__main__.main() itself uses
 # (see its own bot_runner/control_runner). Runs forever, reconnecting on
@@ -230,6 +301,7 @@ class Supervisor:
 
                 start = time.monotonic()
                 runner_task = asyncio.create_task(self.bot_runner(bot, room_id, token))
+                _STDOUT.capture(runner_task)
                 token = None  # already captured by the task; don't let plaintext linger longer than needed
                 confirm_wait = asyncio.create_task(connected_event.wait())
 
@@ -249,6 +321,7 @@ class Supervisor:
                     confirm_wait.cancel()
                     with contextlib.suppress(asyncio.CancelledError):
                         await asyncio.gather(runner_task, confirm_wait, return_exceptions=True)
+                    _STDOUT.pop(runner_task)  # instance is shutting down — discard, just avoid leaking the buffer
                     raise
 
                 if not confirm_wait.done():
@@ -276,6 +349,15 @@ class Supervisor:
                     await runner_task  # already done if it failed before confirming; else runs until it exits
                 elapsed = time.monotonic() - start
 
+                # Whatever the SDK printed for this attempt (see _STDOUT's
+                # docstring) — empty for a timed-out attempt, since that's a
+                # hang, not a rejection. Kept on the event regardless of
+                # whether it classifies below, so a real failure signature is
+                # visible even when the keyword heuristic doesn't match it.
+                captured = _STDOUT.pop(runner_task)
+                error_kind = None if timed_out else _classify_connect_error(captured)
+                detail = captured.strip()[-500:] if captured.strip() else None
+
                 # A stuck-then-timed-out attempt never got a real chance to
                 # "run for a while", so it always counts toward escalation
                 # regardless of how long the timeout window itself was.
@@ -286,18 +368,20 @@ class Supervisor:
                     backoff = self.initial_backoff_s
 
                 if consecutive_fast_failures >= self.max_consecutive_failures:
-                    # SDK's bot_runner doesn't surface *why* it returned (see
-                    # module docstring in the highrise skill's "known
-                    # unknowns") — we can tell something's wrong repeatedly,
-                    # not precisely what. error_kind stays unset here;
-                    # refine once a canary instance gives us real failure
-                    # signatures to key off.
-                    await db.set_status(self.pool, instance_id, "degraded")
-                    await db.insert_event(
-                        self.pool, instance_id, "degraded", {"consecutive_failures": consecutive_fast_failures}
-                    )
+                    # error_kind is the last attempt's classification, if any
+                    # — best-effort (see _classify_connect_error); stays None
+                    # for anything the keyword heuristic doesn't recognize,
+                    # same generic "kept crashing" outcome as before.
+                    await db.set_status(self.pool, instance_id, "degraded", error_kind=error_kind)
+                    degraded_data: dict[str, object] = {"consecutive_failures": consecutive_fast_failures}
+                    if detail:
+                        degraded_data["detail"] = detail
+                    await db.insert_event(self.pool, instance_id, "degraded", degraded_data)
                 elif not timed_out:
-                    await db.insert_event(self.pool, instance_id, "disconnected", {"elapsed_s": round(elapsed, 1)})
+                    disconnected_data: dict[str, object] = {"elapsed_s": round(elapsed, 1)}
+                    if detail:
+                        disconnected_data["detail"] = detail
+                    await db.insert_event(self.pool, instance_id, "disconnected", disconnected_data)
 
             await asyncio.sleep(backoff)
             backoff = min(backoff * 2, self.max_backoff_s)
@@ -346,12 +430,28 @@ class Supervisor:
         await self.listen_conn.add_listener("moderation.requested", _on_notify)
         while True:
             channel, payload = await queue.get()
-            if channel == "avatar_position.updated":
-                await self._handle_avatar_position_update(payload)
-            elif channel == "moderation.requested":
-                await self._handle_moderation_requested(payload)
-            else:
-                await self._handle_config_update(payload)
+            try:
+                if channel == "avatar_position.updated":
+                    await self._handle_avatar_position_update(payload)
+                elif channel == "moderation.requested":
+                    await self._handle_moderation_requested(payload)
+                else:
+                    await self._handle_config_update(payload)
+            except Exception:
+                # This whole task is the sole listener for config/avatar-
+                # position/moderation NOTIFYs — an unshielded exception here
+                # (found live: avatar_position_update racing a bot that
+                # hasn't finished its Highrise handshake yet, so
+                # bot.highrise isn't set — AttributeError) doesn't just drop
+                # this one instance's update, it kills the listener task for
+                # every instance this supervisor runs, and — worse — resurfaces
+                # at the next shutdown, since run()'s finally block awaits
+                # this same task and re-raises whatever it died with,
+                # crashing the whole process. One tenant's bad notification
+                # must never take down the rest (same principle as
+                # catalog/base.py's _shielded, applied to this dispatch loop
+                # instead of a CatalogBot handler).
+                log.exception("%s: notification handling failed", channel)
 
     async def _handle_config_update(self, raw: str) -> None:
         try:

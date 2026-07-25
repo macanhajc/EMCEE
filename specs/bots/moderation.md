@@ -127,6 +127,7 @@ All fields hot-apply (no reconnect needed) — same as every other Emcee module.
 
 - Events: `on_chat` (filter, anti-spam, mod commands), `on_moderate` (observe external mod actions, avoid double-punishing). `on_user_join` raid-guard bookkeeping is not wired — not needed without raid guard built.
 - Actions: `moderate_room` (mute/kick/ban/unban), whispers. All via the `CatalogBot` throttle at `Priority.NORMAL` — no separate high-priority lane for moderation actions in trimmed v1 (the throttle doesn't currently have a priority above `NORMAL`; revisit if saturation telemetry shows moderation actions getting queued behind normal traffic in practice). Dashboard-initiated ban/unban (`WardenEngine.apply_dashboard_action`) shares this same throttle and `ResponseError` handling — supervisor.py's `moderation.requested` NOTIFY channel and its reconcile-loop pending-request sweep are what feed it, both documented above.
+- The filter warning, mod-command "not found" reply, and moderation-denied reply all render through `catalog/strings.py`'s `t(bot.bot_language, ...)` (added 2026-07-24, `general.bot_language` — `specs/04-bot-runtime.md`) rather than a fixed English literal — including the mute/kick/ban verb embedded in the denial message, which has its own per-locale translation. Distinct from the "multi-language curated blocklist" open question below, which is about the filter's *matched terms*, not the bot's own replies.
 
 ## Open questions
 

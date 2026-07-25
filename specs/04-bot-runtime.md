@@ -32,6 +32,7 @@ Module engines (`EmoteEngine`, `GreeterEngine`) are plain classes, not `CatalogB
 - Config arrives as JSONB + `schema_version`; runtime re-validates against the pinned schema in `packages/schemas/` before applying. Invalid config → keep last-good, emit event, flag dashboard.
 - **Hot-apply:** on `config.updated`, swap the validated config object atomically between events. Fields marked `requires_reconnect` in schema metadata trigger a graceful reconnect instead.
 - Catalog bots may only reach Highrise (SDK) and our own Postgres. No other outbound network. Not customer code today — but build the habit.
+- **Bot language** (added 2026-07-24): `general.bot_language` — one schema section not owned by any single module, for settings that apply across all of them. Drives `catalog/strings.py`'s `t(locale, key, **kwargs)` lookup table, which every module's *built-in* (non-owner-authored) player-facing strings render through — emote confirmations, loop messages, moderation warnings, mod-command replies, VIP's room-announce line. Owner-authored templates (Concierge's Welcome/VIP/Farewell/Activation message, `_render`'s literal-token substitution) are untouched by this — they stay in whatever language the owner wrote them, independent of `bot_language`.
 
 ## Rate limiting (empirical — no published numbers)
 

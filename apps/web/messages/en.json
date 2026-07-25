@@ -17,8 +17,16 @@
   },
   "footer": {
     "disclaimer": "Independent project. Not affiliated with Highrise or Pocket Worlds.",
+    "support": "Support",
     "privacy": "Privacy",
     "terms": "Terms"
+  },
+  "cookieBanner": {
+    "heading": "Cookie notice",
+    "body": "We use one strictly-necessary cookie to keep you signed in. With your consent, we also use PostHog (session recording off) to see which features get used — no ad-tracking, no cross-site cookies.",
+    "learnMore": "Learn more",
+    "accept": "Accept",
+    "reject": "Reject"
   },
   "home": {
     "marqueeTicker": {
@@ -310,6 +318,8 @@
     "subscribeToActivate": "Subscribe to activate",
     "checkoutSuccessMessage": "Thanks! Your subscription is starting — this page will reflect it shortly.",
     "savedMessage": "Saved.",
+    "moderationQueuedMessage": "Queued — applies once the bot is connected. Check Activity log below to confirm it went through.",
+    "loading": "Loading…",
     "errors": {
       "rate_limited": "Too many attempts — try again in a few minutes.",
       "bad_token": "That access code doesn't look right.",
@@ -439,6 +449,7 @@
       "activityTab": "Activity",
       "soon": "soon",
       "inGameHeading": "In-game",
+      "loading": "Loading…",
       "comingSoon": "{name} is coming soon",
       "saveChanges": "Save changes",
       "enumLabels": {
@@ -452,15 +463,221 @@
         "BackRight": "Back right",
         "BackLeft": "Back left"
       },
+      "languageLabels": {
+        "en": "English",
+        "es": "Español",
+        "de": "Deutsch",
+        "pt": "Português",
+        "ru": "Русский"
+      },
+      "general": {
+        "title": "Bot language",
+        "description": "Language the bot uses for its own built-in responses — emote confirmations, loop messages, moderation warnings, mod-command replies. Doesn't change your own custom templates (Welcome, VIP, Farewell, Activation message) — those stay exactly as you wrote them.",
+        "botLanguageLabel": "Bot language"
+      },
+      "emoteOnSay": {
+        "title": "Emote on say",
+        "description": "Someone types an emote's name (or its number from the \"emotes\" list) in chat — no command needed — and their avatar performs it, even if they don't own it. Loops on repeat by default (see Loop below).",
+        "enabledLabel": "Enabled",
+        "cooldownLabel": "Per-user cooldown (seconds)",
+        "disabledEmotesLabel": "Blocked emotes",
+        "disabledEmotesDescription": "These won't trigger just by saying their name in chat. \"all <emote>\" and \"loop <emote>\" can still use them directly — this only blocks the passive say-it trigger.",
+        "save": "Save emote on say"
+      },
+      "emoteAll": {
+        "title": "Emote all",
+        "description": "\"all <emote>\" makes everyone in the room perform it as a staggered wave.",
+        "enabledLabel": "Enabled",
+        "permissionLabel": "Who can trigger it",
+        "permissionDescription": "Who's allowed to start an all-room wave: just you, you plus anyone with Designer rights in this room, or a specific list of usernames.",
+        "allowlistLabel": "Allowed usernames",
+        "cooldownLabel": "Room cooldown (seconds)",
+        "cooldownDescription": "Minimum wait between emote-all waves.",
+        "save": "Save emote all"
+      },
+      "listCommand": {
+        "title": "Emote list command",
+        "description": "\"emotes\" whispers a paginated list of available emote names.",
+        "enabledLabel": "Enabled"
+      },
+      "loop": {
+        "title": "Loop",
+        "description": "On by default: saying an emote's name (or \"loop <emote>\" explicitly) repeats that emote until the user says \"stop\" or leaves the room — the AFK-dance feature. Turn off to make emotes fire once instead, like before.",
+        "enabledLabel": "Enabled",
+        "enabledDescription": "On by default — every emote-on-say trigger loops, not just \"loop <emote>\". This is the most demanding feature we offer; keep an eye on things in busy rooms, and turn it off to go back to a single emote per trigger.",
+        "intervalLabel": "Repeat interval (seconds)",
+        "maxDurationLabel": "Max loop duration (seconds)",
+        "maxDurationDescription": "Safety auto-stop in case someone forgets to say \"stop\" — for example if they close the app instead of properly leaving the room.",
+        "cooldownLabel": "Per-user start cooldown (seconds)",
+        "cooldownDescription": "Minimum wait between one user starting new loops.",
+        "save": "Save loop"
+      },
+      "activationMessage": {
+        "title": "Activation message",
+        "description": "Posted publicly in room chat the moment the bot connects — not a whisper. Off by default.",
+        "enabledLabel": "Enabled",
+        "enabledDescription": "Off by default — an unprompted public message on every reconnect can get noisy.",
+        "templateLabel": "Message",
+        "templateDescription": "Use {room_name}.",
+        "templatePlaceholder": "e.g. I'm online and ready to help in {room_name}!",
+        "cooldownLabel": "Re-announce cooldown (minutes)",
+        "cooldownDescription": "Skip the announcement if the bot already posted one within this many minutes — guards against a reconnect storm spamming the room.",
+        "save": "Save activation message"
+      },
+      "welcome": {
+        "title": "Welcome messages",
+        "description": "Whispered to a guest when they join — skipped entirely for VIPs, who get their own greeting instead.",
+        "enabledLabel": "Enabled",
+        "templatesLabel": "Greeting templates",
+        "templatesDescription": "Use {username}, {room_name}. Rotates through the list on each greeting so the room doesn't feel repetitive.",
+        "templatePlaceholder": "e.g. Welcome, {username}!",
+        "cooldownLabel": "Re-greet cooldown (hours)",
+        "cooldownDescription": "Don't whisper the same person again until this many hours have passed since their last greeting.",
+        "busyModeEnabledLabel": "Skip greetings when busy",
+        "busyModeEnabledDescription": "Skip greetings entirely while joins are coming in faster than the threshold below, so a raid or event doesn't flood whispers.",
+        "busyModeJoinsLabel": "Busy threshold (joins/min)",
+        "quietHoursEnabledLabel": "Enable quiet hours",
+        "quietHoursEnabledDescription": "Skip greetings during a daily window (e.g. overnight).",
+        "quietHoursStartLabel": "Quiet hours start",
+        "quietHoursEndLabel": "Quiet hours end",
+        "quietHoursTzLabel": "Quiet hours time zone",
+        "quietHoursTzDescription": "Time zone name, e.g. America/Sao_Paulo.",
+        "save": "Save welcome messages"
+      },
+      "vip": {
+        "title": "VIP recognition",
+        "description": "Named regulars get a distinct greeting instead of the generic welcome — always, even during busy mode or quiet hours.",
+        "usersLabel": "VIP usernames",
+        "templateLabel": "VIP greeting template",
+        "templateDescription": "Use {username}, {room_name}.",
+        "announceToRoomLabel": "Announce to room",
+        "announceToRoomDescription": "Also post a public chat line when a VIP joins, not just the whisper.",
+        "emoteCelebrationEnabledLabel": "Play an emote on VIP join",
+        "emoteCelebrationIdLabel": "Celebration emote",
+        "save": "Save VIP recognition"
+      },
+      "farewell": {
+        "title": "Farewell",
+        "description": "Logs when a regular (visits ≥ the threshold below) leaves. No whisper is possible — they're already gone — but an optional public send-off can post instead.",
+        "logEnabledLabel": "Log farewells",
+        "minVisitsLabel": "Minimum visits to count as a regular",
+        "publicMessageLabel": "Post a public send-off",
+        "publicMessageDescription": "Off by default — a public message on every qualifying leave gets noisy fast.",
+        "publicTemplateLabel": "Send-off template",
+        "save": "Save farewell"
+      },
+      "anchorSpot": {
+        "title": "Anchor spot",
+        "description": "Two ways to set where the bot stands: say \"anchor\" in-game, or enter coordinates directly on this page. Either one updates the same saved spot — the bot walks back there every time it reconnects instead of appearing wherever the room drops it.",
+        "enabledLabel": "Enabled",
+        "enabledDescription": "Turns off both ways of setting the spot — the in-game \"anchor\" command and the coordinate fields below."
+      },
       "position": {
         "fromDashboard": "From the dashboard",
-        "withPosition": "Nudge the saved spot's coordinates directly — an alternative to standing in the room and saying \"anchor\". Always just you; the in-game permission above doesn't apply here.",
-        "withoutPosition": "No spot saved yet. Say \"anchor\" in-game once to set a starting point, or enter coordinates directly if you already know them. Always just you; the in-game permission above doesn't apply here.",
+        "withPosition": "Nudge the saved spot's coordinates directly — an alternative to standing in the room and saying \"anchor\". Always just you.",
+        "withoutPosition": "No spot saved yet. Say \"anchor\" in-game once to set a starting point, or enter coordinates directly if you already know them. Always just you.",
         "x": "X",
         "y": "Y",
         "z": "Z",
         "facing": "Facing",
-        "save": "Save position"
+        "save": "Save position",
+        "roomLayoutPrompt": "Which room layout is this?",
+        "roomLayoutDescription": "Highrise rooms only come in a fixed set of floor plans — pick the one this room uses so the preview lines up with the real floor. You can change it anytime.",
+        "changeRoomLayout": "Change room layout",
+        "elevation": "Elevation (Y)",
+        "gridHint": "Click a tile to set X/Z.",
+        "tileLabel": "Tile x {x}, z {z}"
+      },
+      "idleEmote": {
+        "title": "Idle emote loop",
+        "description": "The bot performs a low-key emote on a repeat interval whenever it isn't busy responding to something — a little life instead of standing frozen.",
+        "enabledLabel": "Enabled",
+        "enabledDescription": "Off by default — a sustained background action, same caution as the Emotes skill's loop feature.",
+        "emoteLabel": "Idle emote",
+        "emoteDescription": "Emote from the Emotes skill's list.",
+        "intervalLabel": "Repeat interval (seconds)",
+        "save": "Save idle emote"
+      },
+      "reactionBack": {
+        "title": "Reaction back",
+        "description": "Someone reacts at the bot — the bot reacts back the same way.",
+        "enabledLabel": "Enabled",
+        "cooldownLabel": "Per-user cooldown (seconds)",
+        "cooldownDescription": "Minimum wait between reacting back at the same person, so repeated reactions can't be used to spam the bot's actions.",
+        "save": "Save reaction back"
+      },
+      "defaultOutfit": {
+        "title": "Default outfit",
+        "description": "A fixed outfit the bot wears when it connects. Items must be owned by the bot (or free) — anything it doesn't own is skipped rather than blocking the whole outfit.",
+        "enabledLabel": "Enabled",
+        "itemIdsLabel": "Items",
+        "itemIdsDescription": "Search and add items the bot owns.",
+        "save": "Save default outfit"
+      },
+      "outfitPresets": {
+        "title": "Named outfit presets",
+        "description": "\"look <name>\" switches the bot into a saved outfit.",
+        "enabledLabel": "Enabled",
+        "presetsLabel": "Presets",
+        "presetsDescription": "Give each preset a name, then search and add the items it should wear.",
+        "save": "Save outfit presets"
+      },
+      "outfitClone": {
+        "title": "Copy a look",
+        "description": "\"copy <username>\" makes the bot wear as much of that person's current outfit as it actually owns — items it doesn't own are skipped, never bought.",
+        "enabledLabel": "Enabled",
+        "minMatchLabel": "Minimum matching items",
+        "minMatchDescription": "If fewer than this many of the target's items are actually in the bot's own inventory, skip the copy entirely and say why, instead of applying a near-empty outfit.",
+        "save": "Save copy a look"
+      },
+      "filter": {
+        "title": "Word filter",
+        "description": "Custom terms trigger a private, whisper-only warning to whoever said them — never a public callout — and count toward the warnings below.",
+        "enabledLabel": "Enabled",
+        "customTermsLabel": "Blocked terms",
+        "customTermsDescription": "Matching ignores capitalization and common tricks like repeated letters, so simple attempts to sneak past it won't work.",
+        "save": "Save word filter"
+      },
+      "antiSpam": {
+        "title": "Anti-spam",
+        "description": "Catches message flooding and copy-pasted repeats. A trip counts toward the warnings below, same as a filter hit.",
+        "enabledLabel": "Enabled",
+        "messageRateCountLabel": "Max messages",
+        "messageRateCountDescription": "More than this many messages from one person within the window below trips the anti-spam rule.",
+        "messageRateWindowLabel": "Window (seconds)",
+        "duplicateCountLabel": "Duplicate message threshold",
+        "duplicateCountDescription": "Sending the exact same message this many times in a row trips the rule.",
+        "save": "Save anti-spam"
+      },
+      "strikeEscalation": {
+        "title": "Warning escalation",
+        "description": "A filter hit, anti-spam trip, or !warn command adds a warning. Crossing a threshold below takes the matching action — only the highest one reached fires, not every one below it.",
+        "strikeDecayLabel": "Warning reset (hours)",
+        "strikeDecayDescription": "A user's warning count resets after this many hours with no new warnings.",
+        "muteAtStrikesLabel": "Mute at this many warnings",
+        "muteDurationLabel": "Mute duration (seconds)",
+        "kickAtStrikesLabel": "Kick at this many warnings",
+        "banEnabledLabel": "Enable ban",
+        "banEnabledDescription": "Off by default — the most serious action we offer, kept opt-in.",
+        "banAtStrikesLabel": "Ban at this many warnings",
+        "banAtStrikesDescription": "Always requires at least 2 warnings, regardless of this setting.",
+        "banDurationLabel": "Ban duration (seconds)",
+        "banDurationDescription": "0 = permanent.",
+        "save": "Save warning escalation"
+      },
+      "exemptions": {
+        "title": "Exemptions",
+        "description": "Exempt users skip the filter and anti-spam entirely, and can issue moderation commands in chat. The room owner is always exempt.",
+        "designersExemptLabel": "Exempt Designers",
+        "usersLabel": "Exempt usernames",
+        "save": "Save exemptions"
+      },
+      "modCommands": {
+        "title": "Moderation commands",
+        "description": "In-chat commands for exempt users: warn, mute, and kick a named user. Ban is dashboard-only, not available as a chat command.",
+        "enabledLabel": "Enabled",
+        "prefixLabel": "Command prefix",
+        "save": "Save moderation commands"
       },
       "tagListPlaceholder": "Type a name and press comma to add",
       "removeTag": "Remove {tag}",
@@ -495,6 +712,12 @@
         "noneYet": "No presets yet — add one below.",
         "addPreset": "Add preset",
         "maxPresets": "Max {max} presets."
+      },
+      "templateListInput": {
+        "addTemplate": "Add template",
+        "removeTemplate": "Remove template {index}",
+        "noneYet": "No templates yet — add at least one.",
+        "maxTemplates": "Maximum {max} templates."
       }
     },
     "banByUsername": {
@@ -1128,5 +1351,50 @@
         ]
       }
     }
+  },
+  "support": {
+    "eyebrow": "Need a hand?",
+    "title": "Support",
+    "intro": "Most questions about your bot, your subscription, or how BotMarket works are answered below. Can't find yours? Email us — we read every message ourselves.",
+    "contact": {
+      "heading": "Contact us",
+      "body": "Have a question about your bot, your subscription, or anything else? Send us an email and we'll get back to you.",
+      "tip": "If a bot's misbehaving, open its instance page, go to the Status log card, and hit “Copy diagnostics” first — paste that straight into your email, it's exactly what we'd ask for anyway."
+    },
+    "faqHeading": "Frequently asked questions",
+    "faq": [
+      {
+        "question": "What is BotMarket, exactly?",
+        "answer": "BotMarket hosts a ready-made Highrise bot — Emcee — for your room. Emcee bundles emotes-on-command, greetings and VIP recognition, moderation, and outfit features into one bot. You configure it from a dashboard; we run it 24/7."
+      },
+      {
+        "question": "Do I need my own Highrise bot account?",
+        "answer": "Yes. You create the bot account and generate its access token in Highrise — we never own or resell Highrise accounts. You paste the token into your dashboard once, and we take it from there."
+      },
+      {
+        "question": "Does BotMarket ever touch Highrise Gold?",
+        "answer": "No. All pricing is in real currency (BRL, with a USD reference price) — we never accept, hold, or transfer Gold in any form."
+      },
+      {
+        "question": "Is my bot token safe?",
+        "answer": "It's encrypted at rest, write-only from the dashboard — once saved, no screen or API ever displays or returns it — and it's never written to logs."
+      },
+      {
+        "question": "How much does it cost, and can I cancel anytime?",
+        "answer": "One flat price per bot instance, billed monthly or annually — see Pricing above. Pay by card or Pix. Cancel anytime; your bot keeps running until the end of the period you already paid for."
+      },
+      {
+        "question": "Can I get a refund?",
+        "answer": "Yes — your first purchase on any plan is fully refundable within 7 days, no questions asked. After that, cancelling stops future renewals, but we don't pro-rate the current period."
+      },
+      {
+        "question": "My bot looks offline or isn't responding — what do I do?",
+        "answer": "Open the bot's instance page and check the Status log card — it shows the current connection state and recent events. If something looks wrong, hit “Copy diagnostics” and paste the result into an email to us."
+      },
+      {
+        "question": "Can I upload my own bot code?",
+        "answer": "Not today. Catalog bots are first-party — you configure them through the dashboard rather than uploading or running your own code on our infrastructure."
+      }
+    ]
   }
 }

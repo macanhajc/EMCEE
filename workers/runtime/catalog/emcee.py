@@ -12,9 +12,15 @@ dispatch (so `CatalogBot.__init_subclass__`'s shielding applies — it only
 wraps methods defined directly on this class, not on the composed engines,
 which is exactly why the delegation happens here and not via mixin
 inheritance) and the one `on_start`-captured room identity (`_room_owner_id`,
-`_room_name`) all three engines read. Everything module-specific — cooldown
+`_room_name`) all four engines read. Everything module-specific — cooldown
 stores, active loops, VIP visit counts, strike state — stays inside its own
 engine.
+
+Both Avatar and Concierge get their own `on_start()` delegate (Warden and
+Emote don't need one) — `_room_name` is assigned before either runs, since
+Concierge's activation-message announcement (added 2026-07-24,
+`specs/bots/greeter.md`) renders `{room_name}` into its template the same
+way the join/leave messages do.
 
 `on_chat` runs Warden before Emote: a filter hit or anti-spam trip should
 still whisper a warning and count toward a strike even though the message
@@ -65,6 +71,7 @@ class EmceeBot(CatalogBot):
         self._room_owner_id = session_metadata.room_info.owner_id
         self._room_name = session_metadata.room_info.room_name
         await self._avatar.on_start()
+        await self._greeter.on_start()
 
     async def apply_avatar_position(self) -> None:
         """Supervisor's entry point for a dashboard-set anchor spot

@@ -220,6 +220,61 @@ async def test_avatar_position_update_reaches_running_instance(pool, make_instan
     await supervisor.shutdown()
 
 
+async def test_avatar_position_update_crash_does_not_kill_listener(pool, make_instance, supervisor):
+    """Regression: found live (2026-07-24) when a real supervisor process
+    crashed instead of shutting down cleanly. Sequence: an instance is
+    running but stuck mid-connect (missing designer rights, in this bug's
+    case — anything that leaves bot_runner() never confirming works), so
+    `bot.highrise` is never set (only assigned once the SDK gets a real
+    session — highrise/__main__.py). If a saved anchor position exists,
+    `avatar.restore_position()` doesn't early-return like it does with no
+    saved row (see test_avatar_position_update_reaches_running_instance
+    above) — it reaches `self.bot.highrise.teleport(...)` and raises
+    AttributeError. That propagated out of _handle_avatar_position_update
+    with nothing catching it, killing the *listener task* for config/avatar-
+    position/moderation NOTIFYs for every instance this supervisor runs —
+    and since Supervisor.run()'s `finally` block awaits that same task on
+    shutdown, the stored exception re-raised there too, crashing the whole
+    process the next time anyone tried to stop it cleanly. One instance
+    stuck in a connect-failure loop must never be able to do that."""
+    instance_id = await make_instance(desired_state="running")
+    await supervisor.reconcile()
+    assert instance_id in supervisor.running
+    assert not hasattr(supervisor.running[instance_id].bot, "highrise")
+
+    await pool.execute(
+        "INSERT INTO avatar_positions (bot_instance_id, x, y, z, facing) VALUES ($1, 1, 2, 3, 'RightFace')",
+        instance_id,
+    )
+
+    listener_task = asyncio.create_task(supervisor._listen_config_updates())
+    await asyncio.sleep(0.1)  # let add_listener's LISTEN register before notifying
+    await pool.execute("SELECT pg_notify('avatar_position.updated', $1)", f'{{"instanceId": "{instance_id}"}}')
+    await asyncio.sleep(0.2)  # let the (now-caught) crash happen
+
+    assert not listener_task.done()  # must survive the crash, not die silently
+
+    # And it must still be doing its job afterward, not just technically alive.
+    await _insert_moderation_request(pool, instance_id, action="ban")
+    supervisor.running[instance_id].bot.highrise = FakeHighrise()
+    await pool.execute("SELECT pg_notify('moderation.requested', $1)", f'{{"instanceId": "{instance_id}"}}')
+
+    async def is_applied():
+        row = await pool.fetchrow("SELECT status FROM moderation_requests WHERE bot_instance_id = $1", instance_id)
+        return row is not None and row["status"] == "applied"
+
+    async def _poll():
+        while not await is_applied():
+            await asyncio.sleep(0.02)
+
+    await asyncio.wait_for(_poll(), timeout=5.0)
+
+    listener_task.cancel()
+    with contextlib.suppress(asyncio.CancelledError):
+        await listener_task
+    await supervisor.shutdown()
+
+
 # --- dashboard-initiated ban/unban (specs/bots/moderation.md's "proposed" section) --------
 
 
@@ -299,6 +354,46 @@ async def test_moderation_requested_denied_marks_request_denied(pool, make_insta
     )
     assert row["status"] == "denied"
     assert row["error"] == "insufficient privilege"
+
+    await supervisor.shutdown()
+
+
+async def test_pending_moderation_requests_apply_in_creation_order(pool, make_instance, supervisor):
+    """Regression test for a live bug: a ban followed by several unbans for
+    the same user, all queued while the instance was stopped, came back from
+    `claim_pending_moderation_requests` in an order that didn't match
+    creation order — `UPDATE ... RETURNING` doesn't preserve the driving
+    subquery's `ORDER BY id`, only lock-acquisition order does — so the
+    *oldest* request (the ban) got applied *last* once the instance
+    reconnected, silently re-banning a user the owner had since unbanned
+    three times. Encodes each row's position via a distinct `duration_s`
+    marker (unband/ban duration is otherwise unused here) so this fails
+    loudly if claiming ever goes back to being unordered."""
+    instance_id = await make_instance(desired_state="stopped")
+    for marker in (1, 2, 3, 4):
+        await pool.execute(
+            """
+            INSERT INTO moderation_requests
+                (bot_instance_id, target_user_id, target_username, action, duration_s, requested_by)
+            VALUES ($1, 'u1', 'troublemaker', 'unban', $2, (SELECT user_id FROM bot_instances WHERE id = $1))
+            """,
+            instance_id,
+            marker,
+        )
+
+    await pool.execute("UPDATE bot_instances SET desired_state = 'running' WHERE id = $1", instance_id)
+    await supervisor.reconcile()
+    assert instance_id in supervisor.running
+    supervisor.running[instance_id].bot.highrise = FakeHighrise()
+
+    await supervisor._apply_pending_moderation_requests([instance_id])
+
+    assert supervisor.running[instance_id].bot.highrise.moderate_room_calls == [
+        ("u1", "unban", 1),
+        ("u1", "unban", 2),
+        ("u1", "unban", 3),
+        ("u1", "unban", 4),
+    ]
 
     await supervisor.shutdown()
 

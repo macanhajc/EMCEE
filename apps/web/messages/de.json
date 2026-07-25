@@ -17,8 +17,16 @@
   },
   "footer": {
     "disclaimer": "Unabhängiges Projekt. Nicht verbunden mit Highrise oder Pocket Worlds.",
+    "support": "Support",
     "privacy": "Datenschutz",
     "terms": "Bedingungen"
+  },
+  "cookieBanner": {
+    "heading": "Cookie-Hinweis",
+    "body": "Wir setzen ein technisch notwendiges Cookie, um dich angemeldet zu halten. Mit deiner Zustimmung nutzen wir außerdem PostHog (Sitzungsaufzeichnung deaktiviert), um zu sehen, welche Funktionen genutzt werden — kein Werbe-Tracking, keine seitenübergreifenden Cookies.",
+    "learnMore": "Mehr erfahren",
+    "accept": "Akzeptieren",
+    "reject": "Ablehnen"
   },
   "home": {
     "marqueeTicker": {
@@ -310,6 +318,8 @@
     "subscribeToActivate": "Abo abschließen zum Aktivieren",
     "checkoutSuccessMessage": "Danke! Dein Abo startet gerade — diese Seite aktualisiert sich gleich.",
     "savedMessage": "Gespeichert.",
+    "moderationQueuedMessage": "In der Warteschlange – wird angewendet, sobald der Bot verbunden ist. Prüfe das Aktivitätsprotokoll unten, um die Anwendung zu bestätigen.",
+    "loading": "Wird geladen …",
     "errors": {
       "rate_limited": "Zu viele Versuche — probier's in ein paar Minuten noch mal.",
       "bad_token": "Dieser Zugangscode sieht nicht richtig aus.",
@@ -439,6 +449,7 @@
       "activityTab": "Aktivität",
       "soon": "bald",
       "inGameHeading": "Im Spiel",
+      "loading": "Wird geladen …",
       "comingSoon": "{name} kommt bald",
       "saveChanges": "Änderungen speichern",
       "enumLabels": {
@@ -452,15 +463,221 @@
         "BackRight": "Hinten rechts",
         "BackLeft": "Hinten links"
       },
+      "languageLabels": {
+        "en": "English",
+        "es": "Español",
+        "de": "Deutsch",
+        "pt": "Português",
+        "ru": "Русский"
+      },
+      "general": {
+        "title": "Bot-Sprache",
+        "description": "Sprache, in der der Bot seine eigenen eingebauten Antworten verfasst — Emote-Bestätigungen, Loop-Nachrichten, Moderationswarnungen, Antworten auf Mod-Befehle. Ändert nicht deine eigenen Vorlagen (Begrüßung, VIP, Abschied, Aktivierungsnachricht) — die bleiben genau so, wie du sie geschrieben hast.",
+        "botLanguageLabel": "Bot-Sprache"
+      },
+      "emoteOnSay": {
+        "title": "Emote im Chat",
+        "description": "Jemand tippt den Namen einer Emote (oder ihre Nummer aus der „emotes“-Liste) in den Chat — kein Befehl nötig — und sein Avatar führt sie aus, auch wenn er sie nicht besitzt. Wird standardmäßig wiederholt geloopt (siehe Loop unten).",
+        "enabledLabel": "Aktiviert",
+        "cooldownLabel": "Abklingzeit pro Nutzer (Sekunden)",
+        "disabledEmotesLabel": "Blockierte Emotes",
+        "disabledEmotesDescription": "Diese lösen nicht mehr aus, nur weil man ihren Namen in den Chat schreibt. „all <emote>“ und „loop <emote>“ können sie trotzdem direkt nutzen — das blockiert nur den passiven Auslöser durchs Sagen.",
+        "save": "Emote im Chat speichern"
+      },
+      "emoteAll": {
+        "title": "Emote für alle",
+        "description": "„all <emote>“ lässt alle im Raum sie nacheinander wie eine Welle ausführen.",
+        "enabledLabel": "Aktiviert",
+        "permissionLabel": "Wer es auslösen kann",
+        "permissionDescription": "Wer eine Raum-Welle starten darf: nur du, du plus alle mit Designer-Rechten in diesem Raum, oder eine bestimmte Liste von Usernames.",
+        "allowlistLabel": "Erlaubte Usernames",
+        "cooldownLabel": "Abklingzeit für den Raum (Sekunden)",
+        "cooldownDescription": "Mindestwartezeit zwischen Emote-für-alle-Wellen.",
+        "save": "Emote für alle speichern"
+      },
+      "listCommand": {
+        "title": "Emote-Liste",
+        "description": "„emotes“ flüstert eine Liste der verfügbaren Emote-Namen, Seite für Seite.",
+        "enabledLabel": "Aktiviert"
+      },
+      "loop": {
+        "title": "Loop",
+        "description": "Standardmäßig aktiviert: Der Name einer Emote (oder explizit „loop <emote>“) wiederholt sie, bis der Nutzer „stop“ sagt oder den Raum verlässt — die AFK-Tanz-Funktion. Deaktivieren lässt Emotes wieder nur einmal ausführen, wie zuvor.",
+        "enabledLabel": "Aktiviert",
+        "enabledDescription": "Standardmäßig aktiviert — jede im Chat getippte Emote loopt, nicht nur „loop <emote>“. Das ist die anspruchsvollste Funktion, die wir anbieten; behalt es in vollen Räumen im Auge, und schalte es aus, um zu einer einzelnen Emote pro Auslösung zurückzukehren.",
+        "intervalLabel": "Wiederholungsintervall (Sekunden)",
+        "maxDurationLabel": "Max. Loop-Dauer (Sekunden)",
+        "maxDurationDescription": "Sicherheits-Stopp, falls jemand vergisst, „stop“ zu sagen — zum Beispiel wenn er die App schließt, statt den Raum richtig zu verlassen.",
+        "cooldownLabel": "Start-Abklingzeit pro Nutzer (Sekunden)",
+        "cooldownDescription": "Mindestwartezeit, bevor ein Nutzer einen neuen Loop starten kann.",
+        "save": "Loop speichern"
+      },
+      "activationMessage": {
+        "title": "Aktivierungsnachricht",
+        "description": "Wird öffentlich im Raumchat gepostet, sobald der Bot sich verbindet — kein Flüstern. Standardmäßig deaktiviert.",
+        "enabledLabel": "Aktiviert",
+        "enabledDescription": "Standardmäßig deaktiviert — eine unaufgeforderte öffentliche Nachricht bei jeder Neuverbindung kann schnell nerven.",
+        "templateLabel": "Nachricht",
+        "templateDescription": "Nutz {room_name}.",
+        "templatePlaceholder": "z. B. Ich bin online und bereit zu helfen in {room_name}!",
+        "cooldownLabel": "Abklingzeit für erneute Ankündigung (Minuten)",
+        "cooldownDescription": "Überspringt die Ankündigung, wenn der Bot innerhalb dieser Minutenzahl bereits eine gepostet hat — schützt vor Spam durch wiederholte Neuverbindungen.",
+        "save": "Aktivierungsnachricht speichern"
+      },
+      "welcome": {
+        "title": "Begrüßungsnachrichten",
+        "description": "Wird einem Gast beim Beitreten zugeflüstert — VIPs werden komplett übersprungen, sie bekommen stattdessen ihre eigene Begrüßung.",
+        "enabledLabel": "Aktiviert",
+        "templatesLabel": "Begrüßungs-Vorlagen",
+        "templatesDescription": "Nutz {username}, {room_name}. Wechselt bei jeder Begrüßung durch die Liste, damit es sich nicht wiederholt anfühlt.",
+        "templatePlaceholder": "z. B. Willkommen, {username}!",
+        "cooldownLabel": "Abklingzeit für erneute Begrüßung (Stunden)",
+        "cooldownDescription": "Diese Person wird erst wieder begrüßt, wenn so viele Stunden seit der letzten Begrüßung vergangen sind.",
+        "busyModeEnabledLabel": "Begrüßungen bei viel Andrang überspringen",
+        "busyModeEnabledDescription": "Überspringt Begrüßungen komplett, solange Beitritte schneller reinkommen als der Schwellenwert unten — so flutet ein Raid oder Event nicht die Flüsternachrichten.",
+        "busyModeJoinsLabel": "Andrang-Schwelle (Beitritte/Min.)",
+        "quietHoursEnabledLabel": "Ruhezeiten aktivieren",
+        "quietHoursEnabledDescription": "Überspringt Begrüßungen während eines täglichen Zeitfensters (z. B. nachts).",
+        "quietHoursStartLabel": "Beginn der Ruhezeit",
+        "quietHoursEndLabel": "Ende der Ruhezeit",
+        "quietHoursTzLabel": "Zeitzone der Ruhezeit",
+        "quietHoursTzDescription": "Name der Zeitzone, z. B. America/Sao_Paulo.",
+        "save": "Begrüßungsnachrichten speichern"
+      },
+      "vip": {
+        "title": "VIP-Erkennung",
+        "description": "Namentlich genannte Stammgäste bekommen eine besondere Begrüßung statt der allgemeinen — immer, auch bei viel Andrang oder in Ruhezeiten.",
+        "usersLabel": "VIP-Usernames",
+        "templateLabel": "VIP-Begrüßungs-Vorlage",
+        "templateDescription": "Nutz {username}, {room_name}.",
+        "announceToRoomLabel": "Im Raum ankündigen",
+        "announceToRoomDescription": "Postet zusätzlich eine öffentliche Chat-Nachricht, wenn ein VIP beitritt, nicht nur die Flüsternachricht.",
+        "emoteCelebrationEnabledLabel": "Emote beim VIP-Beitritt abspielen",
+        "emoteCelebrationIdLabel": "Feier-Emote",
+        "save": "VIP-Erkennung speichern"
+      },
+      "farewell": {
+        "title": "Abschied",
+        "description": "Protokolliert, wenn ein Stammgast (Besuche ≥ Schwellenwert unten) den Raum verlässt. Ein Flüstern ist nicht möglich — die Person ist ja schon weg —, aber optional kann stattdessen eine öffentliche Verabschiedung gepostet werden.",
+        "logEnabledLabel": "Abschiede protokollieren",
+        "minVisitsLabel": "Mindestbesuche, um als Stammgast zu zählen",
+        "publicMessageLabel": "Öffentliche Verabschiedung posten",
+        "publicMessageDescription": "Standardmäßig aus — eine öffentliche Nachricht bei jedem passenden Abgang wird schnell nervig.",
+        "publicTemplateLabel": "Verabschiedungs-Vorlage",
+        "save": "Abschied speichern"
+      },
+      "anchorSpot": {
+        "title": "Ankerplatz",
+        "description": "Es gibt zwei Wege, den Standplatz des Bots festzulegen: „anchor“ im Spiel sagen, oder direkt auf dieser Seite Koordinaten eingeben. Beides aktualisiert denselben gespeicherten Platz — der Bot geht bei jeder Neuverbindung dorthin zurück, statt dort aufzutauchen, wo der Raum ihn zufällig platziert.",
+        "enabledLabel": "Aktiviert",
+        "enabledDescription": "Schaltet beide Wege ab, den Platz festzulegen — den „anchor“-Befehl im Spiel und die Koordinatenfelder unten."
+      },
       "position": {
         "fromDashboard": "Vom Dashboard aus",
-        "withPosition": "Verschieb die Koordinaten des gespeicherten Platzes direkt — als Alternative dazu, im Raum zu stehen und „anchor“ zu sagen. Das kannst immer nur du; die Berechtigung fürs Spiel oben gilt hier nicht.",
-        "withoutPosition": "Noch kein Platz gespeichert. Sag einmal „anchor“ im Spiel, um einen Startpunkt festzulegen, oder gib direkt Koordinaten ein, wenn du sie schon kennst. Das kannst immer nur du; die Berechtigung fürs Spiel oben gilt hier nicht.",
+        "withPosition": "Verschieb die Koordinaten des gespeicherten Platzes direkt — als Alternative dazu, im Raum zu stehen und „anchor“ zu sagen. Das kannst immer nur du.",
+        "withoutPosition": "Noch kein Platz gespeichert. Sag einmal „anchor“ im Spiel, um einen Startpunkt festzulegen, oder gib direkt Koordinaten ein, wenn du sie schon kennst. Das kannst immer nur du.",
         "x": "X",
         "y": "Y",
         "z": "Z",
         "facing": "Blickrichtung",
-        "save": "Position speichern"
+        "save": "Position speichern",
+        "roomLayoutPrompt": "Welches Raum-Layout ist das?",
+        "roomLayoutDescription": "Highrise-Räume gibt es nur in einer festen Auswahl an Grundrissen — wähl den, den dieser Raum nutzt, damit die Vorschau zum echten Boden passt. Du kannst das jederzeit ändern.",
+        "changeRoomLayout": "Raum-Layout ändern",
+        "elevation": "Höhe (Y)",
+        "gridHint": "Klick auf ein Feld, um X/Z festzulegen.",
+        "tileLabel": "Feld x {x}, z {z}"
+      },
+      "idleEmote": {
+        "title": "Leerlauf-Emote-Loop",
+        "description": "Der Bot führt in einem festen Intervall eine dezente Emote aus, wann immer er gerade nicht beschäftigt ist — ein bisschen Leben statt starr rumzustehen.",
+        "enabledLabel": "Aktiviert",
+        "enabledDescription": "Standardmäßig aus — eine dauerhafte Hintergrundaktion, gleiche Vorsicht wie bei der Loop-Funktion der Emotes-Fähigkeit.",
+        "emoteLabel": "Leerlauf-Emote",
+        "emoteDescription": "Emote aus der Liste der Emotes-Fähigkeit.",
+        "intervalLabel": "Wiederholungsintervall (Sekunden)",
+        "save": "Leerlauf-Emote speichern"
+      },
+      "reactionBack": {
+        "title": "Reaktion zurück",
+        "description": "Jemand reagiert auf den Bot — der Bot reagiert auf die gleiche Art zurück.",
+        "enabledLabel": "Aktiviert",
+        "cooldownLabel": "Abklingzeit pro Nutzer (Sekunden)",
+        "cooldownDescription": "Mindestwartezeit, bevor der Bot derselben Person erneut zurückreagiert, damit wiederholte Reactions nicht zum Spammen der Bot-Aktionen missbraucht werden können.",
+        "save": "Reaktion zurück speichern"
+      },
+      "defaultOutfit": {
+        "title": "Standard-Outfit",
+        "description": "Ein festes Outfit, das der Bot beim Verbinden trägt. Artikel müssen dem Bot gehören (oder kostenlos sein) — alles, was er nicht besitzt, wird übersprungen, statt das ganze Outfit zu blockieren.",
+        "enabledLabel": "Aktiviert",
+        "itemIdsLabel": "Artikel",
+        "itemIdsDescription": "Such und füg Artikel hinzu, die der Bot besitzt.",
+        "save": "Standard-Outfit speichern"
+      },
+      "outfitPresets": {
+        "title": "Benannte Outfit-Presets",
+        "description": "„look <name>“ wechselt den Bot in ein gespeichertes Outfit.",
+        "enabledLabel": "Aktiviert",
+        "presetsLabel": "Presets",
+        "presetsDescription": "Gib jedem Preset einen Namen und such dann die Artikel raus, die es tragen soll.",
+        "save": "Outfit-Presets speichern"
+      },
+      "outfitClone": {
+        "title": "Look kopieren",
+        "description": "„copy <username>“ lässt den Bot so viel vom aktuellen Outfit dieser Person tragen, wie er tatsächlich besitzt — Artikel, die er nicht besitzt, werden übersprungen, nie gekauft.",
+        "enabledLabel": "Aktiviert",
+        "minMatchLabel": "Mindestanzahl passender Artikel",
+        "minMatchDescription": "Wenn weniger als diese Anzahl der Artikel der Zielperson wirklich im Inventar des Bots ist, wird das Kopieren komplett übersprungen und der Grund genannt, statt ein fast leeres Outfit anzuziehen.",
+        "save": "Look kopieren speichern"
+      },
+      "filter": {
+        "title": "Wortfilter",
+        "description": "Eigene Begriffe lösen eine private Verwarnung nur per Flüstern aus, für wen auch immer sie gesagt hat — nie eine öffentliche Bloßstellung —, und zählen zu den Verwarnungen unten.",
+        "enabledLabel": "Aktiviert",
+        "customTermsLabel": "Blockierte Begriffe",
+        "customTermsDescription": "Beim Abgleich spielen Groß- und Kleinschreibung und typische Tricks wie wiederholte Buchstaben keine Rolle, damit einfache Umgehungsversuche nicht funktionieren.",
+        "save": "Wortfilter speichern"
+      },
+      "antiSpam": {
+        "title": "Anti-Spam",
+        "description": "Erkennt Nachrichtenfluten und kopierte Wiederholungen. Ein Treffer zählt zu den Verwarnungen unten, genau wie ein Filtertreffer.",
+        "enabledLabel": "Aktiviert",
+        "messageRateCountLabel": "Max. Nachrichten",
+        "messageRateCountDescription": "Mehr als diese Anzahl Nachrichten von einer Person innerhalb des Zeitfensters unten löst die Anti-Spam-Regel aus.",
+        "messageRateWindowLabel": "Zeitfenster (Sekunden)",
+        "duplicateCountLabel": "Schwellenwert für doppelte Nachrichten",
+        "duplicateCountDescription": "Wenn genau dieselbe Nachricht so oft hintereinander gesendet wird, löst das die Regel aus.",
+        "save": "Anti-Spam speichern"
+      },
+      "strikeEscalation": {
+        "title": "Verwarnungsstufen",
+        "description": "Ein Filtertreffer, ein Anti-Spam-Treffer oder der Befehl !warn fügt eine Verwarnung hinzu. Wird ein Schwellenwert unten überschritten, greift die passende Aktion — nur die höchste erreichte Stufe wird ausgelöst, nicht jede darunter.",
+        "strikeDecayLabel": "Verwarnungs-Reset (Stunden)",
+        "strikeDecayDescription": "Der Verwarnungs-Zähler eines Nutzers setzt sich zurück, wenn so viele Stunden lang keine neue Verwarnung dazukam.",
+        "muteAtStrikesLabel": "Muten ab so vielen Verwarnungen",
+        "muteDurationLabel": "Mute-Dauer (Sekunden)",
+        "kickAtStrikesLabel": "Kicken ab so vielen Verwarnungen",
+        "banEnabledLabel": "Bannen aktivieren",
+        "banEnabledDescription": "Standardmäßig aus — die härteste Maßnahme, die wir anbieten, bewusst nur auf Wunsch.",
+        "banAtStrikesLabel": "Bannen ab so vielen Verwarnungen",
+        "banAtStrikesDescription": "Erfordert immer mindestens 2 Verwarnungen, unabhängig von dieser Einstellung.",
+        "banDurationLabel": "Bann-Dauer (Sekunden)",
+        "banDurationDescription": "0 = dauerhaft.",
+        "save": "Verwarnungsstufen speichern"
+      },
+      "exemptions": {
+        "title": "Ausnahmen",
+        "description": "Ausgenommene Nutzer umgehen Filter und Anti-Spam komplett und können Moderationsbefehle im Chat verwenden. Der Besitzer des Raums ist immer ausgenommen.",
+        "designersExemptLabel": "Designer ausnehmen",
+        "usersLabel": "Ausgenommene Usernames",
+        "save": "Ausnahmen speichern"
+      },
+      "modCommands": {
+        "title": "Moderationsbefehle",
+        "description": "Chat-Befehle für ausgenommene Nutzer: warn, mute und kick für einen genannten Nutzer. Bannen geht nur im Dashboard, nicht als Chat-Befehl.",
+        "enabledLabel": "Aktiviert",
+        "prefixLabel": "Befehlspräfix",
+        "save": "Moderationsbefehle speichern"
       },
       "tagListPlaceholder": "Namen eingeben und Komma drücken zum Hinzufügen",
       "removeTag": "{tag} entfernen",
@@ -495,6 +712,12 @@
         "noneYet": "Noch keine Presets — füg unten eins hinzu.",
         "addPreset": "Preset hinzufügen",
         "maxPresets": "Max. {max} Presets."
+      },
+      "templateListInput": {
+        "addTemplate": "Vorlage hinzufügen",
+        "removeTemplate": "Vorlage {index} entfernen",
+        "noneYet": "Noch keine Vorlagen — füge mindestens eine hinzu.",
+        "maxTemplates": "Maximal {max} Vorlagen."
       }
     },
     "banByUsername": {
@@ -1128,5 +1351,50 @@
         ]
       }
     }
+  },
+  "support": {
+    "eyebrow": "Brauchst du Hilfe?",
+    "title": "Support",
+    "intro": "Die meisten Fragen zu deinem Bot, deinem Abo oder wie BotMarket funktioniert, werden unten beantwortet. Nicht gefunden? Schreib uns eine E-Mail — wir lesen jede Nachricht selbst.",
+    "contact": {
+      "heading": "Kontakt",
+      "body": "Hast du eine Frage zu deinem Bot, deinem Abo oder irgendetwas anderem? Schick uns eine E-Mail, wir melden uns zurück.",
+      "tip": "Wenn ein Bot sich merkwürdig verhält, öffne seine Instanzseite, geh zur Statusprotokoll-Karte und klicke zuerst auf „Diagnose kopieren“ — füg das direkt in deine E-Mail ein, das ist ohnehin genau das, wonach wir fragen würden."
+    },
+    "faqHeading": "Häufig gestellte Fragen",
+    "faq": [
+      {
+        "question": "Was genau ist BotMarket?",
+        "answer": "BotMarket hostet einen fertigen Highrise-Bot — Emcee — für deinen Raum. Emcee vereint Emotes auf Zuruf, Begrüßungen und VIP-Erkennung, Moderation und Outfit-Funktionen in einem Bot. Du konfigurierst ihn über ein Dashboard, wir betreiben ihn rund um die Uhr."
+      },
+      {
+        "question": "Brauche ich einen eigenen Highrise-Bot-Account?",
+        "answer": "Ja. Du erstellst den Bot-Account und erzeugst dessen Zugriffstoken in Highrise — wir besitzen oder verkaufen niemals Highrise-Accounts weiter. Du fügst das Token einmal in dein Dashboard ein, den Rest übernehmen wir."
+      },
+      {
+        "question": "Kommt BotMarket jemals mit Highrise Gold in Berührung?",
+        "answer": "Nein. Alle Preise sind in echter Währung (BRL, mit einem USD-Richtwert) — wir nehmen, halten oder übertragen niemals Gold in irgendeiner Form."
+      },
+      {
+        "question": "Ist mein Bot-Token sicher?",
+        "answer": "Es ist im Ruhezustand verschlüsselt, im Dashboard nur schreibbar — einmal gespeichert, zeigt oder liefert es keine Ansicht und keine API je wieder zurück — und wird niemals geloggt."
+      },
+      {
+        "question": "Was kostet es, und kann ich jederzeit kündigen?",
+        "answer": "Ein fester Preis pro Bot-Instanz, monatlich oder jährlich abgerechnet — siehe Preise oben. Zahlung per Karte oder Pix. Jederzeit kündbar; dein Bot läuft bis zum Ende des bereits bezahlten Zeitraums weiter."
+      },
+      {
+        "question": "Bekomme ich eine Rückerstattung?",
+        "answer": "Ja — dein erster Kauf ist bei jedem Plan innerhalb von 7 Tagen ohne Angabe von Gründen voll erstattungsfähig. Danach stoppt eine Kündigung künftige Verlängerungen, aber wir erstatten den laufenden Zeitraum nicht anteilig."
+      },
+      {
+        "question": "Mein Bot wirkt offline oder reagiert nicht — was tue ich?",
+        "answer": "Öffne die Instanzseite des Bots und prüfe die Statusprotokoll-Karte — sie zeigt den aktuellen Verbindungsstatus und die letzten Ereignisse. Wirkt etwas nicht richtig, klicke auf „Diagnose kopieren“ und füg das Ergebnis in eine E-Mail an uns ein."
+      },
+      {
+        "question": "Kann ich meinen eigenen Bot-Code hochladen?",
+        "answer": "Aktuell nicht. Katalog-Bots sind Eigenentwicklungen — du konfigurierst sie über das Dashboard, statt eigenen Code auf unserer Infrastruktur hochzuladen oder auszuführen."
+      }
+    ]
   }
 }

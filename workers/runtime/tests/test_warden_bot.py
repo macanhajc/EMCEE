@@ -327,3 +327,29 @@ async def test_apply_dashboard_action_never_touches_the_strike_ladder():
     bot = make_bot({"ladder": {"ban_enabled": True, "ban_at_strikes": 1}})
     await bot._warden.apply_dashboard_action("u1", "troublemaker", "ban", 0)
     assert "u1" not in bot._warden._strikes_fallback
+
+
+# --- bot language (general.bot_language) ------------------------------------
+
+
+async def test_filter_warning_respects_bot_language():
+    bot = make_bot({"filter": {"custom_terms": ["badword"]}, "general": {"bot_language": "de"}})
+    await bot.on_chat(user("u1"), "you are a badword")
+    assert bot.highrise.whispers == [("u1", "Bitte bleib im Chat freundlich — das ist hier nicht erlaubt.")]
+
+
+async def test_command_target_not_found_respects_bot_language():
+    bot = make_bot(config={"general": {"bot_language": "pt"}}, owner_id="owner-1")
+    await bot.on_chat(user("owner-1", "owner"), "!kick @nobody")
+    assert bot.highrise.whispers == [("owner-1", "Não encontrei nobody na sala.")]
+
+
+async def test_action_denied_translates_both_sentence_and_verb():
+    bot = make_bot(config={"general": {"bot_language": "es"}}, owner_id="owner-1")
+    target = user("u1", "troublemaker")
+    put_in_room(bot, target)
+    bot.highrise.moderate_room_error = ResponseError("insufficient privilege")
+
+    await bot.on_chat(user("owner-1", "owner"), "!kick @troublemaker")
+
+    assert bot.highrise.whispers == [("owner-1", "No pude expulsar a troublemaker aquí — ¿falta algún permiso?")]

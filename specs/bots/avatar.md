@@ -70,6 +70,7 @@ No coordinates ever live in config — the anchor spot is captured either at com
 - **`teleport(user_id, dest: Position)`** targets any user id, including the bot's own (`self.highrise.my_id`) — used both for the anchor command and for restoring the saved position on `on_start`. **`walk_to`** (self-only, `Position | AnchorPosition`) exists too but isn't used in v1 — teleport is instant and simpler for both call sites here.
 - **`on_reaction(user, reaction, receiver)`** — `receiver` is the event's target. Reaction-back only fires when `receiver.id == my_id`; no extra re-entrancy guard needed because the bot's own `react()` call, if it echoes back at all, would carry the *original human* as `receiver`, not the bot — so it can't re-trigger itself by construction.
 - `buy_item`/`tip_user` both exist and both spend the bot's own Highrise wallet (`tip_user`'s literal `gold_bar_*` amounts confirm the wallet is Gold-denominated) — out of scope per the no-auto-buy stance above, not because the SDK lacks the call.
+- Both whisper-only nudges in this module (anchor-not-standing, clone-insufficient-match) render through `catalog/strings.py`'s `t(bot.bot_language, ...)` (added 2026-07-24, `general.bot_language` — `specs/04-bot-runtime.md`) rather than a fixed English literal.
 
 ## Known gaps
 

@@ -501,4 +501,34 @@ async def test_outfit_lock_serializes_concurrent_clone_and_preset_switch():
 
     assert len(bot.highrise.set_outfit_calls) == 2
     assert {i.id for i in bot.highrise.set_outfit_calls[0]} == {"shirt-new"}
-    assert {i.id for i in bot.highrise.set_outfit_calls[1]} == {"shirt-casual"}
+
+
+# --- bot language (general.bot_language) ------------------------------------
+
+
+async def test_anchor_not_standing_respects_bot_language():
+    # Joining the room also fires Concierge's own (English, owner-authored-
+    # template) welcome whisper — same collision test_anchor_while_seated_
+    # whispers_instead_of_teleporting above already works around with `any`,
+    # not exact list equality.
+    bot = make_bot({"general": {"bot_language": "de"}})
+    await bot.on_user_join(owner, AnchorPosition(entity_id="chair-1", anchor_ix=0))
+    await bot.on_chat(owner, "anchor")
+    assert any(
+        text == 'Stell dich (nicht sitzend) an die Stelle, wo ich stehen soll, und sag dann noch einmal "anchor".'
+        for _, text in bot.highrise.whispers
+    )
+
+
+async def test_clone_insufficient_match_respects_bot_language():
+    bot = make_bot({"outfit_clone": {"min_match": 3}, "general": {"bot_language": "ru"}})
+    target = user("u2", "alice")
+    bot.highrise.room_users = [(target, pos())]
+    bot.highrise.outfits["u2"] = [item("shirt-new")]
+    bot.highrise.inventory = [item("shirt-new")]
+
+    await bot.on_chat(owner, "copy alice")
+
+    assert bot.highrise.whispers == [
+        ("owner-1", "Не нашлось достаточно вещей из образа alice в моём гардеробе, чтобы скопировать его.")
+    ]

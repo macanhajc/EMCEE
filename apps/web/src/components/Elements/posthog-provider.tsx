@@ -1,10 +1,13 @@
 "use client";
 
 import { PostHogProvider as PHProvider } from "posthog-js/react";
+import { useCookieConsent } from "@/lib/cookie-consent";
 
 /**
  * No-ops (renders children as-is) when NEXT_PUBLIC_POSTHOG_KEY is unset,
- * so local dev without a PostHog project doesn't need a dummy key.
+ * so local dev without a PostHog project doesn't need a dummy key —
+ * or when the visitor hasn't accepted the cookie banner yet, since
+ * PostHog is the one non-essential cookie this app sets.
  *
  * Session recording is off outright rather than relying on masking — this
  * app's riskiest UI is a bot-token paste field, and specs/05-security.md
@@ -15,7 +18,8 @@ import { PostHogProvider as PHProvider } from "posthog-js/react";
  */
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
   const apiKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
-  if (!apiKey) return children;
+  const consent = useCookieConsent();
+  if (!apiKey || consent !== "accepted") return children;
 
   return (
     <PHProvider

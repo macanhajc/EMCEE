@@ -15,6 +15,11 @@ const Toaster = ({ ...props }: ToasterProps) => {
       theme="dark"
       richColors
       className="toaster group"
+      // Keeps toasts clear of the cookie consent banner, which is fixed
+      // to the viewport bottom and taller on mobile once it wraps to a
+      // stacked layout.
+      offset={{ bottom: "6rem" }}
+      mobileOffset={{ bottom: "10rem" }}
       icons={{
         success: (
           <CircleCheckIcon className="size-4" />
@@ -38,17 +43,17 @@ const Toaster = ({ ...props }: ToasterProps) => {
           "--normal-text": "var(--paper)",
           "--normal-border": "rgba(248, 241, 228, 0.12)",
           "--border-radius": "0.75rem",
-          "--success-bg": "rgba(16, 185, 129, 0.12)",
-          "--success-text": "#6ee7b7",
+          "--success-bg": "rgba(16, 185, 129, 0.7)",
+          "--success-text": "#ffffff",
           "--success-border": "rgba(16, 185, 129, 0.35)",
-          "--error-bg": "rgba(239, 68, 68, 0.12)",
-          "--error-text": "#fca5a5",
+          "--error-bg": "rgba(239, 68, 68, 0.7)",
+          "--error-text": "#ffffff",
           "--error-border": "rgba(239, 68, 68, 0.35)",
-          "--warning-bg": "rgba(247, 183, 51, 0.12)",
-          "--warning-text": "#fcd34d",
+          "--warning-bg": "rgba(247, 183, 51, 0.7)",
+          "--warning-text": "#ffffff",
           "--warning-border": "rgba(247, 183, 51, 0.35)",
-          "--info-bg": "rgba(255, 92, 138, 0.12)",
-          "--info-text": "#ffb3cf",
+          "--info-bg": "rgba(255, 92, 138, 0.7)",
+          "--info-text": "ffffff",
           "--info-border": "rgba(255, 92, 138, 0.35)",
         } as React.CSSProperties
       }

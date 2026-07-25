@@ -536,3 +536,26 @@ async def test_on_user_leave_for_non_looping_user_is_a_noop():
     bot = make_bot({"loop": {"enabled": True}})
     await bot.on_user_leave(user("nobody-looping"))  # must not raise
     assert bot._emote._loops == {}
+
+
+# --- bot language (general.bot_language) ------------------------------------
+
+
+async def test_one_shot_whisper_respects_bot_language():
+    bot = make_bot({"loop": {"enabled": False}, "general": {"bot_language": "es"}})
+    await bot.on_chat(user("u1"), "macarena")
+    assert bot.highrise.whispers == [("u1", '¡Haciendo "Macarena"!')]
+
+
+async def test_list_command_header_respects_bot_language():
+    bot = make_bot({"general": {"bot_language": "ru"}})
+    await bot.on_chat(user("u1"), "emotes")
+    assert bot.highrise.whispers[0][1].startswith("Эмоции:")
+
+
+async def test_bot_language_defaults_to_english_without_general_section():
+    # No `general` section at all (config saved before this field existed) —
+    # falls back to English, same text every pre-existing test above expects.
+    bot = make_bot({"loop": {"enabled": False}})
+    await bot.on_chat(user("u1"), "macarena")
+    assert bot.highrise.whispers == [("u1", 'Doing "Macarena"!')]

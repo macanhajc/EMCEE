@@ -22,7 +22,7 @@
 - Source layout inside `apps/web/src/` (decided 2026-07-21): `app/` is routing-only — each route has just `page.tsx` (+ `actions.ts` where it needs server actions), plus Next.js specials (`layout.tsx`, `route.ts`). `modules/<route>/` mirrors that same route tree: `index.tsx` is the page's template, `components/` under it holds components used by that one page only. `components/UI` and `components/Elements` hold what's actually reused across 2+ pages — dumb presentational primitives vs. logic-bearing ones (data-fetching, state, mutations), respectively. `page.tsx` owns all data-fetching and server-action wiring and passes data + bound actions down as props; templates and their local components stay presentation-only.
 - Auth: Google OAuth + email magic link via Auth.js, no passwords; auth required for checkout, instance creation, and dashboard. Highrise has no public OAuth — the pasted bot token is the Highrise credential. Full spec: `06-auth.md`.
 - i18n: next-intl, locale-prefixed routes (`app/[locale]/...`, `localePrefix: "always"`), 5 locales (en/es/de/pt/ru), copy in `apps/web/messages/*.json`. Transactional email shares the same translation files but can't always read the request-scoped locale (crash alerts fire from a cron sweep, payment-failed from a Stripe webhook — neither has a next-intl request context), so `users.locale` is captured opportunistically by `proxy.ts` on every authenticated request and read by `resolveEmailLocale()`, falling back to `en`.
-- Config dashboard renders forms **generated from each bot's JSON Schema** (see below). Saving config = validate → write Postgres → publish `config.updated` via Postgres `NOTIFY` (`src/lib/notify.ts`; LISTEN/NOTIFY replaced Redis pub/sub 2026-07-22, `docs/cost-plan.md` R6).
+- Config dashboard: each bot module (Emote/Concierge/Warden/Avatar) has hand-written cards, one per schema section — each owns its own query/mutate server action, `useActionState`-driven form, and (where the section has one) auto-save-on-toggle enable/disable, independent of every other card (`docs/decisions.md`, 2026-07-24; superseded the schema-auto-rendered form described below). Saving config = validate the touched section against its own subschema → write Postgres → publish `config.updated` via Postgres `NOTIFY` (`src/lib/notify.ts`; LISTEN/NOTIFY replaced Redis pub/sub 2026-07-22, `docs/cost-plan.md` R6).
 - Admin surface: tenant list, instance health, kill switch per instance, catalog rollout controls.
 
 ## Data plane (Python + official SDK)
@@ -31,14 +31,13 @@ Detailed in `04-bot-runtime.md`. Summary: a **supervisor** process per shard cla
 
 ## The contract between planes: JSON Schema per bot
 
-Each catalog bot ships a versioned JSON Schema in `packages/schemas/`. In v1 there is exactly one catalog bot row (`emcee`, `packages/schemas/emcee/v1.json`) and its schema grows by adding a new top-level section per feature module as each ships — additive, no version bump, each section tagged `x-module` (`emote`/`concierge`/`warden`/`avatar`) for dashboard tab grouping only — rather than a new schema per bot (`01-product.md`).
+Each catalog bot ships a versioned JSON Schema in `packages/schemas/`. In v1 there is exactly one catalog bot row (`emcee`, `packages/schemas/emcee/v1.json`) and its schema grows by adding a new top-level section per feature module as each ships — additive, no version bump, each section tagged `x-module` (`emote`/`concierge`/`warden`/`avatar`) for dashboard tab grouping — rather than a new schema per bot (`01-product.md`).
 
-- **Dashboard** auto-renders the config form from it (labels/help text/constraints in the schema).
-- **Control plane** validates on save.
+- **Dashboard** validates each section's new value against its own subschema on save (`schema.properties.<section>`, not the whole document — a stale field in an unrelated section must never block an otherwise-valid save) and seeds a brand-new instance's config from the schema's own declared defaults at creation time (`lib/schema-form.ts`'s `defaultsFromSchema`).
 - **Runtime** validates again on load (defense in depth; schema version pinned per instance).
-- Adding a config option = one schema change + runtime handling; no bespoke UI work.
+- Adding a config option is a schema change plus a small, symmetric update to that section's dashboard card (query/mutate action, hook, component, translation copy) — the original v1 plan was "schema change + zero UI work" (the dashboard auto-rendering forms straight from the schema), which held for the first several sections but stopped scaling once per-field UX — custom pickers, conditionally-visible fields, locale-aware default copy — started mattering more than generic uniformity could express. Every module was migrated off the generic renderer once it hit that ceiling (Avatar → Moderation → Greeter → Emote, all 2026-07-24, `docs/decisions.md`); `sectionsFromSchema`/`parseConfigFormData`, the generic renderer's own machinery, were deleted once nothing called them anymore.
 
-This is the core product leverage: catalog growth is bounded by bot logic, not UI construction.
+The remaining leverage: JSON Schema is still the single source of truth for config *shape* and *validation*, shared by both planes — a field's bounds/enum values/required-ness are declared once and read by both the dashboard's cards and the Python runtime's own validation, never duplicated. What's no longer true is "no bespoke UI work" — each catalog-growth step needs a small, mechanical card update on the dashboard side too.
 
 ## Key entities (first cut)
 
@@ -49,6 +48,8 @@ This is the core product leverage: catalog growth is bounded by bot logic, not U
 - `InstanceEvent` — append-only: connects, disconnects, errors, moderation actions taken (feeds the dashboard activity log).
 
 Wired 2026-07-20: `apps/web/src/app/instances/` (create + config), `apps/web/src/lib/schema-form.ts` (schema→form), `apps/web/src/lib/schema-validate.ts` (ajv). See `docs/decisions.md`.
+
+Superseded 2026-07-24: the dashboard no longer auto-renders config forms from `sectionsFromSchema` (deleted, along with `parseConfigFormData` — both had zero remaining callers once every module got its own hand-written cards). `schema-form.ts` now holds only `defaultsFromSchema`, used once at instance creation. Per-module config UI lives under `apps/web/src/modules/instances/[id]/components/` (one card per schema section) and `apps/web/src/app/[locale]/instances/[id]/actions.ts` (one query/mutate action pair per section). See `docs/decisions.md`.
 
 ## Instance lifecycle
 

@@ -52,6 +52,7 @@ from highrise import Error, ResponseError, User
 
 from .base import Priority
 from .emotes import normalize
+from .strings import t
 
 if TYPE_CHECKING:
     from .emcee import EmceeBot
@@ -59,7 +60,6 @@ if TYPE_CHECKING:
 log = logging.getLogger("catalog.warden")
 
 MAX_WHISPER_CHARS = 300  # matches emote.py/greeter.py's conservative, unverified whisper-length guess
-FILTER_WARN_MESSAGE = "Please keep the chat friendly — that's not allowed here."
 _REPEAT_RUN = re.compile(r"(.)\1+")  # any run of 2+ of the same char
 
 
@@ -158,7 +158,9 @@ class WardenEngine:
 
         target = await self._resolve_username(target_raw)
         if target is None:
-            await self._whisper(user.id, f"Couldn't find {target_raw} in the room.")
+            await self._whisper(
+                user.id, t(self.bot.bot_language, "warden.command_target_not_found", target=target_raw)
+            )
             return
 
         if verb == "warn":
@@ -193,7 +195,7 @@ class WardenEngine:
         if matched is None:
             return False
 
-        await self._whisper(user.id, FILTER_WARN_MESSAGE)
+        await self._whisper(user.id, t(self.bot.bot_language, "warden.filter_warning"))
         await self._log_event(user, "filter_hit", matched_term=matched)
         await self._strike(user, reason="filter")
         return True
@@ -269,7 +271,12 @@ class WardenEngine:
         except ResponseError as exc:
             await self._log_event(user, "moderation_denied", action=action, error=str(exc))
             if requester is not None:
-                await self._whisper(requester.id, f"Couldn't {action} {user.username} here — missing permission?")
+                locale = self.bot.bot_language
+                translated_verb = t(locale, f"warden.verb.{action}")
+                await self._whisper(
+                    requester.id,
+                    t(locale, "warden.action_denied", action=translated_verb, username=user.username),
+                )
             return
         await self._log_event(
             user,

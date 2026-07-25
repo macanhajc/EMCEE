@@ -4,17 +4,7 @@ import { Check, Copy } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { useState } from "react";
 import { Button } from "@/components/UI/button";
-import type { instanceErrorKind, instanceStatus } from "@/db/schema";
-
-type InstanceStatus = (typeof instanceStatus.enumValues)[number];
-type ErrorKind = (typeof instanceErrorKind.enumValues)[number];
-
-interface OperationalEvent {
-  id: number;
-  kind: string;
-  data: unknown;
-  createdAt: Date;
-}
+import { useStatusLog } from "../hooks/use-status-log";
 
 const KNOWN_KINDS = new Set([
   "degraded",
@@ -26,27 +16,24 @@ const KNOWN_KINDS = new Set([
   "config_rejected",
 ]);
 
-export function StatusLog({
-  events,
-  instanceId,
-  botName,
-  roomId,
-  status,
-  errorKind,
-}: {
-  events: OperationalEvent[];
-  instanceId: string;
-  botName: string;
-  roomId: string;
-  status: InstanceStatus;
-  errorKind: ErrorKind | null;
-}) {
+/**
+ * Status → connection log card — the whole card, chrome included. Fully
+ * self-contained: fetches its own current status/error kind/recent events
+ * via useStatusLog rather than being handed them down from the page's own
+ * server-rendered props. Rendered directly in instance-config.tsx's Status
+ * tab, same self-contained shape every module's cards already use
+ * (docs/decisions.md, 2026-07-24). Read-only plus a client-side clipboard
+ * copy — no mutation, no dedicated save action needed.
+ */
+export function StatusLog({ instanceId }: { instanceId: string }) {
   const t = useTranslations("instanceDetail.statusLog");
+  const tInstance = useTranslations("instanceDetail");
   const tStatus = useTranslations("instanceStatus");
   const format = useFormatter();
   const [copied, setCopied] = useState(false);
+  const { data } = useStatusLog(instanceId);
 
-  const eventLine = (event: OperationalEvent) =>
+  const eventLine = (event: NonNullable<typeof data>["events"][number]) =>
     `${format.dateTime(event.createdAt, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })} — ${t(`events.${KNOWN_KINDS.has(event.kind) ? event.kind : "generic"}`)}`;
 
   // Plain text, not JSON — this is meant to be pasted straight into a
@@ -54,20 +41,21 @@ export function StatusLog({
   // card (status, error kind, recent events); this just makes it copyable
   // with the instance id attached so support can look the row up.
   async function copyDiagnostics() {
-    const statusLine = `${t("diagnostics.status")}: ${tStatus(`status.${status}`)}${
-      errorKind ? ` — ${tStatus(`errorKind.${errorKind}`)}` : ""
+    if (!data) return;
+    const statusLine = `${t("diagnostics.status")}: ${tStatus(`status.${data.status}`)}${
+      data.errorKind ? ` — ${tStatus(`errorKind.${data.errorKind}`)}` : ""
     }`;
     const lines = [
-      t("diagnostics.heading", { botName }),
+      t("diagnostics.heading", { botName: data.botName }),
       t("diagnostics.instance", { instanceId }),
-      t("diagnostics.room", { roomId }),
+      t("diagnostics.room", { roomId: data.roomId }),
       statusLine,
       t("diagnostics.generated", {
         timestamp: format.dateTime(new Date(), { dateStyle: "medium", timeStyle: "short" }),
       }),
       "",
       t("diagnostics.recentActivity"),
-      ...(events.length ? events.map(eventLine) : [t("empty")]),
+      ...(data.events.length ? data.events.map(eventLine) : [t("empty")]),
     ];
 
     try {
@@ -78,6 +66,15 @@ export function StatusLog({
       // Clipboard permission denied/unavailable — button just stays as-is;
       // there's no meaningful fallback for a plain-text copy action.
     }
+  }
+
+  if (!data) {
+    return (
+      <div className="rounded-2xl border border-paper/10 bg-panel p-6">
+        <h2 className="font-display text-base text-paper">{t("title")}</h2>
+        <p className="mt-4 text-sm text-dust">{tInstance("loading")}</p>
+      </div>
+    );
   }
 
   return (
@@ -93,11 +90,11 @@ export function StatusLog({
         </Button>
       </div>
 
-      {events.length === 0 ? (
+      {data.events.length === 0 ? (
         <p className="mt-4 text-sm text-dust">{t("empty")}</p>
       ) : (
         <ul className="mt-4 grid gap-2">
-          {events.map((event) => (
+          {data.events.map((event) => (
             <li
               key={event.id}
               className="flex items-baseline justify-between gap-4 border-b border-paper/5 pb-2 text-sm last:border-0"

@@ -5,6 +5,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { RoutePointerEventsReset } from "@/components/Elements/route-pointer-events-reset";
 import { PostHogProvider } from "@/components/Elements/posthog-provider";
+import { CookieConsentBanner } from "@/components/Elements/cookie-consent-banner";
 import { Toaster } from "@/components/UI/sonner";
 import { routing } from "@/i18n/routing";
 import "../globals.css";
@@ -77,6 +78,7 @@ export default async function RootLayout({
             <RoutePointerEventsReset />
             {children}
             <Toaster />
+            <CookieConsentBanner />
           </PostHogProvider>
         </NextIntlClientProvider>
       </body>
