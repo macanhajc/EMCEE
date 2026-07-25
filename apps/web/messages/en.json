@@ -127,7 +127,7 @@
       "monthly": {
         "label": "Monthly",
         "period": "/mo",
-        "reference": "~US$7 reference",
+        "reference": "~US$2.70 reference",
         "features": [
           "Billed every month, cancel anytime",
           "7-day money-back guarantee",
@@ -138,10 +138,10 @@
       "annual": {
         "label": "Annual",
         "period": "/yr",
-        "reference": "~US$70 reference",
-        "badge": "2 months free",
+        "reference": "~US$23 reference",
+        "badge": "~3 months free",
         "features": [
-          "Pay once for 10 months, get 12",
+          "Save ~28% versus paying monthly",
           "7-day money-back guarantee",
           "Live dashboard — changes apply instantly"
         ],
@@ -264,7 +264,7 @@
       },
       "annual": {
         "label": "Annual",
-        "badge": "2 months free"
+        "badge": "~3 months free"
       }
     },
     "billingNote": "Card or Pix required. You’re charged today for your first period — cancel anytime, and get a full refund within 7 days if it’s not for you.",
@@ -1210,7 +1210,7 @@
       "contact": {
         "heading": "Contact",
         "body": [
-          "Questions about this policy, or want to exercise one of the rights above? Email privacy@botmarket.app."
+          "Questions about this policy, or want to exercise one of the rights above? Email botmarket@codeswift.com.br."
         ]
       }
     }

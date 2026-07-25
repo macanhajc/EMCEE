@@ -127,7 +127,7 @@
       "monthly": {
         "label": "Mensal",
         "period": "/mês",
-        "reference": "~US$7 de referência",
+        "reference": "~US$2.70 de referência",
         "features": [
           "Cobrado todo mês, cancele quando quiser",
           "Garantia de reembolso de 7 dias",
@@ -138,10 +138,10 @@
       "annual": {
         "label": "Anual",
         "period": "/ano",
-        "reference": "~US$70 de referência",
-        "badge": "2 meses grátis",
+        "reference": "~US$23 de referência",
+        "badge": "~3 meses grátis",
         "features": [
-          "Pague por 10 meses e ganhe 12",
+          "Economize ~28% em relação ao mensal",
           "Garantia de reembolso de 7 dias",
           "Painel ao vivo — as mudanças valem na hora"
         ],
@@ -264,7 +264,7 @@
       },
       "annual": {
         "label": "Anual",
-        "badge": "2 meses grátis"
+        "badge": "~3 meses grátis"
       }
     },
     "billingNote": "É preciso cartão ou Pix. O primeiro período é cobrado hoje — cancele quando quiser, e devolvemos seu dinheiro se não for pra você dentro de 7 dias.",
@@ -1210,7 +1210,7 @@
       "contact": {
         "heading": "Contato",
         "body": [
-          "Dúvidas sobre esta política, ou quer exercer algum dos direitos acima? Escreva para privacy@botmarket.app."
+          "Dúvidas sobre esta política, ou quer exercer algum dos direitos acima? Escreva para botmarket@codeswift.com.br."
         ]
       }
     }

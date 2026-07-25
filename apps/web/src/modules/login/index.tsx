@@ -33,7 +33,8 @@ export function LoginTemplate({
         </Alert>
       )}
 
-      <form action={signInWithGoogle}>
+      {/* DISABLED for now */}
+      {/* <form action={signInWithGoogle}>
         <Button
           type="submit"
           variant="outline"
@@ -48,7 +49,7 @@ export function LoginTemplate({
         <span aria-hidden className="h-px flex-1 bg-paper/10" />
         <span className="font-ui-mono text-[11px] text-dust uppercase">{t("or")}</span>
         <span aria-hidden className="h-px flex-1 bg-paper/10" />
-      </div>
+      </div> */}
 
       <form action={sendMagicLink} className="grid gap-4">
         <input type="hidden" name="next" value={next} />

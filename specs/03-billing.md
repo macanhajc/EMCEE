@@ -18,15 +18,15 @@ Entity will be Brazil-based, which is the only path to Pix: Stripe supports **Pi
 ## Rails & currency
 
 - **Cards** (domestic + international) and **Pix** through Stripe Checkout + Billing; self-serve changes via Customer Portal.
-- Settlement in **BRL**. Pricing anchored in BRL with USD reference shown for international buyers (draft: **R$39/mo ≈ $7** per instance — final numbers in `01-product.md`). Verify at build: Stripe BR presentment-currency options for international cards (fallback: charge BRL, issuer converts — acceptable).
+- Settlement in **BRL**. Pricing anchored in BRL with USD reference shown for international buyers (draft: **R$14,99/mo ≈ $2.70** per instance — final numbers in `01-product.md`). Verify at build: Stripe BR presentment-currency options for international cards (fallback: charge BRL, issuer converts — acceptable).
 - Pix silver lining: no card-style chargebacks (disputes go through the rare MED fraud mechanism) → lower dispute exposure on the Brazilian segment.
 
 ## Plans (launch)
 
 | SKU | Price (draft) | Notes |
 |---|---|---|
-| Monthly, per instance | R$39/mo (~$7) | Core offer |
-| Annual, per instance | R$390/yr (10× monthly, ~2 months free) | Renewal reminder email 7 days before charge |
+| Monthly, per instance | R$14,99/mo (~$2.70) | Core offer |
+| Annual, per instance | R$129,90/yr (~28% off monthly, ≈3 months free) | Renewal reminder email 7 days before charge |
 
 - **No bundle SKU at launch** (deselected in review — a multi-*instance* discount, i.e. running the same bot in several rooms, is the post-launch experiment to revisit with real basket data; written when the product was still framed as multiple separate bot products, see `docs/decisions.md` 2026-07-20).
 - **No prepaid blocks** — Pix Automático makes recurring work without them (rejected 2026-07-19).

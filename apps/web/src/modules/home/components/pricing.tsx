@@ -1,6 +1,15 @@
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/UI/button";
+
+// Real billing always settles in BRL (Stripe Brazil, specs/03-billing.md) —
+// this only swaps which currency is *displayed* on the landing page based on
+// locale; USD amounts are the same soft reference conversion shown to
+// non-pt visitors elsewhere (checkout, home.pricing.*.reference copy).
+const PRICES = {
+  monthly: { brl: "R$14,99", usd: "~US$2.70" },
+  annual: { brl: "R$129,90", usd: "~US$23" },
+};
 
 function TicketNotch() {
   return (
@@ -19,6 +28,8 @@ function TicketNotch() {
 
 export function Pricing() {
   const t = useTranslations("home.pricing");
+  const locale = useLocale();
+  const isPt = locale === "pt";
 
   return (
     <section id="pricing" className="mx-auto max-w-6xl px-6 py-24">
@@ -37,9 +48,10 @@ export function Pricing() {
           <div className="p-8">
             <p className="font-display text-sm text-dust">{t("monthly.label")}</p>
             <p className="mt-3 font-display text-4xl text-paper">
-              R$39<span className="font-ui-mono text-base text-dust">{t("monthly.period")}</span>
+              {isPt ? PRICES.monthly.brl : PRICES.monthly.usd}
+              <span className="font-ui-mono text-base text-dust">{t("monthly.period")}</span>
             </p>
-            <p className="mt-1 font-ui-mono text-xs text-dust">{t("monthly.reference")}</p>
+            {isPt && <p className="mt-1 font-ui-mono text-xs text-dust">{t("monthly.reference")}</p>}
           </div>
           <div className="px-8 pb-8">
             <TicketNotch />
@@ -65,9 +77,10 @@ export function Pricing() {
           <div className="p-8">
             <p className="font-display text-sm text-dust">{t("annual.label")}</p>
             <p className="mt-3 font-display text-4xl text-paper">
-              R$390<span className="font-ui-mono text-base text-dust">{t("annual.period")}</span>
+              {isPt ? PRICES.annual.brl : PRICES.annual.usd}
+              <span className="font-ui-mono text-base text-dust">{t("annual.period")}</span>
             </p>
-            <p className="mt-1 font-ui-mono text-xs text-dust">{t("annual.reference")}</p>
+            {isPt && <p className="mt-1 font-ui-mono text-xs text-dust">{t("annual.reference")}</p>}
           </div>
           <div className="px-8 pb-8">
             <TicketNotch />

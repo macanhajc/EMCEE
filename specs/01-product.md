@@ -33,8 +33,8 @@ A **subscription per bot instance** (one bot — BYOT, one token — connected t
 
 Anchors: DIY floor is ~$7/mo (Replit); in-game rentals run ~5k Gold/mo (tens of dollars of street value).
 
-- **Monthly:** R$39/mo (~$7 USD reference) per instance.
-- **Annual:** R$390/yr per instance (10× monthly — ~2 months free).
+- **Monthly:** R$14,99/mo (~$2.70 USD reference) per instance.
+- **Annual:** R$129,90/yr per instance (~28% off monthly, ≈3 months free) — updated 2026-07-24, `docs/decisions.md`.
 - **No free trial** (removed 2026-07-23, `docs/decisions.md`) — every subscription is charged at checkout; the 7-day money-back guarantee (`03-billing.md`) is the funnel's honesty mechanism instead.
 - **No bundle SKU at launch** (decided 2026-07-19); a multi-*instance* discount (same bot, several rooms — see the 2026-07-20 reframing note above) is a post-launch experiment once basket data exists.
 

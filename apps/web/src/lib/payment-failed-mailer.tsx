@@ -55,7 +55,7 @@ export async function sendPaymentFailedEmail(input: PaymentFailedInput): Promise
 
   const { Resend } = await import("resend");
   const resend = new Resend(apiKey);
-  const from = process.env.EMAIL_FROM ?? "BotMarket <noreply@botmarket.app>";
+  const from = process.env.EMAIL_FROM ?? "BotMarket <botmarket@codeswift.com.br>";
 
   const { error } = await resend.emails.send({
     to: input.to,

@@ -46,17 +46,17 @@ export function CheckoutTemplate({
             value="monthly"
             defaultChecked
             label={t("plans.monthly.label")}
-            price="R$39"
+            price="R$14,99"
             period="/mo"
-            reference="~US$7 reference"
+            reference="~US$2.70 reference"
           />
           <PlanOption
             id="plan-annual"
             value="annual"
             label={t("plans.annual.label")}
-            price="R$390"
+            price="R$129,90"
             period="/yr"
-            reference="~US$70 reference"
+            reference="~US$23 reference"
             badge={t("plans.annual.badge")}
           />
         </div>

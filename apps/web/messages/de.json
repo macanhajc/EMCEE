@@ -127,7 +127,7 @@
       "monthly": {
         "label": "Monatlich",
         "period": "/Monat",
-        "reference": "~US$7 Referenz",
+        "reference": "~US$2.70 Referenz",
         "features": [
           "Monatlich abgerechnet, jederzeit kündbar",
           "7 Tage Geld-zurück-Garantie",
@@ -138,10 +138,10 @@
       "annual": {
         "label": "Jährlich",
         "period": "/Jahr",
-        "reference": "~US$70 Referenz",
-        "badge": "2 Monate gratis",
+        "reference": "~US$23 Referenz",
+        "badge": "~3 Monate gratis",
         "features": [
-          "Einmal für 10 Monate zahlen, 12 bekommen",
+          "Spare ~28 % gegenüber der monatlichen Zahlung",
           "7 Tage Geld-zurück-Garantie",
           "Live-Dashboard — Änderungen wirken sofort"
         ],
@@ -264,7 +264,7 @@
       },
       "annual": {
         "label": "Jährlich",
-        "badge": "2 Monate gratis"
+        "badge": "~3 Monate gratis"
       }
     },
     "billingNote": "Karte oder Pix nötig. Die erste Zahlperiode wird heute abgebucht — jederzeit kündbar, und innerhalb von 7 Tagen bekommst du dein Geld zurück, falls es nichts für dich ist.",
@@ -1210,7 +1210,7 @@
       "contact": {
         "heading": "Kontakt",
         "body": [
-          "Fragen zu dieser Erklärung, oder möchtest du eines der oben genannten Rechte ausüben? Schreib uns an privacy@botmarket.app."
+          "Fragen zu dieser Erklärung, oder möchtest du eines der oben genannten Rechte ausüben? Schreib uns an botmarket@codeswift.com.br."
         ]
       }
     }
