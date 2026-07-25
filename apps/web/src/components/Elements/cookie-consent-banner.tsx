@@ -3,16 +3,18 @@
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/UI/button";
 import { Link } from "@/i18n/navigation";
-import { setCookieConsent, useCookieConsent } from "@/lib/cookie-consent";
+import { type CookieConsent, setCookieConsent } from "@/lib/cookie-consent";
+import { useCookieConsent } from "@/lib/use-cookie-consent";
 
 /**
- * Renders nothing until the consent choice is "undecided" (also true on
- * the server and first client render, before localStorage is readable —
- * see cookie-consent.ts), and nothing again once a choice is made.
+ * `initialConsent` comes from RootLayout reading the request cookie server
+ * side, so this renders correctly on the very first paint — no flash for
+ * visitors who already accepted or rejected. Renders nothing once a choice
+ * is made.
  */
-export function CookieConsentBanner() {
+export function CookieConsentBanner({ initialConsent }: { initialConsent: CookieConsent }) {
   const t = useTranslations("cookieBanner");
-  const consent = useCookieConsent();
+  const consent = useCookieConsent(initialConsent);
 
   if (consent !== "undecided") return null;
 

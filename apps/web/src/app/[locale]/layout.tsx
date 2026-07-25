@@ -3,11 +3,13 @@ import { Geist, Geist_Mono, Bungee, Plus_Jakarta_Sans, IBM_Plex_Mono } from "nex
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { cookies } from "next/headers";
 import { RoutePointerEventsReset } from "@/components/Elements/route-pointer-events-reset";
 import { PostHogProvider } from "@/components/Elements/posthog-provider";
 import { CookieConsentBanner } from "@/components/Elements/cookie-consent-banner";
 import { Toaster } from "@/components/UI/sonner";
 import { routing } from "@/i18n/routing";
+import { COOKIE_CONSENT_COOKIE, readServerCookieConsent } from "@/lib/cookie-consent";
 import "../globals.css";
 
 const geistSans = Geist({
@@ -67,6 +69,9 @@ export default async function RootLayout({
   // Enables static rendering for this locale's request-config lookups.
   setRequestLocale(locale);
 
+  const cookieStore = await cookies();
+  const initialConsent = readServerCookieConsent(cookieStore.get(COOKIE_CONSENT_COOKIE)?.value);
+
   return (
     <html
       lang={locale}
@@ -74,11 +79,11 @@ export default async function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider>
-          <PostHogProvider>
+          <PostHogProvider initialConsent={initialConsent}>
             <RoutePointerEventsReset />
             {children}
             <Toaster />
-            <CookieConsentBanner />
+            <CookieConsentBanner initialConsent={initialConsent} />
           </PostHogProvider>
         </NextIntlClientProvider>
       </body>

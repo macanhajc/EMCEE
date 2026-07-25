@@ -1,7 +1,8 @@
 "use client";
 
 import { PostHogProvider as PHProvider } from "posthog-js/react";
-import { useCookieConsent } from "@/lib/cookie-consent";
+import { type CookieConsent } from "@/lib/cookie-consent";
+import { useCookieConsent } from "@/lib/use-cookie-consent";
 
 /**
  * No-ops (renders children as-is) when NEXT_PUBLIC_POSTHOG_KEY is unset,
@@ -16,9 +17,15 @@ import { useCookieConsent } from "@/lib/cookie-consent";
  * loads on navigation, so PostHog's default pageview tracking would miss
  * client-side transitions otherwise).
  */
-export function PostHogProvider({ children }: { children: React.ReactNode }) {
+export function PostHogProvider({
+  children,
+  initialConsent,
+}: {
+  children: React.ReactNode;
+  initialConsent: CookieConsent;
+}) {
   const apiKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
-  const consent = useCookieConsent();
+  const consent = useCookieConsent(initialConsent);
   if (!apiKey || consent !== "accepted") return children;
 
   return (

@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 // external URLs below. Every same-app redirect in this file goes through
 // the locale-aware one from @/i18n/navigation instead.
 import { redirect as redirectExternal } from "next/navigation";
+import Stripe from "stripe";
 import { auth } from "@/auth";
 import { redirect } from "@/i18n/redirect";
 import { db, tables } from "@/db";
@@ -44,19 +45,25 @@ export async function startCheckout(instanceId: string, formData: FormData): Pro
 
   const origin = (await headers()).get("origin") ?? process.env.APP_ORIGIN ?? "http://localhost:3000";
 
-  const checkoutSession = await stripe.checkout.sessions.create(
-    buildCheckoutSessionParams({
-      instanceId: instance.id,
-      userId: session!.user.id,
-      userEmail: session!.user.email!,
-      existingStripeCustomerId: user?.stripeCustomerId ?? null,
-      // Non-null: narrowed above by `if (!priceId) backTo(...)`, but TS's
-      // narrowing doesn't survive the intervening awaits (same limitation
-      // as the sealed-token actions elsewhere in this app).
-      priceId: priceId!,
-      origin,
-    }),
-  );
+  let checkoutSession: Stripe.Checkout.Session;
+  try {
+    checkoutSession = await stripe.checkout.sessions.create(
+      buildCheckoutSessionParams({
+        instanceId: instance.id,
+        userId: session!.user.id,
+        userEmail: session!.user.email!,
+        existingStripeCustomerId: user?.stripeCustomerId ?? null,
+        // Non-null: narrowed above by `if (!priceId) backTo(...)`, but TS's
+        // narrowing doesn't survive the intervening awaits (same limitation
+        // as the sealed-token actions elsewhere in this app).
+        priceId: priceId!,
+        origin,
+      }),
+    );
+  } catch (err) {
+    if (err instanceof Stripe.errors.StripeError) await backTo("stripe_error");
+    throw err;
+  }
 
   if (!checkoutSession.url) await backTo("stripe_error");
   redirectExternal(checkoutSession.url!);
