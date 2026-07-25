@@ -204,12 +204,23 @@ class Supervisor:
         self._config_listener_task = asyncio.create_task(self._listen_config_updates())
         try:
             while True:
-                await self.reconcile()
-                # Unconditional, after reconcile() rather than inside it —
-                # reconcile() has early returns (e.g. no free capacity), and
-                # the heartbeat needs to prove the loop itself is alive every
-                # tick regardless of which branch reconcile() took.
-                await db.write_heartbeat(self.pool, self.supervisor_id, self.capacity, len(self.running))
+                try:
+                    await self.reconcile()
+                    # Unconditional, after reconcile() rather than inside it —
+                    # reconcile() has early returns (e.g. no free capacity), and
+                    # the heartbeat needs to prove the loop itself is alive every
+                    # tick regardless of which branch reconcile() took.
+                    await db.write_heartbeat(self.pool, self.supervisor_id, self.capacity, len(self.running))
+                except Exception:
+                    # One bad tick (a transient DB hiccup, a schema not
+                    # applied yet, ...) must never permanently kill the
+                    # whole loop — every customer's bot depends on this
+                    # process staying alive to reclaim it. Log and retry
+                    # next tick rather than letting the exception escape:
+                    # an escaped exception here previously left the
+                    # container "Up" and healthy in Docker while doing
+                    # nothing at all, forever, with no visible symptom.
+                    log.exception("reconcile tick failed — retrying next tick")
                 await asyncio.sleep(self.reconcile_interval_s)
         finally:
             self._config_listener_task.cancel()

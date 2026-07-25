@@ -127,7 +127,7 @@
       "monthly": {
         "label": "Monthly",
         "period": "/mo",
-        "reference": "~US$2.70 reference",
+        "reference": "{usd} reference",
         "features": [
           "Billed every month, cancel anytime",
           "7-day money-back guarantee",
@@ -138,7 +138,7 @@
       "annual": {
         "label": "Annual",
         "period": "/yr",
-        "reference": "~US$23 reference",
+        "reference": "{usd} reference",
         "badge": "~3 months free",
         "features": [
           "Save ~28% versus paying monthly",
@@ -1396,5 +1396,23 @@
         "answer": "Not today. Catalog bots are first-party — you configure them through the dashboard rather than uploading or running your own code on our infrastructure."
       }
     ]
+  },
+  "health": {
+    "eyebrow": "System status",
+    "title": "Status",
+    "status": {
+      "operational": {
+        "label": "All systems operational",
+        "description": "Bots are connected and running normally."
+      },
+      "degraded": {
+        "label": "Degraded performance",
+        "description": "Some bots are having trouble staying connected. We're on it."
+      },
+      "down": {
+        "label": "Service disruption",
+        "description": "We're experiencing an outage affecting bots. We're on it."
+      }
+    }
   }
 }

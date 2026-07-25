@@ -148,6 +148,68 @@ async def test_run_writes_heartbeat_every_tick(pool, listen_conn, token_box):
         await sup.shutdown()
 
 
+async def test_run_survives_a_failing_tick(pool, listen_conn, token_box):
+    """One tick raising (a transient DB error, a schema not applied yet,
+    ...) must not permanently kill the loop — a real incident: the very
+    first tick after a fresh deploy hit `bot_instances` before migrations
+    had run, the unhandled exception silently ended run()'s task, and the
+    container sat "Up" and healthy in Docker forever afterward doing
+    nothing, with no customer's bot ever reclaimed. run() must catch, log,
+    and retry on the next tick instead."""
+    sup = Supervisor(
+        pool,
+        listen_conn,
+        token_box,
+        supervisor_id="sup-flaky-tick-unit-test",
+        capacity=5,
+        bot_runner=hold_forever,
+        reconcile_interval_s=0.02,
+    )
+    # No transaction-per-test isolation in this suite (CI gets a fresh
+    # throwaway Postgres each run) — clean up a leftover row from a prior
+    # local run so a stale heartbeat can't be mistaken for one this test
+    # tick actually wrote.
+    await pool.execute("DELETE FROM supervisor_heartbeats WHERE supervisor_id = $1", "sup-flaky-tick-unit-test")
+    real_reconcile = sup.reconcile
+    calls = {"n": 0}
+
+    async def flaky_reconcile():
+        calls["n"] += 1
+        if calls["n"] == 1:
+            raise RuntimeError("simulated transient failure")
+        await real_reconcile()
+
+    sup.reconcile = flaky_reconcile
+
+    run_task = asyncio.create_task(sup.run())
+    try:
+        async def has_heartbeat():
+            return await pool.fetchrow(
+                "SELECT 1 FROM supervisor_heartbeats WHERE supervisor_id = $1",
+                "sup-flaky-tick-unit-test",
+            )
+
+        async def _poll():
+            row = None
+            while row is None:
+                row = await has_heartbeat()
+                if row is None:
+                    await asyncio.sleep(0.01)
+            return row
+
+        # A heartbeat only gets written *after* reconcile() succeeds for a
+        # tick — seeing one here proves the loop survived the first,
+        # failing tick and reached a later, successful one.
+        await asyncio.wait_for(_poll(), timeout=2.0)
+        assert calls["n"] >= 2
+        assert not run_task.done()  # still looping, not dead
+    finally:
+        run_task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await run_task
+        await sup.shutdown()
+
+
 async def test_reconcile_keeps_healthy_instance_running_across_ticks(pool, make_instance, supervisor):
     instance_id = await make_instance(desired_state="running")
 

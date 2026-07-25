@@ -1,5 +1,6 @@
 import { SiteFooter } from "@/components/Elements/site-footer";
 import { SiteNav } from "@/components/Elements/site-nav";
+import type { EmceePrices } from "@/lib/pricing";
 import { BotShowcase } from "./components/bot-showcase";
 import { Comparison } from "./components/comparison";
 import { Hero } from "./components/hero";
@@ -8,7 +9,7 @@ import { MarqueeTicker } from "./components/marquee-ticker";
 import { Pricing } from "./components/pricing";
 import { TrustStrip } from "./components/trust-strip";
 
-export function HomeTemplate() {
+export function HomeTemplate({ prices }: { prices: EmceePrices }) {
   return (
     <div className="flex flex-1 flex-col overflow-x-hidden bg-ink font-marquee-body">
       <SiteNav />
@@ -19,7 +20,7 @@ export function HomeTemplate() {
         <HowItWorks />
         <Comparison />
         <TrustStrip />
-        <Pricing />
+        <Pricing prices={prices} />
       </main>
       <SiteFooter />
     </div>

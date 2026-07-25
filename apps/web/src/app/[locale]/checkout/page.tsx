@@ -5,6 +5,7 @@ import { CheckoutTemplate } from "@/modules/checkout";
 import { db, tables } from "@/db";
 import { getActiveSubscriptionForInstance } from "@/db/billing";
 import { getOwnedInstance } from "@/db/instances";
+import { getEmceePrices } from "@/lib/pricing";
 import { startCheckout } from "./actions";
 
 export default async function CheckoutPage({
@@ -27,12 +28,15 @@ export default async function CheckoutPage({
     .from(tables.catalogBots)
     .where(eq(tables.catalogBots.slug, instance.catalogBotSlug));
 
+  const prices = await getEmceePrices();
+
   return (
     <CheckoutTemplate
       botName={bot?.name ?? instance.catalogBotSlug}
       instanceId={instance.id}
       roomId={instance.roomId}
       error={error}
+      prices={prices}
       startCheckout={startCheckout.bind(null, instance.id)}
     />
   );

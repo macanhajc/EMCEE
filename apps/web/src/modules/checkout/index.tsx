@@ -4,6 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { AuthShell } from "@/components/Elements/auth-shell";
 import { Alert, AlertDescription } from "@/components/UI/alert";
 import { Button } from "@/components/UI/button";
+import type { EmceePrices } from "@/lib/pricing";
 import { PlanOption } from "./components/plan-option";
 
 export function CheckoutTemplate({
@@ -11,12 +12,14 @@ export function CheckoutTemplate({
   instanceId,
   roomId,
   error,
+  prices,
   startCheckout,
 }: {
   botName: string;
   instanceId: string;
   roomId: string;
   error?: string;
+  prices: EmceePrices;
   startCheckout: (formData: FormData) => Promise<void>;
 }) {
   const t = useTranslations("checkout");
@@ -46,17 +49,17 @@ export function CheckoutTemplate({
             value="monthly"
             defaultChecked
             label={t("plans.monthly.label")}
-            price="R$14,99"
+            price={prices.monthly.brl}
             period="/mo"
-            reference="~US$2.70 reference"
+            reference={`${prices.monthly.usd} reference`}
           />
           <PlanOption
             id="plan-annual"
             value="annual"
             label={t("plans.annual.label")}
-            price="R$129,90"
+            price={prices.annual.brl}
             period="/yr"
-            reference="~US$23 reference"
+            reference={`${prices.annual.usd} reference`}
             badge={t("plans.annual.badge")}
           />
         </div>

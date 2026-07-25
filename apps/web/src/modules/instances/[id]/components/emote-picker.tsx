@@ -103,8 +103,8 @@ export function EmotePicker({
               title={isBlocked ? t("blockedTitle") : t("availableTitle")}
               className={
                 isBlocked
-                  ? "rounded-full border border-dashed border-paper/15 px-2.5 py-1 text-xs text-dust/50 line-through"
-                  : "rounded-full border border-transparent bg-paper/10 px-2.5 py-1 text-xs text-paper hover:bg-paper/20"
+                  ? "rounded-full cursor-pointer border border-dashed border-paper/15 px-2.5 py-1 text-xs text-dust/50 line-through"
+                  : "rounded-full cursor-pointer border border-transparent bg-paper/10 px-2.5 py-1 text-xs text-paper hover:bg-paper/20"
               }
             >
               {emote.name}

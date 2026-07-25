@@ -138,17 +138,11 @@ export function InstanceConfig({ instanceId }: { instanceId: string }) {
           </TabsContent>
         ))}
 
-        <TabsContent value={ACTIVITY_TAB_KEY} className="flex flex-col gap-6">
-          <RegularsTable instanceId={instanceId} />
-          <BanByUsername instanceId={instanceId} />
-          <ActivityLog />
-        </TabsContent>
-
-        <TabsContent value={STATUS_TAB_KEY} className="flex flex-col gap-6">
-          <GeneralCard instanceId={instanceId} />
-          <BotTokenUpdate instanceId={instanceId} />
-          <StatusLog instanceId={instanceId} />
-          <BotDangerZone instanceId={instanceId} />
+        <TabsContent value={EMOTE_TAB_KEY} className="flex flex-col gap-6">
+          <EmoteOnSayCard instanceId={instanceId} />
+          <EmoteAllCard instanceId={instanceId} />
+          <ListCommandCard instanceId={instanceId} />
+          <LoopCard instanceId={instanceId} />
         </TabsContent>
 
         <TabsContent value={GREETER_TAB_KEY} className="flex flex-col gap-6">
@@ -175,11 +169,17 @@ export function InstanceConfig({ instanceId }: { instanceId: string }) {
           <OutfitCloneCard instanceId={instanceId} />
         </TabsContent>
 
-        <TabsContent value={EMOTE_TAB_KEY} className="flex flex-col gap-6">
-          <EmoteOnSayCard instanceId={instanceId} />
-          <EmoteAllCard instanceId={instanceId} />
-          <ListCommandCard instanceId={instanceId} />
-          <LoopCard instanceId={instanceId} />
+        <TabsContent value={ACTIVITY_TAB_KEY} className="flex flex-col gap-6">
+          <RegularsTable instanceId={instanceId} />
+          <BanByUsername instanceId={instanceId} />
+          <ActivityLog />
+        </TabsContent>
+
+        <TabsContent value={STATUS_TAB_KEY} className="flex flex-col gap-6">
+          <GeneralCard instanceId={instanceId} />
+          <BotTokenUpdate instanceId={instanceId} />
+          <StatusLog instanceId={instanceId} />
+          <BotDangerZone instanceId={instanceId} />
         </TabsContent>
       </Tabs>
     </div>

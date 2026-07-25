@@ -127,7 +127,7 @@
       "monthly": {
         "label": "Mensal",
         "period": "/mês",
-        "reference": "~US$2.70 de referência",
+        "reference": "{usd} de referência",
         "features": [
           "Cobrado todo mês, cancele quando quiser",
           "Garantia de reembolso de 7 dias",
@@ -138,7 +138,7 @@
       "annual": {
         "label": "Anual",
         "period": "/ano",
-        "reference": "~US$23 de referência",
+        "reference": "{usd} de referência",
         "badge": "~3 meses grátis",
         "features": [
           "Economize ~28% em relação ao mensal",
@@ -1396,5 +1396,23 @@
         "answer": "Ainda não. Os bots do catálogo são proprietários — você os configura pelo painel em vez de subir ou rodar código próprio na nossa infraestrutura."
       }
     ]
+  },
+  "health": {
+    "eyebrow": "Status do sistema",
+    "title": "Status",
+    "status": {
+      "operational": {
+        "label": "Todos os sistemas operando normalmente",
+        "description": "Os bots estão conectados e funcionando normalmente."
+      },
+      "degraded": {
+        "label": "Desempenho degradado",
+        "description": "Alguns bots estão com dificuldade para manter a conexão. Já estamos cuidando disso."
+      },
+      "down": {
+        "label": "Interrupção no serviço",
+        "description": "Estamos com uma interrupção afetando os bots. Já estamos cuidando disso."
+      }
+    }
   }
 }

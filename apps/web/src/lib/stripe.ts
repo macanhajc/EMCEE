@@ -3,7 +3,7 @@ import Stripe from "stripe";
 
 const globalForStripe = globalThis as unknown as { stripeClient?: Stripe };
 
-function requireEnv(name: string): string {
+export function requireEnv(name: string): string {
   const value = process.env[name];
   if (!value) throw new Error(`${name} is not set`);
   return value;

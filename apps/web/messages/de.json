@@ -127,7 +127,7 @@
       "monthly": {
         "label": "Monatlich",
         "period": "/Monat",
-        "reference": "~US$2.70 Referenz",
+        "reference": "{usd} Referenz",
         "features": [
           "Monatlich abgerechnet, jederzeit kündbar",
           "7 Tage Geld-zurück-Garantie",
@@ -138,7 +138,7 @@
       "annual": {
         "label": "Jährlich",
         "period": "/Jahr",
-        "reference": "~US$23 Referenz",
+        "reference": "{usd} Referenz",
         "badge": "~3 Monate gratis",
         "features": [
           "Spare ~28 % gegenüber der monatlichen Zahlung",
@@ -1396,5 +1396,23 @@
         "answer": "Aktuell nicht. Katalog-Bots sind Eigenentwicklungen — du konfigurierst sie über das Dashboard, statt eigenen Code auf unserer Infrastruktur hochzuladen oder auszuführen."
       }
     ]
+  },
+  "health": {
+    "eyebrow": "Systemstatus",
+    "title": "Status",
+    "status": {
+      "operational": {
+        "label": "Alle Systeme funktionieren normal",
+        "description": "Die Bots sind verbunden und laufen normal."
+      },
+      "degraded": {
+        "label": "Eingeschränkte Leistung",
+        "description": "Einige Bots haben Verbindungsprobleme. Wir kümmern uns darum."
+      },
+      "down": {
+        "label": "Serviceunterbrechung",
+        "description": "Wir haben aktuell eine Störung, die Bots betrifft. Wir kümmern uns darum."
+      }
+    }
   }
 }

@@ -2,7 +2,10 @@
 
 A plain-language walkthrough of the core loop. For the authoritative spec, see
 `specs/04-bot-runtime.md` (runtime) and `specs/03-billing.md` (billing). This
-file just connects the two in order.
+file just connects the two in order. If something in this loop looks broken,
+check `docs/troubleshooting.md` first — most "the bot isn't working" reports
+so far have traced back to a piece of this chain being silently down rather
+than a bug in bot logic.
 
 ## 1. Creating a bot is just a database row
 
