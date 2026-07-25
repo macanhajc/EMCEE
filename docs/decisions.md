@@ -2,6 +2,10 @@
 
 ADR-lite. Newest first. One entry per decision that shapes the product or architecture; link the spec that carries the detail.
 
+## 2026-07-25 — Anchor restore delay bumped 2s → 30s — 2s still lost the race live
+
+Follow-up to the same-day entry below. 2s was an untested guess at the time; tried live against the Oracle canary and the bot still landed at the room's default spot instead of the saved anchor, same symptom as before the fix — 2s wasn't enough headroom against Highrise's own room-join placement. Bumped `ANCHOR_RESTORE_DELAY_S` (`catalog/avatar.py`) to 30.0. Still an empirical guess, not a confirmed platform timing — needs a live canary check to confirm 30s actually clears the race before treating this as closed; if it doesn't, a bounded retry (poll until the bot's own position stabilizes, rather than a fixed sleep) is the next thing to try instead of guessing a bigger number again.
+
 ## 2026-07-25 — Bug fix: Anchor spot teleport delayed to `on_start` — was losing a race against Highrise's own room-join placement
 
 Reported live against a real connected bot on the Oracle canary box: `avatar_positions` held the correct row, `position.enabled` was `true`, `AvatarEngine.restore_position()` (`workers/runtime/catalog/avatar.py`) ran with no exception anywhere in the logs — and the bot still spawned at the room's default spot on every restart, never at the saved anchor. Every documented gap this could plausibly be (the 2026-07-23 `position.enabled` default bug, a missing/corrupt `avatar_positions` row, an invalid `facing` value, a DB read failure) was ruled out one at a time by querying the live instance directly; none of them were it.

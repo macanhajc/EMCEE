@@ -10,7 +10,7 @@ copies of the same tier logic.
 - **Anchor spot** — saying "anchor" teleports the bot to the speaker's
   current position and persists it (`avatar_positions`, one row per
   instance); restored on every `on_start` so the bot doesn't spawn wherever
-  the room happens to drop it — after a short delay (`ANCHOR_RESTORE_DELAY_S`
+  the room happens to drop it — after a delay (`ANCHOR_RESTORE_DELAY_S`
   below), not immediately: teleporting the instant the WS session opens
   loses a race against Highrise's own room-join placement of the bot's
   avatar (confirmed live, docs/decisions.md 2026-07-25). Deliberately *not*
@@ -131,9 +131,10 @@ COPY_PREFIX = "copy "
 # avatar. Confirmed live on a real canary bot (docs/decisions.md,
 # 2026-07-25): `avatar_positions` held the right row, `restore_position()`
 # ran with no error, and the bot still ended up at the room's default spot
-# because the platform's own placement won the race. Tune against the live
-# canary if this still isn't enough headroom.
-ANCHOR_RESTORE_DELAY_S = 2.0
+# because the platform's own placement won the race. First tried 2.0s —
+# still lost the race live (docs/decisions.md, 2026-07-25 follow-up) — bumped
+# to 30.0s. Tune against the live canary if this still isn't enough headroom.
+ANCHOR_RESTORE_DELAY_S = 30.0
 
 
 def _parse_presets(lines: list[str]) -> dict[str, list[str]]:
