@@ -60,6 +60,7 @@ if TYPE_CHECKING:
 log = logging.getLogger("catalog.warden")
 
 MAX_WHISPER_CHARS = 300  # matches emote.py/greeter.py's conservative, unverified whisper-length guess
+DESIGNER_CACHE_TTL_S = 300  # designer status doesn't change mid-session; avoids a get_room_privilege round trip per message
 _REPEAT_RUN = re.compile(r"(.)\1+")  # any run of 2+ of the same char
 
 
@@ -94,6 +95,13 @@ class WardenEngine:
         # (standalone/unit-test construction) or a write fails.
         self._strikes_fallback: dict[str, int] = {}
         self._last_strike_fallback_at: dict[str, float] = {}
+        # user_id -> (is_designer, cached_at) — get_room_privilege is a live
+        # network round trip; without this, every single chat message from a
+        # non-owner, non-explicitly-exempt user paid for one (designers_exempt
+        # defaults to True), sitting directly in front of Emote's own on_chat
+        # since EmceeBot runs Warden to completion first (docs/decisions.md,
+        # 2026-07-26).
+        self._designer_cache: dict[str, tuple[bool, float]] = {}
 
     async def on_chat(self, user: User, message: str) -> None:
         if await self._is_exempt(user):
@@ -108,6 +116,7 @@ class WardenEngine:
         self._message_times.pop(user.id, None)
         self._last_message.pop(user.id, None)
         self._duplicate_streak.pop(user.id, None)
+        self._designer_cache.pop(user.id, None)
 
     async def on_moderate(
         self, moderator_id: str, target_user_id: str, moderation_type: str, duration: int | None
@@ -134,9 +143,18 @@ class WardenEngine:
         if normalize(user.username) in exempt_names:
             return True
         if cfg.get("designers_exempt", True):
-            privilege = await self.bot.highrise.get_room_privilege(user.id)
-            return not isinstance(privilege, Error) and bool(privilege.designer)
+            return await self._is_designer(user.id)
         return False
+
+    async def _is_designer(self, user_id: str) -> bool:
+        now = time.monotonic()
+        cached = self._designer_cache.get(user_id)
+        if cached is not None and now - cached[1] < DESIGNER_CACHE_TTL_S:
+            return cached[0]
+        privilege = await self.bot.highrise.get_room_privilege(user_id)
+        is_designer = not isinstance(privilege, Error) and bool(privilege.designer)
+        self._designer_cache[user_id] = (is_designer, now)
+        return is_designer
 
     # --- mod commands ----------------------------------------------------
 

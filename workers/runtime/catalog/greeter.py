@@ -250,11 +250,16 @@ class GreeterEngine:
         template = cfg.get("template") or DEFAULT_VIP_TEMPLATE
         text = _render(template, username=user.username, room_name=self.bot._room_name)
 
-        await self.bot.throttle.acquire(Priority.NORMAL)
+        # Real action (the celebration emote) at NORMAL; the whisper and
+        # room announce are flavor text, so Priority.INFO — same treatment
+        # as emote.py's confirmations (docs/decisions.md, 2026-07-26), so a
+        # VIP join's informational text can't queue ahead of someone else's
+        # real emote.
+        await self.bot.throttle.acquire(Priority.INFO)
         await self.bot.highrise.send_whisper(user.id, text)
 
         if cfg.get("announce_to_room", False):
-            await self.bot.throttle.acquire(Priority.NORMAL)
+            await self.bot.throttle.acquire(Priority.INFO)
             await self.bot.highrise.chat(t(self.bot.bot_language, "greeter.vip_announce", username=user.username))
 
         emote_id = cfg.get("emote_celebration_id")

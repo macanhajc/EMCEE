@@ -153,10 +153,15 @@ class EmoteEngine:
         if not check_cooldown(self._last_say_at, user.id, cfg.get("cooldown_s", 3)):
             return
 
-        await self.bot.throttle.acquire(Priority.NORMAL)
-        await self.bot.highrise.send_whisper(user.id, t(self.bot.bot_language, "emote.doing", emote_name=emote.name))
+        # Real action first, confirmation text after: the confirmation is
+        # Priority.INFO precisely so it never makes someone else's NORMAL
+        # action queue up behind it, but within this one call the two sends
+        # are still sequential — firing the emote first keeps this user's
+        # own perceived latency-to-visible-action from riding behind it too.
         await self.bot.throttle.acquire(Priority.NORMAL)
         await self.bot.highrise.send_emote(emote.id, user.id)
+        await self.bot.throttle.acquire(Priority.INFO)
+        await self.bot.highrise.send_whisper(user.id, t(self.bot.bot_language, "emote.doing", emote_name=emote.name))
 
     async def _trigger_emote_all(self, user: User, emote_text: str) -> None:
         cfg = self.bot.config.get("emote_all", {})
@@ -226,8 +231,10 @@ class EmoteEngine:
         # action, so tell the speaker what to expect up front — a forced
         # timeout already explains itself (below); a successful start
         # silently changing their avatar's future behavior for the next N
-        # minutes deserved the same.
-        await self.bot.throttle.acquire(Priority.NORMAL)
+        # minutes deserved the same. Priority.INFO: it's flavor text, not
+        # the visible action itself (the loop task's own first emote tick),
+        # so it never gets to queue ahead of someone else's real action.
+        await self.bot.throttle.acquire(Priority.INFO)
         await self.bot.highrise.send_whisper(
             user.id,
             t(
@@ -248,8 +255,9 @@ class EmoteEngine:
                 await self.bot.highrise.send_emote(emote_id, user_id)
                 await asyncio.sleep(interval_s)
             # Safety cap hit, not an explicit "stop" — say why, since the
-            # user's avatar just stopped for no reason they said.
-            await self.bot.throttle.acquire(Priority.NORMAL)
+            # user's avatar just stopped for no reason they said. Informational
+            # only, so Priority.INFO.
+            await self.bot.throttle.acquire(Priority.INFO)
             await self.bot.highrise.send_whisper(user_id, t(self.bot.bot_language, "emote.loop_timed_out"))
         finally:
             # Compare-and-delete: if `_trigger_loop` already replaced this
@@ -278,6 +286,11 @@ class EmoteEngine:
         names = [f"{i}. {e.name}" for i, e in enumerate(self._catalog.all(), start=1)]
         header = t(self.bot.bot_language, "emote.list_header")
         text = f"{header} " + ", ".join(names)
+        # Priority.INFO: the full catalog is ~230 emotes, which chunks into
+        # a dozen-plus whispers at MAX_WHISPER_CHARS — at NORMAL that used to
+        # occupy the entire per-instance throttle for several seconds,
+        # delaying every other user's real emote for as long as this list
+        # was still being sent (docs/decisions.md, 2026-07-26).
         for chunk in _chunk_text(text, MAX_WHISPER_CHARS):
-            await self.bot.throttle.acquire(Priority.NORMAL)
+            await self.bot.throttle.acquire(Priority.INFO)
             await self.bot.highrise.send_whisper(user.id, chunk)

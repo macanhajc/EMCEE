@@ -39,7 +39,7 @@ Module engines (`EmoteEngine`, `GreeterEngine`) are plain classes, not `CatalogB
 Highrise documents only "respect rate limits or get banned." So:
 
 - Central **outbound action throttle** in `CatalogBot` (token bucket per instance, conservative default like ~1 action/sec burst 3 — tune with data). All chat/whisper/emote actions go through it; handlers never call `self.highrise.*` send-methods directly.
-- Priority classes from day one: **normal** (emote-on-say, whispers) vs. **background** (emote-all fan-out — staggered ~2–4 users/sec by design, see `bots/emote.md`). On server throttle/error signals: back off, shed background first.
+- Three priority classes, ranked and actually enforced (2026-07-26 — see `docs/decisions.md`): **normal** (a real, single-user visible action) outranks **background** (emote-all fan-out — staggered ~2–4 users/sec by design, see `bots/emote.md` — and loop repeats) outranks **info** (purely informational whispers: the emote list, "doing X"/"loop started" confirmations). `ActionThrottle.acquire` only spends a token for a priority when no higher-priority request is currently waiting, so a burst of low-priority sends can't make a higher-priority one queue up behind it — capped at 2s (`_MAX_DEFER_S`) so *sustained* higher-priority demand (e.g. many concurrent loopers) can't starve a lower tier outright, just delay it.
 - Log throttle saturation per instance → tells us real platform limits over time.
 
 ## Failure catalog (each needs a distinct customer-facing status + message)

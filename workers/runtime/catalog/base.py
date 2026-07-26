@@ -50,8 +50,18 @@ _HANDLERS = (
 
 
 class Priority(Enum):
-    NORMAL = "normal"          # emote-on-say, whispers
-    BACKGROUND = "background"  # emote-all fan-out; sheds first under pressure
+    """Ranked low-to-high urgency. ``ActionThrottle.acquire`` only spends a
+    token for a lower-priority request when no higher-priority request is
+    currently waiting, so a burst of low-priority sends (e.g. a long,
+    multi-chunk whisper) can never make a higher-priority one queue up
+    behind it (docs/decisions.md, 2026-07-26)."""
+
+    NORMAL = "normal"          # a real, single-user visible action (emote, reply)
+    BACKGROUND = "background"  # bulk/looping visible actions: emote-all fan-out, loop repeats
+    INFO = "info"              # purely informational whispers (list, confirmations) — never delays a real action
+
+
+_PRIORITY_RANK: dict[Priority, int] = {Priority.NORMAL: 0, Priority.BACKGROUND: 1, Priority.INFO: 2}
 
 
 class ActionThrottle:
@@ -59,7 +69,29 @@ class ActionThrottle:
 
     Platform rate limits are unpublished; defaults are conservative
     (~1 action/sec, burst 3) and tuned with saturation telemetry.
+
+    Priority-ordered: a request spends a token only once no higher-priority
+    request is waiting (see ``Priority``) *or* it's been waiting longer than
+    ``_MAX_DEFER_S``, whichever comes first. The lock only ever wraps the
+    token check itself, not the backoff sleep — holding it across the sleep
+    (the pre-2026-07-26 shape) serialized every waiter regardless of
+    priority, since whoever was sleeping held the lock the whole time.
+
+    Pure "always defer to higher priority" starves a lower tier outright
+    when higher-priority demand is sustained rather than bursty — found live
+    by a test with 10 concurrent loopers: at the default rate, 10 loops
+    re-acquiring BACKGROUND every ``interval_s`` need ~2 tokens/sec, more
+    than the bucket supplies, so ``waiting[BACKGROUND]`` never hit zero and
+    every INFO whisper (loop-start confirmations for users still queued
+    behind them) waited forever, hanging the caller. The age cap bounds
+    that: it fixes the reported bug (a burst of INFO chunks/confirmations
+    no longer blocks a real action for as long as the burst lasts) without
+    creating a new failure mode (indefinite starvation) when priority
+    demand is sustained instead of bursty.
     """
+
+    _POLL_S = 0.05  # recheck interval when tokens exist but a higher-priority request is waiting
+    _MAX_DEFER_S = 2.0  # a lower-priority request is let through anyway after waiting this long
 
     def __init__(self, rate: float = 1.0, burst: int = 3) -> None:
         self._rate = rate
@@ -67,19 +99,29 @@ class ActionThrottle:
         self._burst = float(burst)
         self._updated = time.monotonic()
         self._lock = asyncio.Lock()
+        self._waiting: dict[Priority, int] = {p: 0 for p in Priority}
 
     async def acquire(self, priority: Priority = Priority.NORMAL) -> None:
-        # TODO(runtime): background class should also yield to queued normal
-        # sends, not just pay the same token price. Revisit with telemetry.
-        async with self._lock:
+        my_rank = _PRIORITY_RANK[priority]
+        enqueued_at = time.monotonic()
+        self._waiting[priority] += 1
+        try:
             while True:
-                now = time.monotonic()
-                self._tokens = min(self._burst, self._tokens + (now - self._updated) * self._rate)
-                self._updated = now
-                if self._tokens >= 1:
-                    self._tokens -= 1
-                    return
-                await asyncio.sleep((1 - self._tokens) / self._rate)
+                async with self._lock:
+                    now = time.monotonic()
+                    self._tokens = min(self._burst, self._tokens + (now - self._updated) * self._rate)
+                    self._updated = now
+                    aged_out = now - enqueued_at >= self._MAX_DEFER_S
+                    blocked_by_higher_priority = not aged_out and any(
+                        count > 0 for p, count in self._waiting.items() if _PRIORITY_RANK[p] < my_rank
+                    )
+                    if self._tokens >= 1 and not blocked_by_higher_priority:
+                        self._tokens -= 1
+                        return
+                    wait_s = (1 - self._tokens) / self._rate if self._tokens < 1 else self._POLL_S
+                await asyncio.sleep(wait_s)
+        finally:
+            self._waiting[priority] -= 1
 
 
 def _shielded(fn):

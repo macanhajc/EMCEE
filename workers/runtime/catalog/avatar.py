@@ -409,14 +409,17 @@ class AvatarEngine:
         never less complete than `base` already was — see module docstring
         on why clone can't just equip the raw matched intersection. An item
         whose category lookup itself fails is left out of the merge
-        entirely (see `_item_category`) rather than aborting the clone."""
+        entirely (see `_item_category`) rather than aborting the clone.
+
+        Category lookups are independent webapi round trips, so they're
+        gathered concurrently rather than one-at-a-time (a full outfit is
+        ~10-16 items) — the base-then-overrides precedence only depends on
+        dict insertion/overwrite order below, not on the order the lookups
+        themselves complete in."""
+        all_items = base + overrides
+        categories = await asyncio.gather(*(self._item_category(item) for item in all_items))
         by_category: dict[str, Item] = {}
-        for item in base:
-            category = await self._item_category(item)
-            if category is not None:
-                by_category[category] = item
-        for item in overrides:
-            category = await self._item_category(item)
+        for item, category in zip(all_items, categories):
             if category is not None:
                 by_category[category] = item
         return list(by_category.values())
