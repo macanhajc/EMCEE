@@ -1,4 +1,4 @@
-# Cost plan — running BotMarket as cheaply as possible
+# Cost plan — running BotMaker as cheaply as possible
 
 Written 2026-07-22 after a full read of both planes. Goal: minimum monthly cost **without cutting any feature**. All third-party prices are ballpark as of 2026-07 — verify before committing to any of them.
 
@@ -51,18 +51,6 @@ Make Pix and annual visually prominent at checkout.
 4. **Unbounded table growth, no pruning existed** — `instance_events` (spec promises 90-day retention), `webhook_events` (full Stripe payloads forever), expired `sessions`/`verification_tokens`. Plus the spec-flagged missing `(kind, created_at)` index on `instance_events`. → retention cron, R3. `greeter_visits`/`warden_strikes` are deliberately untouched — rows are bounded per instance×user and deleting them would reset features (visit counts, strike decay).
 5. **CI ran all three jobs (each with Postgres+Redis service containers) on every push** regardless of what changed. → path filters, R5; the Redis service containers themselves were later dropped too under R6, since nothing in CI needs them anymore.
 
-## Refactor list
-
-| # | Change | Status |
-|---|---|---|
-| R1 | Production single-box deploy: prod Docker Compose (Next standalone + supervisor + PG + Caddy — no Redis, post-R6), crontab for cron routes, pg_dump→B2 backups | **Not started** — do at deploy time; this is the $35–45/mo lever |
-| R2 | Delete Redis heartbeat writes (dead code; Postgres `status` is the real signal) | **Shipped 2026-07-22** |
-| R3 | Retention cron `/api/cron/retention`: roll up `instance_events` >90 d into `instance_event_rollups` then delete (keeps chargeback-evidence summaries); strip old `webhook_events` payloads (rows kept — they're the idempotency keys); sweep expired sessions/verification tokens; add `(kind, created_at)` index | **Shipped 2026-07-22** |
-| R4 | Batch lease renewal into a single `WHERE id = ANY(...)` query per reconcile tick | **Shipped 2026-07-22** |
-| R5 | CI path filters (web / runtime / cross-plane each run only when their inputs change; shared inputs trigger all) | **Shipped 2026-07-22** (plus a real fix: CI's runtime job pointed pytest at a non-`_test` DB name conftest refuses — would have failed on first real run) |
-| R6 | Drop Redis entirely — move `config.updated`/`avatar_position.updated` to Postgres `LISTEN`/`NOTIFY` | **Shipped 2026-07-22** — see `docs/decisions.md` for the full account; verified end-to-end against real Postgres including the actual `apps/web` `notify.ts` module driving the real Python supervisor's `asyncpg` listener |
-| R7 | Email transport swap (Resend → SES ~$0.10/1k) | **Deferred** — mailers already isolated in 3 small modules; trigger is sustained >100 emails/day |
-
 ## Do not cut
 
 - The 24/7 supervisor — no scale-to-zero anything on the data plane; it's the product.
@@ -79,7 +67,3 @@ Make Pix and annual visually prominent at checkout.
 | Per-IP connection ceiling discovered (known unknown) | Extra IPs/VMs; the unused `shard` column was reserved for this | +€ small |
 | Revenue + uptime anxiety | Managed PG (~$15–19), maybe web on Vercel Pro ($20) | ~$40/mo class |
 | Postgres leaves localhost | R4 (batched leases) already done; also revisit reconcile cadence. Each supervisor now also holds one dedicated `LISTEN` connection (R6) — negligible at 1–2 supervisor processes, worth counting against the connection budget on a managed-PG plan with a low connection cap | — |
-
-## Status of the green-lit refactors
-
-R2, R3, R4, R5, and R6 all shipped 2026-07-22 — see `docs/decisions.md` (same date) for the full account and verification. The app has no Redis dependency anywhere as of R6: removed from both planes' code, `docker-compose.yml`, CI, and every `.env.example`. R1 (single-box production deploy) is recommended but not started, and is now simpler than originally scoped (one fewer container). R7 (SES swap) stays deferred with its trigger above.

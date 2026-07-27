@@ -19,7 +19,7 @@ export function AuthShell({
       <header className="flex items-center justify-between px-6 py-6">
         <Link href="/" className="inline-flex items-center gap-2 font-display text-sm text-paper">
           <span aria-hidden className="size-2.5 rounded-full bg-spotlight" />
-          BOTMARKET
+          BOTMAKER
         </Link>
         <LocaleSwitcher />
       </header>

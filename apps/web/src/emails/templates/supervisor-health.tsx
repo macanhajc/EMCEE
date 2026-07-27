@@ -8,7 +8,7 @@
 import "server-only";
 import { EmailLayout } from "../components/layout";
 
-const OPS_FOOTER = "BotMarket internal ops alert — never sent to a customer.";
+const OPS_FOOTER = "BotMaker internal ops alert — never sent to a customer.";
 
 export function SupervisorDownEmail({ lastSeenAt }: { lastSeenAt: Date | null }) {
   const lastSeen = lastSeenAt ? lastSeenAt.toUTCString() : "never — no heartbeat has ever been recorded";
@@ -39,5 +39,5 @@ export function SupervisorRecoveredEmail() {
   );
 }
 
-export const SUPERVISOR_DOWN_SUBJECT = "BotMarket: supervisor is down";
-export const SUPERVISOR_RECOVERED_SUBJECT = "BotMarket: supervisor recovered";
+export const SUPERVISOR_DOWN_SUBJECT = "BotMaker: supervisor is down";
+export const SUPERVISOR_RECOVERED_SUBJECT = "BotMaker: supervisor recovered";

@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "title": "BotMarket — hosted Highrise bots, bring your own account",
+    "title": "BotMaker — hosted Highrise bots, bring your own account",
     "description": "Rent a ready-made Highrise bot for your room in about two minutes. Pick a bot, paste your bot's access code, set it up on a simple dashboard — we keep it online 24/7."
   },
   "common": {
-    "brand": "BOTMARKET",
+    "brand": "BOTMAKER",
     "dash": "—",
     "genericError": "Something went wrong. Please try again.",
     "loginLink": "Log in"
@@ -413,7 +413,7 @@
       "diagnostics": {
         "copy": "Copy diagnostics",
         "copied": "Copied",
-        "heading": "BotMarket diagnostics — {botName}",
+        "heading": "BotMaker diagnostics — {botName}",
         "instance": "Instance: {instanceId}",
         "room": "Room: {roomId}",
         "status": "Status",
@@ -1076,11 +1076,11 @@
     }
   },
   "emails": {
-    "footer": "Manage your bot anytime from your BotMarket dashboard.",
+    "footer": "Manage your bot anytime from your BotMaker dashboard.",
     "signIn": {
-      "subject": "Sign in to BotMarket",
-      "preview": "Your BotMarket sign-in link is ready.",
-      "heading": "Sign in to BotMarket",
+      "subject": "Sign in to BotMaker",
+      "preview": "Your BotMaker sign-in link is ready.",
+      "heading": "Sign in to BotMaker",
       "body": "Tap the button below to sign in. This link works once and expires in 15 minutes.",
       "button": "Sign in",
       "linkFallback": "Or paste this link into your browser:"
@@ -1095,7 +1095,7 @@
     },
     "paymentFailed": {
       "subject": "Payment failed for your bot in \"{roomId}\"",
-      "preview": "A payment for your BotMarket subscription did not go through.",
+      "preview": "A payment for your BotMaker subscription did not go through.",
       "greetingNamed": "Hi {name},",
       "greetingGeneric": "Hi,",
       "body": "We tried to charge {amount} for your bot in room {roomId}, but the payment did not go through. Your bot keeps running for now — update your payment method to avoid an interruption.",
@@ -1108,14 +1108,14 @@
     "updated": "Last updated July 22, 2026",
     "onThisPage": "On this page",
     "intro": [
-      "BotMarket (“we,” “us”) runs a subscription service that hosts configurable Highrise bots on your behalf. This page explains what personal data we collect through the dashboard and your bot instances, why we collect it, and the choices you have.",
+      "BotMaker (“we,” “us”) runs a subscription service that hosts configurable Highrise bots on your behalf. This page explains what personal data we collect through the dashboard and your bot instances, why we collect it, and the choices you have.",
       "We built this product for a Highrise audience that skews young, so we’ve tried to write this in plain language rather than dense legal boilerplate. If anything here is unclear, email us — see “Contact” below."
     ],
     "sections": {
       "whoWeAre": {
         "heading": "Who we are",
         "body": [
-          "BotMarket is an independent, unofficial project, operated by CodeSwift (codeswift.com.br). We are not affiliated with, endorsed by, or sponsored by Highrise or Pocket Worlds — “Highrise” is referenced only to describe what our bots connect to.",
+          "BotMaker is an independent, unofficial project, operated by CodeSwift (codeswift.com.br). We are not affiliated with, endorsed by, or sponsored by Highrise or Pocket Worlds — “Highrise” is referenced only to describe what our bots connect to.",
           "We’re a Brazil-based company. We’ll publish our registered legal name, CNPJ, and business address on this page once they’re finalized; until then, you can reach us at the contact address below, or at codeswift.com.br."
         ]
       },
@@ -1182,7 +1182,7 @@
       "ageRequirement": {
         "heading": "Age requirement",
         "body": [
-          "BotMarket is for adults: you must be 18 or older, or the age of majority where you live, and you confirm this when you sign up.",
+          "BotMaker is for adults: you must be 18 or older, or the age of majority where you live, and you confirm this when you sign up.",
           "If we learn an account belongs to someone under that age, we refund the current billing period and suspend the account."
         ]
       },
@@ -1190,7 +1190,7 @@
         "heading": "Security",
         "body": [
           "Your bot token is encrypted the moment it reaches us and is never returned by any part of the dashboard or API — only a last-4 reference is ever shown.",
-          "Traffic to and from BotMarket is encrypted in transit (TLS). Access to production systems is limited to what each part of our service actually needs — for example, the servers that run your bot don’t have access to billing data.",
+          "Traffic to and from BotMaker is encrypted in transit (TLS). Access to production systems is limited to what each part of our service actually needs — for example, the servers that run your bot don’t have access to billing data.",
           "No system is perfectly secure, and we can’t promise otherwise — but token handling is the one thing we’ve deliberately over-engineered, because it’s the one thing that matters most here."
         ]
       },
@@ -1198,7 +1198,7 @@
         "heading": "International data transfers",
         "body": [
           "Our company is Brazil-based, and some of the providers listed above (like Stripe, Google, PostHog, and Sentry) process data outside Brazil, including in the United States. Where that happens, we rely on those providers’ own safeguards for cross-border transfer.",
-          "By using BotMarket, you understand your data may be processed outside the country you live in."
+          "By using BotMaker, you understand your data may be processed outside the country you live in."
         ]
       },
       "changes": {
@@ -1221,27 +1221,27 @@
     "updated": "Last updated July 22, 2026",
     "onThisPage": "On this page",
     "intro": [
-      "These terms cover your use of BotMarket — the dashboard, hosting, and catalog bots we operate. By creating an account or subscribing, you agree to them.",
+      "These terms cover your use of BotMaker — the dashboard, hosting, and catalog bots we operate. By creating an account or subscribing, you agree to them.",
       "We’ve written these in plain language where we could. If something here conflicts with a specific consumer-protection law in your country, that law wins."
     ],
     "sections": {
       "acceptance": {
         "heading": "Acceptance of these terms",
         "body": [
-          "By creating a BotMarket account, you agree to these Terms and to our Privacy Policy. You must be 18 or older, or the age of majority where you live, and you confirm this at signup."
+          "By creating a BotMaker account, you agree to these Terms and to our Privacy Policy. You must be 18 or older, or the age of majority where you live, and you confirm this at signup."
         ]
       },
       "whatWeProvide": {
         "heading": "What we provide",
         "body": [
-          "BotMarket is a subscription service: you pick a bot from our first-party catalog, connect it to your own Highrise bot account using your own access token (“bring your own token,” or BYOT), configure it from a dashboard, and we host it for you around the clock.",
+          "BotMaker is a subscription service: you pick a bot from our first-party catalog, connect it to your own Highrise bot account using your own access token (“bring your own token,” or BYOT), configure it from a dashboard, and we host it for you around the clock.",
           "We provide software and hosting. We do not sell, lease, or grant access to any Highrise account, bot, or in-game item — you already own the bot account before you connect it to us."
         ]
       },
       "independentOperator": {
         "heading": "Independent operator",
         "body": [
-          "BotMarket is an independent, unofficial project, operated by CodeSwift (codeswift.com.br). We are not affiliated with, endorsed by, or sponsored by Highrise or Pocket Worlds, and nothing in this product should be read as an official Highrise offering.",
+          "BotMaker is an independent, unofficial project, operated by CodeSwift (codeswift.com.br). We are not affiliated with, endorsed by, or sponsored by Highrise or Pocket Worlds, and nothing in this product should be read as an official Highrise offering.",
           "Your Highrise bot account remains subject to Highrise’s own Terms of Service at all times — ours don’t replace or override theirs."
         ]
       },
@@ -1271,7 +1271,7 @@
       "acceptableUse": {
         "heading": "Acceptable use",
         "body": [
-          "Don’t use BotMarket for anything illegal, or to harass, spam, or abuse other Highrise users.",
+          "Don’t use BotMaker for anything illegal, or to harass, spam, or abuse other Highrise users.",
           "Don’t configure a bot in a way designed to evade Highrise’s own moderation, rate limits, or account eligibility rules.",
           "Don’t try to reverse-engineer, resell, or run unauthorized code through our service — our catalog bots are first-party only; you configure them, you don’t upload code to them.",
           "Don’t attempt to disrupt, overload, or gain unauthorized access to our systems or another customer’s instance.",
@@ -1291,7 +1291,7 @@
         "heading": "Refunds",
         "body": [
           "First purchase, any plan: full refund within 7 days, no questions asked. This also satisfies Brazil’s consumer-protection right of withdrawal for online purchases (CDC Art. 49).",
-          "After that window, cancelling stops future renewals, but we don’t pro-rate a refund for the time already paid — with one exception: if we discontinue BotMarket or a bot you’re subscribed to, we refund any unused prepaid time."
+          "After that window, cancelling stops future renewals, but we don’t pro-rate a refund for the time already paid — with one exception: if we discontinue BotMaker or a bot you’re subscribed to, we refund any unused prepaid time."
         ]
       },
       "paymentIssuesAndSuspension": {
@@ -1326,7 +1326,7 @@
       "disclaimersLiability": {
         "heading": "Disclaimers & limitation of liability",
         "body": [
-          "BotMarket is provided “as is.” We work to keep bots online and well-behaved, but we can’t guarantee they’ll prevent every moderation issue, or that Highrise won’t change its platform, rate limits, or eligibility rules in ways that affect your bot.",
+          "BotMaker is provided “as is.” We work to keep bots online and well-behaved, but we can’t guarantee they’ll prevent every moderation issue, or that Highrise won’t change its platform, rate limits, or eligibility rules in ways that affect your bot.",
           "To the extent permitted by law, our liability to you is limited to the amount you paid us in the 12 months before the issue arose, and we’re not liable for indirect or consequential damages.",
           "Nothing here limits rights that Brazilian consumer law (or another law that applies to you) doesn’t allow us to limit."
         ]
@@ -1334,7 +1334,7 @@
       "governingLaw": {
         "heading": "Governing law",
         "body": [
-          "These terms are governed by the laws of Brazil, where CodeSwift, the company behind BotMarket, is based. We’ll publish our registered legal name, CNPJ, and business address here once they’re finalized.",
+          "These terms are governed by the laws of Brazil, where CodeSwift, the company behind BotMaker, is based. We’ll publish our registered legal name, CNPJ, and business address here once they’re finalized.",
           "If you’re a consumer, this doesn’t take away any protection you’re entitled to under the mandatory law of the country you live in."
         ]
       },
@@ -1355,7 +1355,7 @@
   "support": {
     "eyebrow": "Need a hand?",
     "title": "Support",
-    "intro": "Most questions about your bot, your subscription, or how BotMarket works are answered below. Can't find yours? Email us — we read every message ourselves.",
+    "intro": "Most questions about your bot, your subscription, or how BotMaker works are answered below. Can't find yours? Email us — we read every message ourselves.",
     "contact": {
       "heading": "Contact us",
       "body": "Have a question about your bot, your subscription, or anything else? Send us an email and we'll get back to you.",
@@ -1364,15 +1364,15 @@
     "faqHeading": "Frequently asked questions",
     "faq": [
       {
-        "question": "What is BotMarket, exactly?",
-        "answer": "BotMarket hosts a ready-made Highrise bot — Emcee — for your room. Emcee bundles emotes-on-command, greetings and VIP recognition, moderation, and outfit features into one bot. You configure it from a dashboard; we run it 24/7."
+        "question": "What is BotMaker, exactly?",
+        "answer": "BotMaker hosts a ready-made Highrise bot — Emcee — for your room. Emcee bundles emotes-on-command, greetings and VIP recognition, moderation, and outfit features into one bot. You configure it from a dashboard; we run it 24/7."
       },
       {
         "question": "Do I need my own Highrise bot account?",
         "answer": "Yes. You create the bot account and generate its access token in Highrise — we never own or resell Highrise accounts. You paste the token into your dashboard once, and we take it from there."
       },
       {
-        "question": "Does BotMarket ever touch Highrise Gold?",
+        "question": "Does BotMaker ever touch Highrise Gold?",
         "answer": "No. All pricing is in real currency (BRL, with a USD reference price) — we never accept, hold, or transfer Gold in any form."
       },
       {

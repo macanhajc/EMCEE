@@ -86,5 +86,9 @@ export const config = {
   // that same fallthrough would 307 Stripe's webhook and the cron job to
   // a /en/api/... URL that doesn't exist — so /api has to be excluded
   // outright, not rely on classifyRoute again.
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  //
+  // sitemap.xml/robots.txt (src/app/sitemap.ts, robots.ts) are root-level
+  // Next.js file conventions crawlers fetch unprefixed — without this
+  // exclusion the locale redirect 307s them to /en/sitemap.xml, a 404.
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)"],
 };

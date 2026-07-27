@@ -7,9 +7,11 @@ import { cookies } from "next/headers";
 import { RoutePointerEventsReset } from "@/components/Elements/route-pointer-events-reset";
 import { PostHogProvider } from "@/components/Elements/posthog-provider";
 import { CookieConsentBanner } from "@/components/Elements/cookie-consent-banner";
+import { JsonLd } from "@/components/Elements/json-ld";
 import { Toaster } from "@/components/UI/sonner";
 import { routing } from "@/i18n/routing";
 import { COOKIE_CONSENT_COOKIE, readServerCookieConsent } from "@/lib/cookie-consent";
+import { hreflangAlternates, SITE_NAME, SITE_URL } from "@/lib/site";
 import "../globals.css";
 
 const geistSans = Geist({
@@ -50,9 +52,30 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "metadata" });
+  const title = t("title");
+  const description = t("description");
+
   return {
-    title: t("title"),
-    description: t("description"),
+    metadataBase: new URL(SITE_URL),
+    title: { default: title, template: `%s · ${SITE_NAME}` },
+    description,
+    alternates: {
+      canonical: `/${locale}`,
+      languages: hreflangAlternates("/"),
+    },
+    openGraph: {
+      title,
+      description,
+      url: `/${locale}`,
+      siteName: SITE_NAME,
+      locale,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
   };
 }
 
@@ -78,6 +101,23 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${bungee.variable} ${plusJakarta.variable} ${ibmPlexMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <JsonLd
+          data={{
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": "Organization",
+                name: SITE_NAME,
+                url: SITE_URL,
+              },
+              {
+                "@type": "WebSite",
+                name: SITE_NAME,
+                url: SITE_URL,
+              },
+            ],
+          }}
+        />
         <NextIntlClientProvider>
           <PostHogProvider initialConsent={initialConsent}>
             <RoutePointerEventsReset />

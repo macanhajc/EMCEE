@@ -45,7 +45,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // decision). Auth.js just requires `server` to be present at
       // construction time.
       server: "smtp://unused:unused@localhost:1025",
-      from: process.env.EMAIL_FROM ?? "BotMarket <botmarket@codeswift.com.br>",
+      from: process.env.EMAIL_FROM ?? "BotMaker <botmarket@codeswift.com.br>",
       maxAge: FIFTEEN_MIN_S, // link expiry per spec; single-use is adapter-default
       sendVerificationRequest,
     }),

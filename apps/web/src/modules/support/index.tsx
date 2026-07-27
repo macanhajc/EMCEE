@@ -6,10 +6,11 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/UI/accordion";
+import { JsonLd } from "@/components/Elements/json-ld";
 import { SiteFooter } from "@/components/Elements/site-footer";
 import { SiteNav } from "@/components/Elements/site-nav";
 
-const SUPPORT_EMAIL = "support@botmarket.app";
+const SUPPORT_EMAIL = "botmarket@codeswift.com.br";
 
 type FaqEntry = { question: string; answer: string };
 
@@ -19,6 +20,17 @@ export function SupportTemplate() {
 
   return (
     <div className="flex flex-1 flex-col bg-ink font-marquee-body">
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: faq.map((item) => ({
+            "@type": "Question",
+            name: item.question,
+            acceptedAnswer: { "@type": "Answer", text: item.answer },
+          })),
+        }}
+      />
       <SiteNav />
       <main className="flex-1">
         <article className="mx-auto max-w-3xl px-6 py-16 sm:py-24">

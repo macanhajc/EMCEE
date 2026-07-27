@@ -32,7 +32,7 @@ export function Comparison() {
             </span>
 
             <div>
-              <p className="font-display text-base text-spotlight">BotMarket</p>
+              <p className="font-display text-base text-spotlight">BotMaker</p>
               <p className="mt-2 font-marquee-body text-sm text-paper/90">
                 {t(`rows.${i}.answer`)}
               </p>

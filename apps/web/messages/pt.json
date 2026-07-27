@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "title": "BotMarket — bots do Highrise hospedados, use sua própria conta",
+    "title": "BotMaker — bots do Highrise hospedados, use sua própria conta",
     "description": "Alugue um bot do Highrise pronto para sua sala em cerca de dois minutos. Escolha um bot, cole o código de acesso do seu bot, configure tudo em um painel simples — a gente mantém ele online 24/7."
   },
   "common": {
-    "brand": "BOTMARKET",
+    "brand": "BOTMAKER",
     "dash": "—",
     "genericError": "Algo deu errado. Tente novamente.",
     "loginLink": "Entrar"
@@ -413,7 +413,7 @@
       "diagnostics": {
         "copy": "Copiar diagnóstico",
         "copied": "Copiado",
-        "heading": "Diagnóstico do BotMarket — {botName}",
+        "heading": "Diagnóstico do BotMaker — {botName}",
         "instance": "Instância: {instanceId}",
         "room": "Sala: {roomId}",
         "status": "Status",
@@ -1076,11 +1076,11 @@
     }
   },
   "emails": {
-    "footer": "Gerencie seu bot quando quiser pelo seu painel do BotMarket.",
+    "footer": "Gerencie seu bot quando quiser pelo seu painel do BotMaker.",
     "signIn": {
-      "subject": "Entrar no BotMarket",
-      "preview": "Seu link de acesso ao BotMarket está pronto.",
-      "heading": "Entrar no BotMarket",
+      "subject": "Entrar no BotMaker",
+      "preview": "Seu link de acesso ao BotMaker está pronto.",
+      "heading": "Entrar no BotMaker",
       "body": "Toque no botão abaixo para entrar. Este link funciona uma única vez e expira em 15 minutos.",
       "button": "Entrar",
       "linkFallback": "Ou cole este link no seu navegador:"
@@ -1095,7 +1095,7 @@
     },
     "paymentFailed": {
       "subject": "Não conseguimos cobrar o pagamento do seu bot em \"{roomId}\"",
-      "preview": "Um pagamento da sua assinatura do BotMarket não foi processado.",
+      "preview": "Um pagamento da sua assinatura do BotMaker não foi processado.",
       "greetingNamed": "Oi {name},",
       "greetingGeneric": "Oi,",
       "body": "Tentamos cobrar {amount} pelo seu bot na sala {roomId}, mas o pagamento não foi processado. Seu bot continua rodando por enquanto — atualize seu método de pagamento para evitar uma interrupção.",
@@ -1108,14 +1108,14 @@
     "updated": "Última atualização: 22 de julho de 2026",
     "onThisPage": "Nesta página",
     "intro": [
-      "A BotMarket opera um serviço por assinatura que hospeda bots de Highrise configuráveis em seu nome. Esta página explica quais dados pessoais coletamos pelo painel e pelas suas instâncias de bot, por que coletamos e quais escolhas você tem.",
+      "A BotMaker opera um serviço por assinatura que hospeda bots de Highrise configuráveis em seu nome. Esta página explica quais dados pessoais coletamos pelo painel e pelas suas instâncias de bot, por que coletamos e quais escolhas você tem.",
       "Criamos este produto pensando em um público de Highrise que tende a ser jovem, então tentamos escrever isso em linguagem simples em vez de juridiquês. Se algo não estiver claro, escreva para a gente — veja “Contato” mais abaixo."
     ],
     "sections": {
       "whoWeAre": {
         "heading": "Quem somos",
         "body": [
-          "A BotMarket é um projeto independente e não oficial, operado pela CodeSwift (codeswift.com.br). Não temos qualquer afiliação com a Highrise ou a Pocket Worlds, nem contamos com apoio delas — “Highrise” é mencionada aqui só para descrever a quê nossos bots se conectam.",
+          "A BotMaker é um projeto independente e não oficial, operado pela CodeSwift (codeswift.com.br). Não temos qualquer afiliação com a Highrise ou a Pocket Worlds, nem contamos com apoio delas — “Highrise” é mencionada aqui só para descrever a quê nossos bots se conectam.",
           "Somos uma empresa com base no Brasil. Vamos publicar aqui nossa razão social, CNPJ e endereço assim que estiverem definidos. Até lá, você pode falar com a gente pelo contato abaixo, ou visitar codeswift.com.br."
         ]
       },
@@ -1182,7 +1182,7 @@
       "ageRequirement": {
         "heading": "Exigência de idade",
         "body": [
-          "A BotMarket é para adultos: você precisa ter 18 anos ou mais, ou a maioridade legal do lugar onde mora, e confirma isso ao se cadastrar.",
+          "A BotMaker é para adultos: você precisa ter 18 anos ou mais, ou a maioridade legal do lugar onde mora, e confirma isso ao se cadastrar.",
           "Se descobrirmos que uma conta pertence a alguém abaixo dessa idade, reembolsamos o período de cobrança atual e suspendemos a conta."
         ]
       },
@@ -1190,7 +1190,7 @@
         "heading": "Segurança",
         "body": [
           "O token do seu bot é criptografado no instante em que chega até nós e nenhuma parte do painel ou da API o devolve — só os últimos 4 caracteres são exibidos.",
-          "O tráfego de e para a BotMarket é criptografado em trânsito (TLS). O acesso aos sistemas de produção é limitado ao que cada parte do serviço realmente precisa — por exemplo, os servidores que rodam seu bot não têm acesso aos dados de cobrança.",
+          "O tráfego de e para a BotMaker é criptografado em trânsito (TLS). O acesso aos sistemas de produção é limitado ao que cada parte do serviço realmente precisa — por exemplo, os servidores que rodam seu bot não têm acesso aos dados de cobrança.",
           "Nenhum sistema é perfeitamente seguro, e não podemos prometer o contrário — mas o tratamento do token é a única coisa que deliberadamente superdimensionamos, porque é o que mais importa aqui."
         ]
       },
@@ -1198,7 +1198,7 @@
         "heading": "Transferências internacionais de dados",
         "body": [
           "Nossa empresa tem base no Brasil, e alguns dos provedores listados acima (como Stripe, Google, PostHog e Sentry) processam dados fora do Brasil, inclusive nos Estados Unidos. Nesses casos, contamos com as próprias salvaguardas desses provedores para a transferência internacional.",
-          "Ao usar a BotMarket, você entende que seus dados podem ser processados fora do país onde mora."
+          "Ao usar a BotMaker, você entende que seus dados podem ser processados fora do país onde mora."
         ]
       },
       "changes": {
@@ -1221,27 +1221,27 @@
     "updated": "Última atualização: 22 de julho de 2026",
     "onThisPage": "Nesta página",
     "intro": [
-      "Estes termos cobrem o uso que você faz da BotMarket — o painel, a hospedagem e os bots do catálogo que operamos. Ao criar uma conta ou assinar, você concorda com eles.",
+      "Estes termos cobrem o uso que você faz da BotMaker — o painel, a hospedagem e os bots do catálogo que operamos. Ao criar uma conta ou assinar, você concorda com eles.",
       "Tentamos escrever isso em linguagem simples sempre que possível. Se algo aqui entrar em conflito com uma lei de proteção ao consumidor específica do seu país, essa lei prevalece."
     ],
     "sections": {
       "acceptance": {
         "heading": "Aceitação destes termos",
         "body": [
-          "Ao criar uma conta na BotMarket, você concorda com estes Termos e com nossa Política de Privacidade. Você precisa ter 18 anos ou mais, ou a maioridade legal do lugar onde mora, e confirma isso no cadastro."
+          "Ao criar uma conta na BotMaker, você concorda com estes Termos e com nossa Política de Privacidade. Você precisa ter 18 anos ou mais, ou a maioridade legal do lugar onde mora, e confirma isso no cadastro."
         ]
       },
       "whatWeProvide": {
         "heading": "O que oferecemos",
         "body": [
-          "A BotMarket é um serviço por assinatura: você escolhe um bot do nosso catálogo próprio, conecta-o à sua própria conta de bot da Highrise usando seu próprio token de acesso (“traga seu próprio token”, ou BYOT), configura tudo pelo painel, e nós hospedamos o bot 24 horas por dia para você.",
+          "A BotMaker é um serviço por assinatura: você escolhe um bot do nosso catálogo próprio, conecta-o à sua própria conta de bot da Highrise usando seu próprio token de acesso (“traga seu próprio token”, ou BYOT), configura tudo pelo painel, e nós hospedamos o bot 24 horas por dia para você.",
           "Fornecemos software e hospedagem. Não vendemos, alugamos nem concedemos acesso a nenhuma conta, bot ou item da Highrise — você já é dono da conta do bot antes de conectá-la a nós."
         ]
       },
       "independentOperator": {
         "heading": "Operador independente",
         "body": [
-          "A BotMarket é um projeto independente e não oficial, operado pela CodeSwift (codeswift.com.br). Não temos afiliação com a Highrise ou a Pocket Worlds, nem apoio ou patrocínio delas, e nada neste produto deve ser interpretado como uma oferta oficial da Highrise.",
+          "A BotMaker é um projeto independente e não oficial, operado pela CodeSwift (codeswift.com.br). Não temos afiliação com a Highrise ou a Pocket Worlds, nem apoio ou patrocínio delas, e nada neste produto deve ser interpretado como uma oferta oficial da Highrise.",
           "Sua conta de bot da Highrise continua sujeita, o tempo todo, aos próprios Termos de Serviço da Highrise — os nossos não os substituem nem os sobrepõem."
         ]
       },
@@ -1271,7 +1271,7 @@
       "acceptableUse": {
         "heading": "Uso aceitável",
         "body": [
-          "Não use a BotMarket para nada ilegal, nem para assediar, enviar spam ou abusar de outros usuários da Highrise.",
+          "Não use a BotMaker para nada ilegal, nem para assediar, enviar spam ou abusar de outros usuários da Highrise.",
           "Não configure um bot de forma que busque driblar a moderação, os limites de taxa ou as regras de elegibilidade de conta da própria Highrise.",
           "Não tente fazer engenharia reversa, revender ou rodar código não autorizado através do nosso serviço — nossos bots do catálogo são exclusivamente próprios; você os configura, não envia código para eles.",
           "Não tente interromper, sobrecarregar ou obter acesso não autorizado aos nossos sistemas ou à instância de outro cliente.",
@@ -1291,7 +1291,7 @@
         "heading": "Reembolsos",
         "body": [
           "Primeira compra, em qualquer plano: reembolso total em até 7 dias, sem perguntas. Isso também satisfaz o direito de arrependimento do consumidor brasileiro para compras on-line (CDC Art. 49).",
-          "Depois desse prazo, cancelar interrompe renovações futuras, mas não reembolsamos proporcionalmente o tempo já pago — com uma exceção: se descontinuarmos a BotMarket ou um bot ao qual você é assinante, reembolsamos o tempo pré-pago não utilizado."
+          "Depois desse prazo, cancelar interrompe renovações futuras, mas não reembolsamos proporcionalmente o tempo já pago — com uma exceção: se descontinuarmos a BotMaker ou um bot ao qual você é assinante, reembolsamos o tempo pré-pago não utilizado."
         ]
       },
       "paymentIssuesAndSuspension": {
@@ -1326,7 +1326,7 @@
       "disclaimersLiability": {
         "heading": "Isenções e limitação de responsabilidade",
         "body": [
-          "A BotMarket é fornecida “como está”. Trabalhamos para manter os bots on-line e bem-comportados, mas não podemos garantir que eles evitem todo problema de moderação, nem que a Highrise não mude sua plataforma, limites de taxa ou regras de elegibilidade de um jeito que afete seu bot.",
+          "A BotMaker é fornecida “como está”. Trabalhamos para manter os bots on-line e bem-comportados, mas não podemos garantir que eles evitem todo problema de moderação, nem que a Highrise não mude sua plataforma, limites de taxa ou regras de elegibilidade de um jeito que afete seu bot.",
           "Na medida permitida por lei, nossa responsabilidade perante você fica limitada ao valor que você nos pagou nos 12 meses anteriores ao problema, e não somos responsáveis por danos indiretos ou consequentes.",
           "Nada aqui limita direitos que a lei de proteção ao consumidor do Brasil (ou outra lei aplicável a você) não nos permita limitar."
         ]
@@ -1334,7 +1334,7 @@
       "governingLaw": {
         "heading": "Lei aplicável",
         "body": [
-          "Estes termos são regidos pelas leis do Brasil, onde tem base a CodeSwift, a empresa por trás da BotMarket. Vamos publicar aqui nossa razão social, CNPJ e endereço assim que estiverem definidos.",
+          "Estes termos são regidos pelas leis do Brasil, onde tem base a CodeSwift, a empresa por trás da BotMaker. Vamos publicar aqui nossa razão social, CNPJ e endereço assim que estiverem definidos.",
           "Se você é consumidor, isso não retira nenhuma proteção à qual você tenha direito pela lei imperativa do país onde mora."
         ]
       },
@@ -1355,7 +1355,7 @@
   "support": {
     "eyebrow": "Precisa de ajuda?",
     "title": "Suporte",
-    "intro": "A maioria das perguntas sobre seu bot, sua assinatura ou como o BotMarket funciona estão respondidas abaixo. Não encontrou a sua? Nos mande um e-mail — nós mesmos lemos cada mensagem.",
+    "intro": "A maioria das perguntas sobre seu bot, sua assinatura ou como o BotMaker funciona estão respondidas abaixo. Não encontrou a sua? Nos mande um e-mail — nós mesmos lemos cada mensagem.",
     "contact": {
       "heading": "Fale conosco",
       "body": "Tem uma pergunta sobre seu bot, sua assinatura ou qualquer outra coisa? Nos mande um e-mail e a gente responde.",
@@ -1364,15 +1364,15 @@
     "faqHeading": "Perguntas frequentes",
     "faq": [
       {
-        "question": "O que é o BotMarket, exatamente?",
-        "answer": "O BotMarket hospeda um bot de Highrise pronto — o Emcee — para sua sala. O Emcee reúne emotes sob comando, boas-vindas e reconhecimento de VIPs, moderação e recursos de outfit em um único bot. Você configura pelo painel; a gente mantém ele rodando 24/7."
+        "question": "O que é o BotMaker, exatamente?",
+        "answer": "O BotMaker hospeda um bot de Highrise pronto — o Emcee — para sua sala. O Emcee reúne emotes sob comando, boas-vindas e reconhecimento de VIPs, moderação e recursos de outfit em um único bot. Você configura pelo painel; a gente mantém ele rodando 24/7."
       },
       {
         "question": "Preciso ter minha própria conta de bot no Highrise?",
         "answer": "Sim. Você cria a conta do bot e gera o token de acesso dela no Highrise — nós nunca somos donos nem revendemos contas do Highrise. Você cola o token no painel uma vez, e cuidamos do resto."
       },
       {
-        "question": "O BotMarket chega a lidar com Highrise Gold?",
+        "question": "O BotMaker chega a lidar com Highrise Gold?",
         "answer": "Não. Todos os preços são em moeda real (BRL, com um preço de referência em USD) — nunca aceitamos, guardamos ou transferimos Gold de nenhuma forma."
       },
       {

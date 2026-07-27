@@ -1,4 +1,4 @@
-# BotMarket — Highrise Bot Marketplace
+# BotMaker — Highrise Bot Marketplace
 
 Hosted, configurable Highrise bots sold as a monthly USD subscription. Customers bring their own Highrise bot token (BYOT), pick a bot from our first-party catalog, configure it in a dashboard, and we run it 24/7.
 

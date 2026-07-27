@@ -54,7 +54,7 @@ export function EmailLayout({ preview, footer, children }: EmailLayoutProps) {
                     <tr>
                       <td style={{ backgroundColor: BRAND.panel, padding: "20px 32px" }}>
                         <span style={{ color: BRAND.marquee, fontSize: 20, fontWeight: 700, letterSpacing: 0.5 }}>
-                          BotMarket
+                          BotMaker
                         </span>
                       </td>
                     </tr>

@@ -40,7 +40,7 @@ async function sendOpsAlert(subject: string, node: ReactElement): Promise<void> 
   const { html, text } = await renderEmail(node);
   const { Resend } = await import("resend");
   const resend = new Resend(apiKey);
-  const from = process.env.EMAIL_FROM ?? "BotMarket <botmarket@codeswift.com.br>";
+  const from = process.env.EMAIL_FROM ?? "BotMaker <botmarket@codeswift.com.br>";
 
   const { error } = await resend.emails.send({ to, from, subject, text, html });
   if (error) {

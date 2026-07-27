@@ -46,7 +46,7 @@ export async function sendDegradedAlertEmail(input: DegradedAlertInput): Promise
 
   const { Resend } = await import("resend");
   const resend = new Resend(apiKey);
-  const from = process.env.EMAIL_FROM ?? "BotMarket <botmarket@codeswift.com.br>";
+  const from = process.env.EMAIL_FROM ?? "BotMaker <botmarket@codeswift.com.br>";
 
   const { error } = await resend.emails.send({
     to: input.to,

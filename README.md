@@ -1,4 +1,4 @@
-# BotMarket
+# BotMaker
 
 Hosted, configurable bots for [Highrise](https://highrise.game) rooms — monthly subscription, no code, two-minute setup. Bring your own bot token; we run it 24/7.
 

@@ -22,7 +22,7 @@ export function DashboardShell({
             className="flex items-center gap-2 font-display text-sm text-paper"
           >
             <span aria-hidden className="size-2.5 rounded-full bg-spotlight" />
-            BOTMARKET
+            BOTMAKER
           </Link>
 
           <div className="flex items-center gap-2">
