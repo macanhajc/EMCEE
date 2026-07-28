@@ -154,7 +154,12 @@
       "subtitle": "Un solo bot, una sola suscripción, una sola configuración — no lo cambias cada vez que se agregan nuevas habilidades. Es el presentador de tiempo completo de tu sala: entretiene, recibe a los invitados, mantiene el orden y se viste para la ocasión.",
       "badge": "4 habilidades — listas ahora",
       "tagline": "Listo para usar · solo completas los ajustes, no necesitas programar",
-      "comingSoonLabel": "Próximamente — el mismo bot, nuevas habilidades"
+      "comingSoonLabel": "Próximamente — el mismo bot, nuevas habilidades",
+      "viewEmotesButton": "Ver todas las emotes",
+      "emoteModalTitle": "Todas las emotes que Emcee conoce",
+      "emoteModalDescription": "{count, plural, one {# emote — di su nombre en el chat y tu avatar la hace.} other {# emotes — di cualquier nombre en el chat y tu avatar la hace.}}",
+      "emoteModalSearchPlaceholder": "Buscar emotes…",
+      "emoteModalNoMatches": "Ninguna emote coincide con \"{query}\"."
     }
   },
   "bot": {

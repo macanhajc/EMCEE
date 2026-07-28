@@ -11,13 +11,15 @@ with the real current list"):
   docs' general "can be directed toward a player" language, not per-emote
   confirmed — exactly what specs/bots/emote.md's "Verification list" flags
   as needing real testing before sales copy.
-- 227 entries from the **current live list**, supplied directly (id + name
+- 228 entries from the **current live list**, supplied directly (id + name
   pairs) rather than scraped — higher confidence on id/name accuracy than
   the earlier GitHub-cross-referenced batch it replaced, since every id in
   that older batch turned out to already be present here. Still not
   independently doc-verified, and still says nothing about targetability,
   so `targetable: false` stays the conservative default on all of them,
-  same reasoning as before.
+  same reasoning as before. Includes new emotes added one at a time as
+  Highrise ships them (e.g. `emote-adoringfans`, added 2026-07-28) —
+  same conservative `targetable: false` default applies.
 
 Four real id collisions in the supplied list share a display name with a
 different entry (Relaxed, Sleepy, Shy, Laugh) — both ids kept (each is a

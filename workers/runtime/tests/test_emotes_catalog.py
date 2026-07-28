@@ -41,7 +41,7 @@ def test_get_by_id():
 
 def test_all_returns_every_entry():
     catalog = EmoteCatalog()
-    assert len(catalog.all()) == 232
+    assert len(catalog.all()) == 233
 
 
 def test_every_entry_has_at_least_one_alias():
@@ -78,7 +78,7 @@ def test_resolve_by_position_matches_all_order():
     catalog = EmoteCatalog()
     all_emotes = catalog.all()
     assert catalog.resolve("1") is catalog.by_position(1) is all_emotes[0]
-    assert catalog.resolve("232") is all_emotes[231]
+    assert catalog.resolve("233") is all_emotes[232]
 
 
 def test_position_is_one_based_not_zero_based():
@@ -88,7 +88,7 @@ def test_position_is_one_based_not_zero_based():
 
 def test_position_out_of_range_returns_none():
     catalog = EmoteCatalog()
-    assert catalog.resolve("233") is None
+    assert catalog.resolve("234") is None
     assert catalog.resolve("99999") is None
 
 

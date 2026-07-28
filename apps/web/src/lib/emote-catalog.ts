@@ -237,4 +237,5 @@ export const EMOTE_CATALOG: { id: string; name: string }[] = [
   { id: "emote-collab-photo-right", name: "Highrise Star" },
   { id: "emote-spiderman", name: "Hanging Around" },
   { id: "dance-mine", name: "Mine Dance" },
+  { id: "emote-adoringfans", name: "Adoring Fans" },
 ];

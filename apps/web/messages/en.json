@@ -154,7 +154,12 @@
       "subtitle": "One bot, one subscription, one setup — it doesn't get swapped out as new skills are added. Your room's full-time host: it entertains, greets guests, keeps things in order, and looks the part.",
       "badge": "4 skills — ready now",
       "tagline": "Ready to use · you just fill in the settings, no coding needed",
-      "comingSoonLabel": "Coming soon — same bot, new skills"
+      "comingSoonLabel": "Coming soon — same bot, new skills",
+      "viewEmotesButton": "See all emotes",
+      "emoteModalTitle": "Every emote Emcee knows",
+      "emoteModalDescription": "{count, plural, one {# emote — say its name in chat and your avatar performs it.} other {# emotes — say any name in chat and your avatar performs it.}}",
+      "emoteModalSearchPlaceholder": "Search emotes…",
+      "emoteModalNoMatches": "No emotes match \"{query}\"."
     }
   },
   "bot": {

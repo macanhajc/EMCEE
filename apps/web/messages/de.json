@@ -154,7 +154,12 @@
       "subtitle": "Ein Bot, ein Abo, eine Einrichtung — er wird nicht ausgetauscht, wenn neue Fähigkeiten dazukommen. Der Vollzeit-Gastgeber deines Raums: Er unterhält, begrüßt Gäste, sorgt für Ordnung und sieht auch noch gut dabei aus.",
       "badge": "4 Fähigkeiten — startklar",
       "tagline": "Startklar · du füllst nur die Einstellungen aus, programmieren musst du nicht",
-      "comingSoonLabel": "Bald verfügbar — derselbe Bot, neue Fähigkeiten"
+      "comingSoonLabel": "Bald verfügbar — derselbe Bot, neue Fähigkeiten",
+      "viewEmotesButton": "Alle Emotes ansehen",
+      "emoteModalTitle": "Alle Emotes, die Emcee kennt",
+      "emoteModalDescription": "{count, plural, one {# Emote — sag ihren Namen im Chat und dein Avatar führt sie aus.} other {# Emotes — sag einen Namen im Chat und dein Avatar führt ihn aus.}}",
+      "emoteModalSearchPlaceholder": "Emotes durchsuchen…",
+      "emoteModalNoMatches": "Keine Emotes gefunden für „{query}“."
     }
   },
   "bot": {

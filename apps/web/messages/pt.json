@@ -154,7 +154,12 @@
       "subtitle": "Um bot só, uma assinatura só, uma configuração só — ele não muda conforme novas habilidades chegam. É o anfitrião fixo da sua sala: anima, recebe os convidados, mantém a ordem e ainda tem estilo.",
       "badge": "4 habilidades — prontas agora",
       "tagline": "Pronto pra usar · você só preenche as configurações, sem precisar programar",
-      "comingSoonLabel": "Em breve — o mesmo bot, novas habilidades"
+      "comingSoonLabel": "Em breve — o mesmo bot, novas habilidades",
+      "viewEmotesButton": "Ver todas as emotes",
+      "emoteModalTitle": "Todas as emotes que o Emcee conhece",
+      "emoteModalDescription": "{count, plural, one {# emote — diga o nome no chat e seu avatar faz.} other {# emotes — diga qualquer nome no chat e seu avatar faz.}}",
+      "emoteModalSearchPlaceholder": "Buscar emotes…",
+      "emoteModalNoMatches": "Nenhuma emote encontrada para \"{query}\"."
     }
   },
   "bot": {

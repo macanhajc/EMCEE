@@ -1,6 +1,7 @@
 import { useTranslations } from "next-intl";
 import { Badge } from "@/components/UI/badge";
 import { BOT_FEATURES, BOT_ROADMAP } from "@/lib/roadmap";
+import { EmoteListModal } from "./emote-list-modal";
 
 export function BotShowcase() {
   const t = useTranslations("home.botShowcase");
@@ -36,6 +37,7 @@ export function BotShowcase() {
               <p className="mt-2 font-marquee-body text-sm leading-relaxed text-dust">
                 {tBot(`features.${feature.key}.body`)}
               </p>
+              {feature.key === "emote" && <EmoteListModal />}
             </div>
           ))}
         </div>
