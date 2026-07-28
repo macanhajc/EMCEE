@@ -37,7 +37,7 @@ export function EmoteListModal() {
           {t("viewEmotesButton")}
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[80vh] flex-col border-paper/10 bg-panel text-paper sm:max-w-lg">
+      <DialogContent className="max-h-[80vh] overflow-scroll flex-col border-paper/10 bg-panel text-paper sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="font-display text-paper">
             {t("emoteModalTitle")}
@@ -58,7 +58,7 @@ export function EmoteListModal() {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto pr-1 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-1 pr-1 sm:grid-cols-3">
           {filtered.map((emote) => (
             <p key={emote.id} className="truncate py-1 text-sm text-dust">
               {emote.name}
