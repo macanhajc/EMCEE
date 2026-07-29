@@ -48,7 +48,7 @@
       "subtitle": "Rent a ready-made Highrise bot for your room in about two minutes. Paste your bot's access code, set it up on a dashboard — we keep it dancing 24/7.",
       "ctaPrimary": "Get started",
       "ctaSecondary": "See the bot",
-      "note": "Card or Pix required · cancel anytime · 7-day money-back guarantee · we never touch Highrise Gold",
+      "note": "Card or Pix required · cancel anytime · we never touch Highrise Gold",
       "demoLabel": "TONIGHT'S ACT",
       "live": "LIVE",
       "demoBotTagline": "Emotes + Greeter + Moderation + Outfits · your room",
@@ -130,7 +130,6 @@
         "reference": "{usd} reference",
         "features": [
           "Billed every month, cancel anytime",
-          "7-day money-back guarantee",
           "Live dashboard — changes apply instantly"
         ],
         "cta": "Subscribe now"
@@ -152,7 +151,6 @@
         "badge": "One-time",
         "features": [
           "Pay once, own it forever",
-          "7-day money-back guarantee",
           "Live dashboard — changes apply instantly"
         ],
         "cta": "Buy once"

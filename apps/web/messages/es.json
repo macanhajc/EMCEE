@@ -48,7 +48,7 @@
       "subtitle": "Alquila un bot de Highrise ya armado para tu sala en unos dos minutos. Pega el código de acceso de tu bot, configúralo en un panel — nosotros lo mantenemos bailando 24/7.",
       "ctaPrimary": "Empieza ahora",
       "ctaSecondary": "Conoce al bot",
-      "note": "Se requiere tarjeta o Pix · cancela cuando quieras · garantía de reembolso de 7 días · nunca tocamos el Oro de Highrise",
+      "note": "Se requiere tarjeta o Pix · cancela cuando quieras · nunca tocamos el Oro de Highrise",
       "demoLabel": "LA FUNCIÓN DE ESTA NOCHE",
       "live": "EN VIVO",
       "demoBotTagline": "Gestos + Bienvenida + Moderación + Vestuario · tu sala",
@@ -130,7 +130,6 @@
         "reference": "{usd} de referencia",
         "features": [
           "Se cobra cada mes, cancela cuando quieras",
-          "Garantía de reembolso de 7 días",
           "Panel en vivo — los cambios se aplican al instante"
         ],
         "cta": "Suscribirme ahora"
@@ -152,7 +151,6 @@
         "badge": "Pago único",
         "features": [
           "Pagas una vez, es tuyo para siempre",
-          "Garantía de reembolso de 7 días",
           "Panel en vivo — los cambios se aplican al instante"
         ],
         "cta": "Comprar una vez"

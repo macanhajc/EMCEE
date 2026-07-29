@@ -54,7 +54,6 @@ export function Pricing({ prices }: { prices: EmceePrices }) {
             <ul className="mt-6 space-y-2 font-marquee-body text-sm text-dust">
               <li>{t("monthly.features.0")}</li>
               <li>{t("monthly.features.1")}</li>
-              <li>{t("monthly.features.2")}</li>
             </ul>
             <Button
               asChild
@@ -87,7 +86,6 @@ export function Pricing({ prices }: { prices: EmceePrices }) {
             <ul className="mt-6 space-y-2 font-marquee-body text-sm text-dust">
               <li>{t("annual.features.0")}</li>
               <li>{t("annual.features.1")}</li>
-              <li>{t("annual.features.2")}</li>
             </ul>
             <Button
               asChild
@@ -118,7 +116,6 @@ export function Pricing({ prices }: { prices: EmceePrices }) {
             <ul className="mt-6 space-y-2 font-marquee-body text-sm text-dust">
               <li>{t("lifetime.features.0")}</li>
               <li>{t("lifetime.features.1")}</li>
-              <li>{t("lifetime.features.2")}</li>
             </ul>
             <Button
               asChild
