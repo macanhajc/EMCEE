@@ -41,6 +41,7 @@ const SUBSCRIPTION_CLASS: Record<SubscriptionStatus, string | null> = {
   past_due: "text-red-400",
   suspended: null,
   canceled: null,
+  lifetime: "text-spotlight",
 };
 
 export function SubscriptionBadge({ status }: { status: SubscriptionStatus }) {

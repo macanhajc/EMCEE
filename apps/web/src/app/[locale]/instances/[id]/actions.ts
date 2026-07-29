@@ -7,7 +7,7 @@ import { auth } from "@/auth";
 import { redirect } from "@/i18n/redirect";
 import type { AppLocale } from "@/i18n/routing";
 import { db, tables } from "@/db";
-import { getActiveSubscriptionForInstance } from "@/db/billing";
+import { getActiveSubscriptionForInstance, RECURRING_ACTIVE } from "@/db/billing";
 import { getRegulars } from "@/db/greeter-visits";
 import { getOwnedInstance } from "@/db/instances";
 import { getRecentOperationalEvents } from "@/db/operational-events";
@@ -1727,14 +1727,18 @@ export async function setBotRunning(instanceId: string): Promise<ConfigActionSta
 }
 
 export interface BotDangerZoneInfo {
-  isSubscribed: boolean;
+  // "recurring": trialing/active/past_due — has a real future charge, and
+  // deleting requires canceling via the billing portal first. "lifetime":
+  // paid in full already, nothing to cancel, delete is allowed outright.
+  // "none": never subscribed (or a lapsed/canceled one) — delete is allowed.
+  subscriptionKind: "none" | "recurring" | "lifetime";
   botName: string;
 }
 
 /**
  * Query half of the Status → Danger zone card — its own component
  * (bot-danger-zone.tsx) fetches this itself via useBotDangerZone rather than
- * being handed `isSubscribed`/`botName` down from the page's own
+ * being handed `subscriptionKind`/`botName` down from the page's own
  * server-rendered props. `deleteInstance`/`openBillingPortal` themselves
  * stay plain redirect-based actions (imported and bound directly in the
  * component, not routed through this hook) — deleting an instance's success
@@ -1748,8 +1752,9 @@ export async function getBotDangerZoneInfo(instanceId: string): Promise<BotDange
     getActiveSubscriptionForInstance(instanceId),
     db.select().from(tables.catalogBots).where(eq(tables.catalogBots.slug, instance.catalogBotSlug)),
   ]);
+  const subscriptionKind = !subscription ? "none" : subscription.status === "lifetime" ? "lifetime" : "recurring";
   return {
-    isSubscribed: !!subscription,
+    subscriptionKind,
     botName: bot[0]?.name ?? instance.catalogBotSlug,
   };
 }
@@ -1759,9 +1764,12 @@ export async function getBotDangerZoneInfo(instanceId: string): Promise<BotDange
  * = ciphertext destroyed"). Cascades take care of instance_events,
  * greeter_visits, warden_strikes, avatar_positions; subscriptions keeps its
  * row with bot_instance_id set null (billing mirror outlives the instance).
- * Blocked while a subscription is active/trialing/past_due — billing state
- * drives entitlement (specs/02-architecture.md), so cancel that first via
- * the portal rather than deleting billing out from under the customer.
+ * Blocked while a *recurring* subscription is active/trialing/past_due —
+ * billing state drives entitlement (specs/02-architecture.md), so cancel
+ * that first via the portal rather than deleting billing out from under the
+ * customer. A "lifetime" subscription is exempt: it was paid in full at
+ * purchase, so there's no future charge deleting the instance would strand —
+ * see RECURRING_ACTIVE's comment (db/billing.ts).
  * The running supervisor notices within one reconcile tick (~10s,
  * workers/runtime/supervisor.py) since the row it was leasing is just gone.
  */
@@ -1773,7 +1781,7 @@ export async function deleteInstance(instanceId: string, formData: FormData): Pr
   }
 
   const subscription = await getActiveSubscriptionForInstance(instance.id);
-  if (subscription) {
+  if (subscription && RECURRING_ACTIVE.includes(subscription.status as (typeof RECURRING_ACTIVE)[number])) {
     await redirect(`/instances/${instanceId}?error=active_subscription`);
   }
 

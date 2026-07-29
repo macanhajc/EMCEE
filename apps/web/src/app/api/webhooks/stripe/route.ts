@@ -21,6 +21,13 @@
  *   confirmation email: Stripe's own receipt already covers that. Neither
  *   independently decides desired_state, to keep exactly one source of
  *   truth for that decision.
+ * - charge.refunded: the "Lifetime" SKU's only path off of entitlement.
+ *   A one-time purchase has no Subscription object and therefore no
+ *   customer.subscription.* stream to fire past_due/canceled the way a
+ *   recurring plan does — a full refund is the sole event that revokes it.
+ *   Ignored for anything that isn't a "lifetime" row (recurring dunning/
+ *   cancellation already owns that path) and for partial refunds (a
+ *   goodwill partial refund shouldn't kill the license).
  *
  * This handler never writes bot_instances.status — that column is
  * supervisor-observed, not billing-owned (specs/02-architecture.md).
@@ -90,13 +97,16 @@ async function handleEvent(event: Stripe.Event): Promise<void> {
     case "invoice.payment_failed":
       await onInvoiceEvent(event.type, event.data.object as Stripe.Invoice);
       return;
+    case "charge.refunded":
+      await onChargeRefunded(event.data.object as Stripe.Charge);
+      return;
     default:
       return; // not one of the events we act on
   }
 }
 
 async function onCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
-  if (session.mode !== "subscription") return;
+  if (session.mode !== "subscription" && session.mode !== "payment") return;
   const instanceId = session.client_reference_id;
   if (!instanceId) return;
 
@@ -112,6 +122,81 @@ async function onCheckoutCompleted(session: Stripe.Checkout.Session): Promise<vo
     botInstanceId: instanceId,
     kind: "checkout_completed",
     data: { stripeCheckoutSessionId: session.id },
+  });
+
+  // Subscription mode's entitlement is driven entirely by
+  // customer.subscription.created/updated (onSubscriptionChanged below),
+  // which Stripe fires around the same time as this event — nothing more to
+  // do here. mode:"payment" (the "Lifetime" SKU) has no Subscription object
+  // and therefore no such event, so recording entitlement is this handler's
+  // job alone for that case.
+  if (session.mode !== "payment") return;
+  if (!customerId) {
+    // Shouldn't happen: buildCheckoutSessionParams always passes either an
+    // existing customer id or customer_creation:"always". Thrown (not
+    // returned) so it surfaces the same way every other handler bug does —
+    // webhook_events.processed_at stays null for ops to find.
+    throw new Error(`checkout.session.completed (payment mode) for instance ${instanceId} has no customer id`);
+  }
+
+  // Checkout Session webhook payloads don't include line item/price data
+  // unless expanded — re-retrieve with that expansion rather than trusting
+  // the catalog's *current* lifetime price id, which could differ from what
+  // this purchase actually charged if the price changes later.
+  const fullSession = await stripe.checkout.sessions.retrieve(session.id, { expand: ["line_items"] });
+  const priceId = fullSession.line_items?.data[0]?.price?.id ?? "";
+  const paymentIntentId =
+    typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id;
+
+  await db.insert(tables.subscriptions).values({
+    userId: instance.userId,
+    botInstanceId: instanceId,
+    stripeCustomerId: customerId,
+    stripePaymentIntentId: paymentIntentId,
+    stripePriceId: priceId,
+    status: "lifetime",
+    stripeStatus: "lifetime", // synthetic — no underlying Stripe object has a "status" to mirror
+  });
+
+  const desiredState = resolveDesiredState("running", instance.userEnabled);
+  await db.update(tables.botInstances).set({ desiredState }).where(eq(tables.botInstances.id, instanceId));
+}
+
+/**
+ * See file header for when this fires. Keys off stripePaymentIntentId
+ * (subscriptions table) since a one-time purchase has no Subscription id to
+ * correlate through the way onSubscriptionChanged does.
+ */
+async function onChargeRefunded(charge: Stripe.Charge): Promise<void> {
+  if (charge.amount_refunded < charge.amount) return; // partial refund — entitlement untouched
+
+  const paymentIntentId =
+    typeof charge.payment_intent === "string" ? charge.payment_intent : charge.payment_intent?.id;
+  if (!paymentIntentId) return;
+
+  const [sub] = await db
+    .select()
+    .from(tables.subscriptions)
+    .where(eq(tables.subscriptions.stripePaymentIntentId, paymentIntentId));
+  if (!sub || sub.status !== "lifetime") return; // not a lifetime purchase — not this handler's concern
+
+  await db
+    .update(tables.subscriptions)
+    .set({ status: "canceled", stripeStatus: "refunded", canceledAt: new Date() })
+    .where(eq(tables.subscriptions.id, sub.id));
+
+  if (!sub.botInstanceId) return; // instance already deleted — billing mirror update above is enough
+
+  const [instance] = await db.select().from(tables.botInstances).where(eq(tables.botInstances.id, sub.botInstanceId));
+  if (instance) {
+    const desiredState = resolveDesiredState("stopped", instance.userEnabled);
+    await db.update(tables.botInstances).set({ desiredState }).where(eq(tables.botInstances.id, sub.botInstanceId));
+  }
+
+  await db.insert(tables.instanceEvents).values({
+    botInstanceId: sub.botInstanceId,
+    kind: "lifetime_refunded",
+    data: { stripeChargeId: charge.id },
   });
 }
 

@@ -47,6 +47,11 @@ export const subscriptionStatus = pgEnum("subscription_status", [
   "past_due",
   "suspended",
   "canceled",
+  // One-time purchase (specs/03-billing.md "Lifetime" SKU) — no Stripe
+  // Subscription object behind it, so it never transitions through the
+  // states above on its own. Terminal only via a full refund (webhook
+  // route.ts's onChargeRefunded), which moves it straight to "canceled".
+  "lifetime",
 ]);
 
 // ---------------------------------------------------------------------------
@@ -133,6 +138,8 @@ export const catalogBots = pgTable("catalog_bots", {
   lifecycle: catalogLifecycle("lifecycle").notNull().default("beta"),
   stripeMonthlyPriceId: text("stripe_monthly_price_id"),
   stripeAnnualPriceId: text("stripe_annual_price_id"),
+  // One-time Price (mode: "payment", not recurring) — the "Lifetime" SKU.
+  stripeLifetimePriceId: text("stripe_lifetime_price_id"),
   createdAt: timestamptz("created_at").notNull().defaultNow(),
 });
 
@@ -211,8 +218,15 @@ export const subscriptions = pgTable(
       onDelete: "set null", // billing mirror outlives the instance
     }),
     stripeCustomerId: text("stripe_customer_id").notNull(),
-    stripeSubscriptionId: text("stripe_subscription_id").notNull().unique(),
-    stripePriceId: text("stripe_price_id").notNull(), // monthly | annual SKU
+    // Null for a "lifetime" row: no Stripe Subscription object exists behind
+    // a one-time purchase (see stripePaymentIntentId below instead).
+    stripeSubscriptionId: text("stripe_subscription_id").unique(),
+    // Set only for a "lifetime" row, from the Checkout Session's
+    // payment_intent — how onChargeRefunded (webhook route.ts) finds this
+    // row again when Stripe reports a refund, since there's no
+    // customer.subscription.* stream for a one-time payment to key off.
+    stripePaymentIntentId: text("stripe_payment_intent_id").unique(),
+    stripePriceId: text("stripe_price_id").notNull(), // monthly | annual | lifetime SKU
     status: subscriptionStatus("status").notNull(), // our state machine
     stripeStatus: text("stripe_status").notNull(), // raw Stripe status, for fidelity
     cancelAtPeriodEnd: boolean("cancel_at_period_end").notNull().default(false),

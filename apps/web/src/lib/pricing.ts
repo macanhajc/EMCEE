@@ -1,11 +1,11 @@
 /**
  * Live Emcee prices, read from Stripe instead of hardcoded (docs/decisions.md,
- * 2026-07-25) — the two Price ids (`STRIPE_EMCEE_MONTHLY_PRICE_ID`/
- * `STRIPE_EMCEE_ANNUAL_PRICE_ID`) are the actual source of truth Checkout
- * already charges against; this just reads the same objects instead of
- * duplicating their amount by hand in copy. That duplication was a real bug
- * once already (2026-07-24 entry: display copy said R$14,99 while the real
- * test-mode Price was still R$39).
+ * 2026-07-25) — the Price ids (`STRIPE_EMCEE_MONTHLY_PRICE_ID`/
+ * `STRIPE_EMCEE_ANNUAL_PRICE_ID`/`STRIPE_EMCEE_LIFETIME_PRICE_ID`) are the
+ * actual source of truth Checkout already charges against; this just reads
+ * the same objects instead of duplicating their amount by hand in copy. That
+ * duplication was a real bug once already (2026-07-24 entry: display copy
+ * said R$14,99 while the real test-mode Price was still R$39).
  *
  * Cached (1h) via unstable_cache rather than fetched live on every request —
  * a public marketing/checkout page shouldn't pay Stripe API latency, or fail
@@ -23,6 +23,7 @@ export interface PriceDisplay {
 export interface EmceePrices {
   monthly: PriceDisplay;
   annual: PriceDisplay;
+  lifetime: PriceDisplay;
 }
 
 // Soft reference only — Stripe never charges in USD here (BRL-only rail,
@@ -40,6 +41,7 @@ const BRL_TO_USD_REFERENCE_RATE = 5.55;
 const FALLBACK_PRICES: EmceePrices = {
   monthly: { brl: "R$14,99", usd: "~US$2.70" },
   annual: { brl: "R$129,90", usd: "~US$23" },
+  lifetime: { brl: "R$299,90", usd: "~US$54" },
 };
 
 function formatBrl(unitAmountCents: number): string {
@@ -52,18 +54,21 @@ function formatUsdReference(unitAmountCents: number, decimals: number): string {
 }
 
 async function fetchEmceePrices(): Promise<EmceePrices> {
-  const [monthly, annual] = await Promise.all([
+  const [monthly, annual, lifetime] = await Promise.all([
     stripe.prices.retrieve(requireEnv("STRIPE_EMCEE_MONTHLY_PRICE_ID")),
     stripe.prices.retrieve(requireEnv("STRIPE_EMCEE_ANNUAL_PRICE_ID")),
+    stripe.prices.retrieve(requireEnv("STRIPE_EMCEE_LIFETIME_PRICE_ID")),
   ]);
-  if (monthly.unit_amount === null || annual.unit_amount === null) {
+  if (monthly.unit_amount === null || annual.unit_amount === null || lifetime.unit_amount === null) {
     throw new Error("Emcee price is missing unit_amount (not a flat per-unit price?)");
   }
   return {
-    // Annual shown as a whole dollar (matches the original hand-written
-    // copy) — purely cosmetic, this is a rough reference either way.
+    // Annual/lifetime shown as a whole dollar (matches the original
+    // hand-written copy) — purely cosmetic, this is a rough reference either
+    // way.
     monthly: { brl: formatBrl(monthly.unit_amount), usd: formatUsdReference(monthly.unit_amount, 2) },
     annual: { brl: formatBrl(annual.unit_amount), usd: formatUsdReference(annual.unit_amount, 0) },
+    lifetime: { brl: formatBrl(lifetime.unit_amount), usd: formatUsdReference(lifetime.unit_amount, 0) },
   };
 }
 

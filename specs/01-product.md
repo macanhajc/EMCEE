@@ -35,6 +35,7 @@ Anchors: DIY floor is ~$7/mo (Replit); in-game rentals run ~5k Gold/mo (tens of 
 
 - **Monthly:** R$14,99/mo (~$2.70 USD reference) per instance.
 - **Annual:** R$129,90/yr per instance (~28% off monthly, ≈3 months free) — updated 2026-07-24, `docs/decisions.md`.
+- **Lifetime:** R$299,90 one-time per instance (added 2026-07-29 in response to customer demand, `docs/decisions.md`) — a permanent entitlement, not a subscription; see `03-billing.md` for how it's billed and what revokes it (only a full refund).
 - **No free trial** (removed 2026-07-23, `docs/decisions.md`) — every subscription is charged at checkout; the 7-day money-back guarantee (`03-billing.md`) is the funnel's honesty mechanism instead.
 - **No bundle SKU at launch** (decided 2026-07-19); a multi-*instance* discount (same bot, several rooms — see the 2026-07-20 reframing note above) is a post-launch experiment once basket data exists.
 

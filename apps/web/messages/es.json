@@ -141,11 +141,21 @@
         "reference": "{usd} de referencia",
         "badge": "~3 meses gratis",
         "features": [
-          "Ahorra ~28% frente al pago mensual",
-          "Garantía de reembolso de 7 días",
+          "Ahorra frente al pago mensual",
           "Panel en vivo — los cambios se aplican al instante"
         ],
         "cta": "Suscribirme ahora"
+      },
+      "lifetime": {
+        "label": "De por vida",
+        "reference": "{usd} de referencia",
+        "badge": "Pago único",
+        "features": [
+          "Pagas una vez, es tuyo para siempre",
+          "Garantía de reembolso de 7 días",
+          "Panel en vivo — los cambios se aplican al instante"
+        ],
+        "cta": "Comprar una vez"
       }
     },
     "botShowcase": {
@@ -270,9 +280,13 @@
       "annual": {
         "label": "Anual",
         "badge": "~3 meses gratis"
+      },
+      "lifetime": {
+        "label": "De por vida",
+        "badge": "Pago único"
       }
     },
-    "billingNote": "Necesitas tarjeta o Pix. Se te cobra hoy el primer período — cancela cuando quieras, y si no es para ti, te devolvemos el dinero dentro de los primeros 7 días.",
+    "billingNote": "Necesitas tarjeta o Pix. Los planes mensual y anual se renuevan automáticamente hasta que canceles; el plan de por vida es un pago único.",
     "continueToPayment": "Continuar al pago",
     "stripeNote": "Los pagos los procesa Stripe — nunca vemos los datos de tu tarjeta."
   },
@@ -444,6 +458,7 @@
       "title": "Zona de peligro",
       "body": "Elimina este bot de forma permanente — su código de acceso guardado, ajustes, registro de actividad y memoria de la sala (habituales, advertencias, posición guardada). Esto no se puede deshacer.",
       "activeSubNote": "Este bot tiene una suscripción activa. Cancélala primero y luego vuelve aquí para eliminar el bot.",
+      "lifetimeDeleteNote": "Pagaste una sola vez por el acceso de por vida — no hay ninguna suscripción que cancelar. Eliminar este bot lo borra para siempre; la compra no se transfiere a uno nuevo.",
       "deleteSummary": "Eliminar este bot",
       "confirmLabel": "Entiendo que esto elimina permanentemente a {name} y todo lo relacionado con él.",
       "deleteSubmit": "Eliminar bot"
@@ -1077,7 +1092,8 @@
     "subscription": {
       "trialing": "Prueba",
       "active": "Activa",
-      "past_due": "Pago fallido"
+      "past_due": "Pago fallido",
+      "lifetime": "De por vida"
     }
   },
   "emails": {

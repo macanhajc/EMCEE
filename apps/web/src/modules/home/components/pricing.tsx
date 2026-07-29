@@ -35,7 +35,7 @@ export function Pricing({ prices }: { prices: EmceePrices }) {
         <p className="mt-4 font-marquee-body text-dust">{t("subtitle")}</p>
       </div>
 
-      <div className="mt-12 grid gap-8 sm:grid-cols-2">
+      <div className="mt-12 grid gap-8 sm:grid-cols-3">
         <div className="overflow-hidden rounded-2xl border border-paper/10 bg-panel">
           <div className="p-8">
             <p className="font-display text-sm text-dust">{t("monthly.label")}</p>
@@ -94,6 +94,38 @@ export function Pricing({ prices }: { prices: EmceePrices }) {
               className="mt-6 w-full bg-marquee text-ink hover:bg-marquee/85"
             >
               <Link href="/dashboard">{t("annual.cta")}</Link>
+            </Button>
+          </div>
+        </div>
+
+        <div className="relative overflow-hidden rounded-2xl border border-paper/10 bg-panel">
+          <span className="absolute top-6 right-6 rounded-full bg-paper/10 px-3 py-1 font-ui-mono text-[11px] text-paper">
+            {t("lifetime.badge")}
+          </span>
+          <div className="p-8">
+            <p className="font-display text-sm text-dust">{t("lifetime.label")}</p>
+            <p className="mt-3 font-display text-4xl text-paper">
+              {isPt ? prices.lifetime.brl : prices.lifetime.usd}
+            </p>
+            {isPt && (
+              <p className="mt-1 font-ui-mono text-xs text-dust">
+                {t("lifetime.reference", { usd: prices.lifetime.usd })}
+              </p>
+            )}
+          </div>
+          <div className="px-8 pb-8">
+            <TicketNotch />
+            <ul className="mt-6 space-y-2 font-marquee-body text-sm text-dust">
+              <li>{t("lifetime.features.0")}</li>
+              <li>{t("lifetime.features.1")}</li>
+              <li>{t("lifetime.features.2")}</li>
+            </ul>
+            <Button
+              asChild
+              className="mt-6 w-full bg-transparent border border-paper/25 text-paper hover:bg-paper/10 hover:text-paper"
+              variant="outline"
+            >
+              <Link href="/dashboard">{t("lifetime.cta")}</Link>
             </Button>
           </div>
         </div>

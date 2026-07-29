@@ -31,7 +31,7 @@ export async function startCheckout(instanceId: string, formData: FormData): Pro
   if (!instance) await redirect("/dashboard");
 
   const plan = String(formData.get("plan") ?? "");
-  if (plan !== "monthly" && plan !== "annual") await backTo("bad_plan");
+  if (plan !== "monthly" && plan !== "annual" && plan !== "lifetime") await backTo("bad_plan");
 
   const [bot] = await db
     .select()
@@ -53,6 +53,7 @@ export async function startCheckout(instanceId: string, formData: FormData): Pro
         userId: session!.user.id,
         userEmail: session!.user.email!,
         existingStripeCustomerId: user?.stripeCustomerId ?? null,
+        plan: plan as Plan,
         // Non-null: narrowed above by `if (!priceId) backTo(...)`, but TS's
         // narrowing doesn't survive the intervening awaits (same limitation
         // as the sealed-token actions elsewhere in this app).

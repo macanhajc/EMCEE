@@ -141,11 +141,21 @@
         "reference": "{usd} de referência",
         "badge": "~3 meses grátis",
         "features": [
-          "Economize ~28% em relação ao mensal",
-          "Garantia de reembolso de 7 dias",
+          "Economize em relação ao mensal",
           "Painel ao vivo — as mudanças valem na hora"
         ],
         "cta": "Assinar agora"
+      },
+      "lifetime": {
+        "label": "Vitalício",
+        "reference": "{usd} de referência",
+        "badge": "Pagamento único",
+        "features": [
+          "Paga uma vez, é seu pra sempre",
+          "Garantia de reembolso de 7 dias",
+          "Painel ao vivo — as mudanças valem na hora"
+        ],
+        "cta": "Comprar uma vez"
       }
     },
     "botShowcase": {
@@ -270,9 +280,13 @@
       "annual": {
         "label": "Anual",
         "badge": "~3 meses grátis"
+      },
+      "lifetime": {
+        "label": "Vitalício",
+        "badge": "Pagamento único"
       }
     },
-    "billingNote": "É preciso cartão ou Pix. O primeiro período é cobrado hoje — cancele quando quiser, e devolvemos seu dinheiro se não for pra você dentro de 7 dias.",
+    "billingNote": "É preciso cartão ou Pix. Os planos mensal e anual renovam automaticamente até você cancelar; o vitalício é um pagamento único.",
     "continueToPayment": "Continuar para o pagamento",
     "stripeNote": "Pagamentos processados pela Stripe — a gente nunca vê os dados do seu cartão."
   },
@@ -444,6 +458,7 @@
       "title": "Zona de perigo",
       "body": "Exclui esse bot permanentemente — o código de acesso salvo, as configurações, o registro de atividades e a memória da sala (frequentadores, avisos, posição salva). Isso não pode ser desfeito.",
       "activeSubNote": "Esse bot tem uma assinatura ativa. Cancele ela primeiro e depois volte aqui para excluir o bot.",
+      "lifetimeDeleteNote": "Você pagou uma única vez pelo acesso vitalício — não há assinatura para cancelar. Excluir remove esse bot pra sempre; a compra não passa pra uma instância nova.",
       "deleteSummary": "Excluir esse bot",
       "confirmLabel": "Eu entendo que isso vai excluir {name} e tudo relacionado a ele para sempre.",
       "deleteSubmit": "Excluir bot"
@@ -1077,7 +1092,8 @@
     "subscription": {
       "trialing": "Teste",
       "active": "Ativa",
-      "past_due": "Falha no pagamento"
+      "past_due": "Falha no pagamento",
+      "lifetime": "Vitalício"
     }
   },
   "emails": {

@@ -25,7 +25,7 @@ export function CheckoutTemplate({
   const t = useTranslations("checkout");
 
   return (
-    <AuthShell eyebrow={t("eyebrow")} title={botName} subtitle={t("roomSubtitle", { roomId })} maxWidth="max-w-lg">
+    <AuthShell eyebrow={t("eyebrow")} title={botName} subtitle={t("roomSubtitle", { roomId })} maxWidth="max-w-3xl">
       <Link
         href={`/instances/${instanceId}`}
         className="mb-5 inline-flex items-center gap-1.5 font-ui-mono text-xs text-dust hover:text-paper"
@@ -43,7 +43,7 @@ export function CheckoutTemplate({
       )}
 
       <form action={startCheckout} className="grid gap-5">
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-3">
           <PlanOption
             id="plan-monthly"
             value="monthly"
@@ -60,7 +60,14 @@ export function CheckoutTemplate({
             price={prices.annual.brl}
             period="/yr"
             reference={`${prices.annual.usd} reference`}
-            badge={t("plans.annual.badge")}
+          />
+          <PlanOption
+            id="plan-lifetime"
+            value="lifetime"
+            label={t("plans.lifetime.label")}
+            price={prices.lifetime.brl}
+            reference={`${prices.lifetime.usd} reference`}
+            badge={t("plans.lifetime.badge")}
           />
         </div>
 

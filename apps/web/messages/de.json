@@ -146,6 +146,17 @@
           "Live-Dashboard — Änderungen wirken sofort"
         ],
         "cta": "Jetzt abonnieren"
+      },
+      "lifetime": {
+        "label": "Lebenslang",
+        "reference": "{usd} Referenz",
+        "badge": "Einmalzahlung",
+        "features": [
+          "Einmal zahlen, für immer behalten",
+          "7 Tage Geld-zurück-Garantie",
+          "Live-Dashboard — Änderungen wirken sofort"
+        ],
+        "cta": "Einmalig kaufen"
       }
     },
     "botShowcase": {
@@ -270,9 +281,13 @@
       "annual": {
         "label": "Jährlich",
         "badge": "~3 Monate gratis"
+      },
+      "lifetime": {
+        "label": "Lebenslang",
+        "badge": "Einmalzahlung"
       }
     },
-    "billingNote": "Karte oder Pix nötig. Die erste Zahlperiode wird heute abgebucht — jederzeit kündbar, und innerhalb von 7 Tagen bekommst du dein Geld zurück, falls es nichts für dich ist.",
+    "billingNote": "Karte oder Pix nötig. Monatlich und jährlich verlängern sich automatisch, bis du kündigst; Lebenslang ist eine einmalige Zahlung.",
     "continueToPayment": "Weiter zur Zahlung",
     "stripeNote": "Zahlungen werden über Stripe abgewickelt — wir sehen deine Kartendaten nie."
   },
@@ -444,6 +459,7 @@
       "title": "Gefahrenzone",
       "body": "Löscht diesen Bot dauerhaft — seinen gespeicherten Zugangscode, Einstellungen, das Aktivitätsprotokoll und die Rauminfos (Stammgäste, Verwarnungen, gespeicherte Position). Das kann nicht rückgängig gemacht werden.",
       "activeSubNote": "Dieser Bot hat ein aktives Abo. Kündige es zuerst, dann kannst du hierher zurückkommen, um den Bot zu löschen.",
+      "lifetimeDeleteNote": "Du hast einmalig für lebenslangen Zugang bezahlt — es gibt kein Abo zu kündigen. Das Löschen entfernt diesen Bot endgültig; der Kauf lässt sich nicht auf eine neue Instanz übertragen.",
       "deleteSummary": "Diesen Bot löschen",
       "confirmLabel": "Mir ist klar, dass dadurch {name} und alles damit Verbundene dauerhaft gelöscht wird.",
       "deleteSubmit": "Bot löschen"
@@ -1077,7 +1093,8 @@
     "subscription": {
       "trialing": "Testphase",
       "active": "Aktiv",
-      "past_due": "Zahlung fehlgeschlagen"
+      "past_due": "Zahlung fehlgeschlagen",
+      "lifetime": "Lebenslang"
     }
   },
   "emails": {

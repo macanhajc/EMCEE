@@ -18,6 +18,7 @@ async function main() {
       // come from env, not a hardcoded value — see .env.example.
       stripeMonthlyPriceId: process.env.STRIPE_EMCEE_MONTHLY_PRICE_ID,
       stripeAnnualPriceId: process.env.STRIPE_EMCEE_ANNUAL_PRICE_ID,
+      stripeLifetimePriceId: process.env.STRIPE_EMCEE_LIFETIME_PRICE_ID,
     })
     .onConflictDoUpdate({
       target: tables.catalogBots.slug,
@@ -26,6 +27,7 @@ async function main() {
         tagline: "Your room's full-time host — entertains, greets, moderates, and looks the part.",
         stripeMonthlyPriceId: process.env.STRIPE_EMCEE_MONTHLY_PRICE_ID,
         stripeAnnualPriceId: process.env.STRIPE_EMCEE_ANNUAL_PRICE_ID,
+        stripeLifetimePriceId: process.env.STRIPE_EMCEE_LIFETIME_PRICE_ID,
       },
     });
   console.log("seeded catalog_bots: emcee");

@@ -9,7 +9,7 @@ import { useBotDangerZone } from "../hooks/use-bot-danger-zone";
 
 /**
  * Status → Danger zone card — the whole card, chrome included. Fully
- * self-contained: fetches its own current isSubscribed/bot name via
+ * self-contained: fetches its own current subscriptionKind/bot name via
  * useBotDangerZone rather than being handed them down from the page's own
  * server-rendered props. Rendered directly in instance-config.tsx's Status
  * tab, same self-contained shape every module's cards already use
@@ -42,7 +42,7 @@ export function BotDangerZone({ instanceId }: { instanceId: string }) {
       <h2 className="font-display text-base text-paper">{t("title")}</h2>
       <p className="mt-1 text-sm leading-relaxed text-dust">{t("body")}</p>
 
-      {data.isSubscribed ? (
+      {data.subscriptionKind === "recurring" ? (
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm leading-relaxed text-dust">{t("activeSubNote")}</p>
           <form action={openBillingPortal}>
@@ -60,6 +60,9 @@ export function BotDangerZone({ instanceId }: { instanceId: string }) {
           <summary className="cursor-pointer font-ui-mono text-[11px] tracking-widest text-red-400 uppercase select-none">
             {t("deleteSummary")}
           </summary>
+          {data.subscriptionKind === "lifetime" && (
+            <p className="mt-3 text-sm leading-relaxed text-dust">{t("lifetimeDeleteNote")}</p>
+          )}
           <form action={deleteInstance.bind(null, instanceId)} className="mt-4 grid gap-3">
             <div className="flex items-start gap-3">
               <Checkbox

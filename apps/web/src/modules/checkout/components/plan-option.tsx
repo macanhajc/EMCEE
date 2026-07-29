@@ -9,10 +9,12 @@ export function PlanOption({
   defaultChecked,
 }: {
   id: string;
-  value: "monthly" | "annual";
+  value: "monthly" | "annual" | "lifetime";
   label: string;
   price: string;
-  period: string;
+  // Omitted for the lifetime plan — a one-time price has no "/mo"-style
+  // trailing period to show.
+  period?: string;
   reference: string;
   badge?: string;
   defaultChecked?: boolean;
@@ -40,7 +42,7 @@ export function PlanOption({
         <p className="font-display text-xs tracking-wide text-dust uppercase">{label}</p>
         <p className="mt-2 font-display text-2xl text-paper">
           {price}
-          <span className="font-ui-mono text-sm text-dust">{period}</span>
+          {period && <span className="font-ui-mono text-sm text-dust">{period}</span>}
         </p>
         <p className="mt-1 font-ui-mono text-[11px] text-dust">{reference}</p>
       </label>

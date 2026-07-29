@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { buildCheckoutSessionParams, priceIdForPlan } from "./billing-checkout";
 
-const bot = { stripeMonthlyPriceId: "price_monthly_123", stripeAnnualPriceId: "price_annual_456" };
+const bot = {
+  stripeMonthlyPriceId: "price_monthly_123",
+  stripeAnnualPriceId: "price_annual_456",
+  stripeLifetimePriceId: "price_lifetime_789",
+};
 
 describe("priceIdForPlan", () => {
   it("picks the monthly price for plan 'monthly'", () => {
@@ -12,8 +16,14 @@ describe("priceIdForPlan", () => {
     expect(priceIdForPlan(bot, "annual")).toBe("price_annual_456");
   });
 
+  it("picks the lifetime price for plan 'lifetime'", () => {
+    expect(priceIdForPlan(bot, "lifetime")).toBe("price_lifetime_789");
+  });
+
   it("returns null if the catalog bot has no price configured yet", () => {
-    expect(priceIdForPlan({ stripeMonthlyPriceId: null, stripeAnnualPriceId: null }, "monthly")).toBeNull();
+    expect(
+      priceIdForPlan({ stripeMonthlyPriceId: null, stripeAnnualPriceId: null, stripeLifetimePriceId: null }, "monthly"),
+    ).toBeNull();
   });
 });
 
@@ -23,6 +33,7 @@ describe("buildCheckoutSessionParams", () => {
     userId: "user-1",
     userEmail: "founder@botmarket.app",
     existingStripeCustomerId: null,
+    plan: "monthly" as const,
     priceId: "price_monthly_123",
     origin: "https://botmarket.app",
   };
@@ -70,5 +81,43 @@ describe("buildCheckoutSessionParams", () => {
 
   it("never enables automatic_tax (no active Stripe Tax registration yet)", () => {
     expect(buildCheckoutSessionParams(base)).not.toHaveProperty("automatic_tax");
+  });
+});
+
+describe("buildCheckoutSessionParams (lifetime plan)", () => {
+  const lifetimeBase = {
+    instanceId: "inst-1",
+    userId: "user-1",
+    userEmail: "founder@botmarket.app",
+    existingStripeCustomerId: null,
+    plan: "lifetime" as const,
+    priceId: "price_lifetime_789",
+    origin: "https://botmarket.app",
+  };
+
+  it("is a payment-mode session, not subscription-mode", () => {
+    expect(buildCheckoutSessionParams(lifetimeBase).mode).toBe("payment");
+  });
+
+  it("carries metadata on payment_intent_data instead of subscription_data", () => {
+    const params = buildCheckoutSessionParams(lifetimeBase);
+    expect(params.payment_intent_data?.metadata).toEqual({ bot_instance_id: "inst-1", user_id: "user-1" });
+    expect(params.subscription_data).toBeUndefined();
+  });
+
+  it("forces customer_creation when there's no existing Stripe customer yet", () => {
+    const params = buildCheckoutSessionParams(lifetimeBase);
+    expect(params.customer_creation).toBe("always");
+    expect(params.customer_email).toBe("founder@botmarket.app");
+  });
+
+  it("never sends customer_creation alongside an existing customer id", () => {
+    const params = buildCheckoutSessionParams({ ...lifetimeBase, existingStripeCustomerId: "cus_existing123" });
+    expect(params.customer).toBe("cus_existing123");
+    expect(params.customer_creation).toBeUndefined();
+  });
+
+  it("still sets client_reference_id for webhook correlation", () => {
+    expect(buildCheckoutSessionParams(lifetimeBase).client_reference_id).toBe("inst-1");
   });
 });

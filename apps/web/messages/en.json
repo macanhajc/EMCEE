@@ -141,11 +141,21 @@
         "reference": "{usd} reference",
         "badge": "~3 months free",
         "features": [
-          "Save ~28% versus paying monthly",
-          "7-day money-back guarantee",
+          "Save versus paying monthly",
           "Live dashboard — changes apply instantly"
         ],
         "cta": "Subscribe now"
+      },
+      "lifetime": {
+        "label": "Lifetime",
+        "reference": "{usd} reference",
+        "badge": "One-time",
+        "features": [
+          "Pay once, own it forever",
+          "7-day money-back guarantee",
+          "Live dashboard — changes apply instantly"
+        ],
+        "cta": "Buy once"
       }
     },
     "botShowcase": {
@@ -270,9 +280,13 @@
       "annual": {
         "label": "Annual",
         "badge": "~3 months free"
+      },
+      "lifetime": {
+        "label": "Lifetime",
+        "badge": "One-time"
       }
     },
-    "billingNote": "Card or Pix required. You’re charged today for your first period — cancel anytime, and get a full refund within 7 days if it’s not for you.",
+    "billingNote": "Card or Pix required. Monthly and annual renew automatically until you cancel; lifetime is a single one-time charge.",
     "continueToPayment": "Continue to payment",
     "stripeNote": "Payments handled by Stripe — we never see your card details."
   },
@@ -444,6 +458,7 @@
       "title": "Danger zone",
       "body": "Permanently deletes this bot — its saved access code, settings, activity log, and room memory (regulars, warnings, saved position). This can't be undone.",
       "activeSubNote": "This bot has an active subscription. Cancel it first, then come back here to delete the bot.",
+      "lifetimeDeleteNote": "You paid once for lifetime access — there's no subscription to cancel. Deleting removes this bot instance for good; the purchase doesn't transfer to a new one.",
       "deleteSummary": "Delete this bot",
       "confirmLabel": "I understand this permanently deletes {name} and everything tied to it.",
       "deleteSubmit": "Delete bot"
@@ -1077,7 +1092,8 @@
     "subscription": {
       "trialing": "Trial",
       "active": "Active",
-      "past_due": "Payment failed"
+      "past_due": "Payment failed",
+      "lifetime": "Lifetime"
     }
   },
   "emails": {

@@ -64,6 +64,13 @@ export default async function Home({
               url: `${SITE_URL}/${locale}`,
               category: "subscription",
             },
+            {
+              "@type": "Offer",
+              price: parseBrl(prices.lifetime.brl),
+              priceCurrency: "BRL",
+              url: `${SITE_URL}/${locale}`,
+              category: "one-time",
+            },
           ],
         }}
       />
