@@ -83,6 +83,6 @@ export function buildCheckoutSessionParams(
     // blocker, specs/03-billing.md) — enabling it without one means Stripe
     // silently collects zero tax while looking configured.
     // No payment_method_types: let Stripe determine eligible methods
-    // (cards, Pix) dynamically from the Dashboard rather than hardcoding.
+    // (cards) dynamically from the Dashboard rather than hardcoding.
   };
 }

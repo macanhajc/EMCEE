@@ -48,7 +48,7 @@
       "subtitle": "Rent a ready-made Highrise bot for your room in about two minutes. Paste your bot's access code, set it up on a dashboard — we keep it dancing 24/7.",
       "ctaPrimary": "Get started",
       "ctaSecondary": "See the bot",
-      "note": "Card or Pix required · cancel anytime · we never touch Highrise Gold",
+      "note": "Card required · cancel anytime · we never touch Highrise Gold",
       "demoLabel": "TONIGHT'S ACT",
       "live": "LIVE",
       "demoBotTagline": "Emotes + Greeter + Moderation + Outfits · your room",
@@ -90,7 +90,7 @@
         {
           "alt": "Renting a bot for in-game Gold",
           "weakness": "Against Highrise's rules, no dashboard, no one to call if it breaks — you're trusting a stranger.",
-          "answer": "Pay with a card or Pix, manage everything yourself, and see exactly how your bot is doing at all times."
+          "answer": "Pay with a card, manage everything yourself, and see exactly how your bot is doing at all times."
         },
         {
           "alt": "Building your own with a coding template",
@@ -112,7 +112,7 @@
         },
         {
           "title": "Never any Highrise Gold",
-          "body": "Every price on this page is real money (cards or Pix). We never accept, hold, or move Highrise Gold — that's against the rules and we won't touch it."
+          "body": "Every price on this page is real money (cards). We never accept, hold, or move Highrise Gold — that's against the rules and we won't touch it."
         },
         {
           "title": "Built the right way",
@@ -123,7 +123,7 @@
     "pricing": {
       "eyebrow": "Pricing",
       "title": "One price. One bot. One room.",
-      "subtitle": "Each bot instance connects to one room. Pay by card or Pix — your bot is live as soon as checkout completes.",
+      "subtitle": "Each bot instance connects to one room. Pay by card — your bot is live as soon as checkout completes.",
       "monthly": {
         "label": "Monthly",
         "period": "/mo",
@@ -284,7 +284,7 @@
         "badge": "One-time"
       }
     },
-    "billingNote": "Card or Pix required. Monthly and annual renew automatically until you cancel; lifetime is a single one-time charge.",
+    "billingNote": "Card required. Monthly and annual renew automatically until you cancel; lifetime is a single one-time charge.",
     "continueToPayment": "Continue to payment",
     "stripeNote": "Payments handled by Stripe — we never see your card details."
   },
@@ -1300,8 +1300,7 @@
       "subscriptionAndBilling": {
         "heading": "Subscription & billing",
         "body": [
-          "Each bot instance is billed as a monthly or annual subscription, in Brazilian reais (BRL) with a USD reference price shown for convenience, through Stripe (cards or Pix).",
-          "If you pay by Pix, you’re authorizing a Pix Automático recurring mandate — your bank debits each renewal automatically until you cancel. You can revoke that mandate anytime in your banking app; doing so has the same effect as cancelling from the dashboard.",
+          "Each bot instance is billed as a monthly or annual subscription, in Brazilian reais (BRL) with a USD reference price shown for convenience, through Stripe.",
           "A subscription entitles your instance to run; it doesn’t start the bot by itself. You press Start on the dashboard whenever you want it live, and Stop whenever you don’t.",
           "Cancel anytime from the dashboard’s billing portal — your instance keeps running through the end of the period you already paid for."
         ]
@@ -1400,7 +1399,7 @@
       },
       {
         "question": "How much does it cost, and can I cancel anytime?",
-        "answer": "One flat price per bot instance, billed monthly or annually — see Pricing above. Pay by card or Pix. Cancel anytime; your bot keeps running until the end of the period you already paid for."
+        "answer": "One flat price per bot instance, billed monthly or annually — see Pricing above. Pay by card. Cancel anytime; your bot keeps running until the end of the period you already paid for."
       },
       {
         "question": "Can I get a refund?",

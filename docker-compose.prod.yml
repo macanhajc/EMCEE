@@ -11,13 +11,19 @@
 #   docker compose -p botmarket-prod -f docker-compose.prod.yml --env-file .env.prod up -d --build
 #
 # Migrations: the `migrate` one-off service below — run manually after
-# `up`, and again after any deploy that changes apps/web/drizzle:
-#   docker compose -p botmarket-prod -f docker-compose.prod.yml --env-file .env.prod --profile tools run --rm migrate
+# `up`, and again after any deploy that changes apps/web/drizzle. `migrate`
+# is profile-gated ("tools"), so plain `up --build` above never rebuilds
+# it — ALWAYS pass --build here too, or `run` silently reuses whatever
+# `migrate` image was built on a previous deploy (drizzle-kit then sees
+# last deploy's migrations folder, not this one, and reports success
+# having applied nothing new):
+#   docker compose -p botmarket-prod -f docker-compose.prod.yml --env-file .env.prod --profile tools run --build --rm migrate
 #
 # Catalog seed: same `migrate` image, command overridden — run once after
 # the first migrate, and again any time STRIPE_EMCEE_*_PRICE_ID changes
-# (apps/web/src/db/seed.ts is an upsert, safe to re-run):
-#   docker compose -p botmarket-prod -f docker-compose.prod.yml --env-file .env.prod --profile tools run --rm migrate pnpm --filter web exec tsx src/db/seed.ts
+# (apps/web/src/db/seed.ts is an upsert, safe to re-run). Same --build
+# caveat as above:
+#   docker compose -p botmarket-prod -f docker-compose.prod.yml --env-file .env.prod --profile tools run --build --rm migrate pnpm --filter web exec tsx src/db/seed.ts
 #
 # Backups + cron routes: deploy/backup.sh and deploy/crontab — host
 # crontab entries, not services here (they need to run on a schedule

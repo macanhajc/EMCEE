@@ -43,7 +43,7 @@ Keep pricing per-instance simple in v1; usage tiers only if the runtime cost dat
 
 ## Onboarding flow (the 2 minutes)
 
-1. Sign up (Google or magic link, 18+ attestation — `06-auth.md`) → 2. pick bot → 3. checkout (charged immediately, card or Pix) → 4. paste bot token + room ID, guided: where to find both, reminder to grant the bot designer rights in the room → 5. bot connects, dashboard shows **live** → 6. tweak config, changes apply within seconds.
+1. Sign up (Google or magic link, 18+ attestation — `06-auth.md`) → 2. pick bot → 3. checkout (charged immediately, card) → 4. paste bot token + room ID, guided: where to find both, reminder to grant the bot designer rights in the room → 5. bot connects, dashboard shows **live** → 6. tweak config, changes apply within seconds.
 
 Failure UX matters most at step 5: bad token, missing designer rights, room not found — each needs a specific, human error message.
 

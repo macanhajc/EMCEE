@@ -48,7 +48,7 @@
       "subtitle": "Alugue um bot do Highrise pronto para sua sala em cerca de dois minutos. Cole o código de acesso do seu bot, configure tudo em um painel — a gente mantém ele dançando 24/7.",
       "ctaPrimary": "Começar agora",
       "ctaSecondary": "Ver o bot",
-      "note": "Cartão ou Pix necessário · cancele quando quiser · a gente nunca mexe em Highrise Gold",
+      "note": "Cartão necessário · cancele quando quiser · a gente nunca mexe em Highrise Gold",
       "demoLabel": "A ATRAÇÃO DA NOITE",
       "live": "AO VIVO",
       "demoBotTagline": "Emotes + Recepção + Moderação + Visual · sua sala",
@@ -90,7 +90,7 @@
         {
           "alt": "Alugar um bot pagando com Gold do jogo",
           "weakness": "Vai contra as regras do Highrise, não tem painel, e não tem ninguém pra chamar se der problema — você confia cegamente em um estranho.",
-          "answer": "Pague com cartão ou Pix, controle tudo você mesmo e veja exatamente como seu bot está indo o tempo todo."
+          "answer": "Pague com cartão, controle tudo você mesmo e veja exatamente como seu bot está indo o tempo todo."
         },
         {
           "alt": "Criar o seu próprio com um template de código",
@@ -112,7 +112,7 @@
         },
         {
           "title": "Nunca envolve Highrise Gold",
-          "body": "Todo preço nesta página é em dinheiro de verdade (cartão ou Pix). A gente nunca aceita, guarda ou movimenta Highrise Gold — isso vai contra as regras e não encostamos nisso."
+          "body": "Todo preço nesta página é em dinheiro de verdade (cartão). A gente nunca aceita, guarda ou movimenta Highrise Gold — isso vai contra as regras e não encostamos nisso."
         },
         {
           "title": "Feito do jeito certo",
@@ -123,7 +123,7 @@
     "pricing": {
       "eyebrow": "Preços",
       "title": "Um preço. Um bot. Uma sala.",
-      "subtitle": "Cada bot conecta a uma sala. Pague com cartão ou Pix — seu bot fica no ar assim que o pagamento é concluído.",
+      "subtitle": "Cada bot conecta a uma sala. Pague com cartão — seu bot fica no ar assim que o pagamento é concluído.",
       "monthly": {
         "label": "Mensal",
         "period": "/mês",
@@ -284,7 +284,7 @@
         "badge": "Pagamento único"
       }
     },
-    "billingNote": "É preciso cartão ou Pix. Os planos mensal e anual renovam automaticamente até você cancelar; o vitalício é um pagamento único.",
+    "billingNote": "É preciso cartão. Os planos mensal e anual renovam automaticamente até você cancelar; o vitalício é um pagamento único.",
     "continueToPayment": "Continuar para o pagamento",
     "stripeNote": "Pagamentos processados pela Stripe — a gente nunca vê os dados do seu cartão."
   },
@@ -1300,8 +1300,7 @@
       "subscriptionAndBilling": {
         "heading": "Assinatura e cobrança",
         "body": [
-          "Cada instância de bot é cobrada como assinatura mensal ou anual, em reais (BRL), com um preço de referência em USD exibido para orientação, processada pela Stripe (cartão ou Pix).",
-          "Se você pagar com Pix, está autorizando um mandato recorrente de Pix Automático — seu banco debita cada renovação automaticamente até você cancelar. Você pode revogar esse mandato a qualquer momento no app do seu banco; isso tem o mesmo efeito que cancelar pelo painel.",
+          "Cada instância de bot é cobrada como assinatura mensal ou anual, em reais (BRL), com um preço de referência em USD exibido para orientação, processada pela Stripe.",
           "Uma assinatura habilita sua instância a funcionar; ela não liga o bot sozinha. Você aperta Iniciar no painel sempre que quiser que ele fique no ar, e Parar quando não quiser.",
           "Cancele quando quiser pelo portal de cobrança do painel — sua instância continua funcionando até o fim do período que você já pagou."
         ]
@@ -1400,7 +1399,7 @@
       },
       {
         "question": "Quanto custa, e posso cancelar quando quiser?",
-        "answer": "Um preço fixo por instância de bot, cobrado mensal ou anualmente — veja Preços acima. Pagamento por cartão ou Pix. Cancele quando quiser; seu bot continua rodando até o fim do período já pago."
+        "answer": "Um preço fixo por instância de bot, cobrado mensal ou anualmente — veja Preços acima. Pagamento por cartão. Cancele quando quiser; seu bot continua rodando até o fim do período já pago."
       },
       {
         "question": "Posso pedir reembolso?",

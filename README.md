@@ -92,7 +92,7 @@ Redeploying after a code change is the same `up -d --build` command in step 4 (C
 | `docs/cost-plan.md` | Cost model + deployment recommendation; tracks the cheap-to-run refactors |
 | `specs/01-product.md` | Vision, pricing draft, v1 scope |
 | `specs/02-architecture.md` | Control plane / data plane split |
-| `specs/03-billing.md` | Stripe + Pix, entitlement lifecycle |
+| `specs/03-billing.md` | Stripe (cards only), entitlement lifecycle |
 | `specs/04-bot-runtime.md` | Python supervisor, throttling, failure modes |
 | `specs/05-security.md` | Token handling, threat model |
 | `specs/06-auth.md` | Sign-in methods, gating, sessions, age policy |

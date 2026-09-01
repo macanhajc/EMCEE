@@ -36,12 +36,11 @@ Truly-$0 option: Oracle Cloud Always Free ARM (4 cores/24 GB) runs this whole st
 
 ## Per-customer marginal cost (the % of revenue)
 
-Stripe is the only real one. Two levers already in the product:
+Stripe is the only real one. One lever already in the product:
 
-- **Pix**: materially cheaper than cards in BR and no card-style chargebacks — verify exact current rates once the BR entity/account exists.
 - **Annual plan**: one fixed per-transaction fee instead of twelve, and 12× fewer invoices — which also matters later because **NFS-e issuance (Focus NFe/eNotas) is per-invoice**.
 
-Make Pix and annual visually prominent at checkout.
+Make annual visually prominent at checkout. (Pix dropped 2026-07-29 — see `docs/decisions.md` — so it's no longer a fee lever here.)
 
 ## Code findings with cost/complexity implications
 

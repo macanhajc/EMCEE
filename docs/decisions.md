@@ -2,6 +2,18 @@
 
 ADR-lite. Newest first. One entry per decision that shapes the product or architecture; link the spec that carries the detail.
 
+## 2026-07-29 — Billing: Pix dropped, cards-only via Stripe Brazil
+
+Product decision: Pix is no longer an accepted payment method. Stripe Brazil remains the settlement rail (BRL settlement, CNPJ/tax path unchanged) but now for card payments only — this removes the Pix Automático recurring-mandate path that was part of the original "Why Stripe Brazil" rationale (`03-billing.md`). PayPal was already dropped for v1, so the payment story is now simply "cards, via Stripe."
+
+**Copy**: every "card or Pix" mention removed from `messages/*.json` (all 5 locales) — hero note, comparison-row answer, "never any Highrise Gold" body, checkout subtitle, checkout `billingNote`, and the billing FAQ answer. The ToS `subscriptionAndBilling` body had a whole sentence disclosing the Pix Automático mandate (added `2026-07-23`, see that entry below) — deleted outright rather than reworded, since there's no mandate left to disclose.
+
+**Spec** (`03-billing.md`): rail description, "Why Stripe Brazil," Rails & currency, the "no prepaid blocks" rationale (now points at standard Stripe-subscription recurring billing on cards instead of Pix Automático), the webhook list (dropped the Pix-mandate-revoked bullet), the Smart Retries note, and the Pix-eligibility open question all updated or removed to match. `01-product.md` onboarding-flow step 3 updated to "card" only.
+
+**Code**: `lib/billing-checkout.ts` comment updated. `payment_method_types` was already left unset in the Checkout Session params — Stripe determines eligible methods from the Dashboard rather than this code hardcoding them — so there's no functional checkout-code change here.
+
+**Not done here, needs separate action**: the live/sandbox Stripe Dashboard still needs Pix disabled as a payment method on the account itself; a repo-only change doesn't touch that, and it wasn't done as part of this edit.
+
 ## 2026-07-29 — Billing: added a "Lifetime" one-time SKU (R$299,90/instance) alongside monthly/annual
 
 Customer demand for a one-time-pay option. Modeled as a plain one-time Stripe Checkout Session (`mode: "payment"`) rather than any subscription-machinery workaround (e.g. a 1-cycle subscription immediately canceled) — still one Stripe account, one webhook endpoint, one `subscriptions` table, just no `Subscription` object behind this particular row. Doesn't reverse "no prepaid blocks" (`03-billing.md`, rejected 2026-07-19): that decision was about pre-buying future recurring cycles, which Pix Automático made unnecessary; Lifetime is a single permanent entitlement, a different thing entirely.

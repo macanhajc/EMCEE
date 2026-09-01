@@ -19,7 +19,7 @@ These come from Highrise's Terms of Service and platform rules — see `docs/res
 - **Control plane:** Next.js + TypeScript — storefront, auth, billing, config dashboard, admin.
 - **Data plane:** Python workers on the **official** `highrise-bot-sdk` (Pocket Worlds). Never the community JS SDKs.
 - **Shared state:** Postgres only (source of truth, plus config pub/sub via LISTEN/NOTIFY). No Redis — heartbeats removed 2026-07-22 (R2), then the config/avatar-position pub/sub channels moved off Redis onto Postgres the same day (R6), dropping the dependency entirely; see `docs/cost-plan.md`.
-- **Payments:** single rail — **Stripe Brazil**: cards + Pix, with Pix Automático mandates for recurring. PayPal dropped for v1. BRL settlement, USD reference pricing. See `specs/03-billing.md`.
+- **Payments:** single rail — **Stripe Brazil**: cards only. Pix dropped 2026-07-29 (see `docs/decisions.md`). PayPal dropped for v1. BRL settlement, USD reference pricing. See `specs/03-billing.md`.
 - Bot config is defined as **JSON Schema**, shared by both planes: the dashboard renders forms from it, the Python runtime validates against it.
 - **i18n:** next-intl, locale-prefixed routes (`/[locale]/...`), 5 locales (en/es/de/pt/ru) across UI copy and transactional email.
 
